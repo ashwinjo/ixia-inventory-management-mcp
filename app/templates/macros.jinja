@@ -1,0 +1,83 @@
+<!-- Chassis Info Modal-->
+{% macro chassis_item(id, ip_address) %}
+<div class="portfolio-item mx-auto" data-bs-toggle="modal" data-bs-target="#{{ id }}">
+    <button type="button" class="btn btn-success">{{id}} :: {{ip_address}}</button>
+</div>
+{% endmacro %}
+
+{% macro chassis_modal(id, title, chassis) %}
+<div class="portfolio-modal modal " id="{{ id }}" tabindex="-1" aria-labelledby="portfolioModal1" aria-hidden="false">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+            <div class="modal-body text-center pb-5">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <!-- Portfolio Modal - Title-->
+                            <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">{{ chassis["chassis_information"]["mgmtIp"] }}</h2>
+                            <h2> {{id}} </h2>
+                            <!-- Icon Divider-->
+                            <div class="divider-custom">
+                                <div class="divider-custom-line"></div>
+                                <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                                <div class="divider-custom-line"></div>
+                            </div>
+                            <!-- Portfolio Modal - Image-->
+                            <img class="img-fluid rounded mb-5" src={{chassis["chassis_information"]["chassis_model_img_src"]}} alt="..." />
+                            <!-- Portfolio Modal - Text-->
+                            <div class="col d-flex justify-content-center card ">
+                                <div class="card-header">
+                                  Chassis Information
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                {% for key, value in chassis["chassis_information"].items() %}
+                                <li class="list-group-item">{{key}}:&nbsp;{{value}}</li>
+                                {% endfor %}
+                                </ul>
+                            </div>
+                        <div><br/></div>
+                        <!-- Portfolio Modal - Text-->
+                        <div><br/></div>
+                        <div class="col d-flex justify-content-center card ">
+                                <div class="card-header">
+                                  Chassis Cards Information
+                                </div>
+                                
+                                {% for item in chassis["cards_information"] %}
+                                    <ul class="list-group list-group-flush">
+                                    {% for key, value in item.items() %}
+                                        <li class="list-group-item">{{key}}:&nbsp;{{value}}</li>
+                                    {% endfor %}
+                                    </ul>
+                                {% endfor %}
+                                
+                        </div>
+                        
+                        <!-- Portfolio Modal - Text-->
+                        <div><br/></div>
+                            <div class="col d-flex justify-content-center card ">
+                                <div class="card-header">
+                                  License Information
+                                </div>
+                                {% for item in chassis["license_information"] %}
+                                <ul class="list-group list-group-flush">
+                                {% for key, value in item.items() %}
+                                    <li class="list-group-item">{{key}}:&nbsp;{{value}}</li>
+                                {% endfor %}
+                                </ul>
+                            {% endfor %}
+                                
+                        </div>
+                        <button class="btn btn-primary" href="#!" data-bs-dismiss="modal">
+                            <i class="fas fa-times fa-fw"></i>
+                            Close Window
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
