@@ -27,27 +27,28 @@
                             <img class="img-fluid rounded mb-5" src={{chassis["chassis_information"]["chassis_model_img_src"]}} alt="..." />
                             <!-- Portfolio Modal - Text-->
                             <div class="col d-flex justify-content-center card ">
-                                <div class="card-header">
+                                <div class="card-header bg-info">
                                   Chassis Information
                                 </div>
                                 <ul class="list-group list-group-flush">
-                                {% for key, value in chassis["chassis_information"].items() %}
-                                <li class="list-group-item">{{key}}:&nbsp;{{value}}</li>
+                                 {% for key, value in chassis["chassis_information"].items() %}
+                                 <li class="list-group-item"><h5><span class="badge bg-secondary">{{key}}:</span>&nbsp;<span class="badge bg-primary">{{value}}</span></h5></li>
                                 {% endfor %}
                                 </ul>
                             </div>
                         <div><br/></div>
                         <!-- Portfolio Modal - Text-->
                         <div><br/></div>
-                        <div class="col d-flex justify-content-center card ">
-                                <div class="card-header">
+                        <div class="col d-flex justify-content-right card ">
+                                <div class="card-header bg-info">
                                   Chassis Cards Information
                                 </div>
                                 
                                 {% for item in chassis["cards_information"] %}
+                                    <div><span class="placeholder" style="width: 100%;"></span></div>
                                     <ul class="list-group list-group-flush">
                                     {% for key, value in item.items() %}
-                                        <li class="list-group-item">{{key}}:&nbsp;{{value}}</li>
+                                    <li class="list-group-item"><h5><span class="badge bg-secondary">{{key}}:</span>&nbsp;<span class="badge bg-primary">{{value}}</span></h5></li>
                                     {% endfor %}
                                     </ul>
                                 {% endfor %}
@@ -57,22 +58,19 @@
                         <!-- Portfolio Modal - Text-->
                         <div><br/></div>
                             <div class="col d-flex justify-content-center card ">
-                                <div class="card-header">
+                                <div class="card-header bg-info">
                                   License Information
                                 </div>
                                 {% for item in chassis["license_information"] %}
+                                <div><span class="placeholder" style="width: 100%;"></span></div>
                                 <ul class="list-group list-group-flush">
                                 {% for key, value in item.items() %}
-                                    <li class="list-group-item">{{key}}:&nbsp;{{value}}</li>
+                                <li class="list-group-item"><h5><span class="badge bg-secondary">{{key}}:</span>&nbsp;<span class="badge bg-primary">{{value}}</span></h5></li>
                                 {% endfor %}
                                 </ul>
                             {% endfor %}
                                 
                         </div>
-                        <button class="btn btn-primary" href="#!" data-bs-dismiss="modal">
-                            <i class="fas fa-times fa-fw"></i>
-                            Close Window
-                        </button>
                     </div>
                 </div>
             </div>
