@@ -120,5 +120,5 @@ def start_chassis_rest_data_fetch(chassis, username, password):
     complete_response = {} 
     complete_response["chassis_information"] = get_chassis_information(session)
     complete_response["cards_information"] = get_chassis_cards_information(session)
-    #complete_response["license_information"] = get_license_activation(session)
+    complete_response["license_information"] = get_license_activation(session)
     return complete_response
