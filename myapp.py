@@ -2,26 +2,10 @@ from flask import render_template
 import sys
 from app import create_app
 from IxOSRest import start_chassis_rest_data_fetch
+from config import CHASSIS_LIST
 
 
 app = create_app()
-
-CHASSIS_LIST = [
-{
-    "ip": "10.36.236.121",
-    "username": "admin",
-    "password": "Kimchi123Kimchi123!",
-    "os": "linux",
-    "fetch": ""
-},
-{
-    "ip": "10.36.236.121",
-    "username": "admin",
-    "password": "Kimchi123Kimchi123!",
-    "os": "linux",
-    "fetch": ""
-}
-]
 
 @app.get("/")
 def home():
