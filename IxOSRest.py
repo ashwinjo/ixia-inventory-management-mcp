@@ -16,15 +16,12 @@ It collects the below info from the chassis:
 """
 
 import json
-import tabulate
 import pandas as pd
 from  RestApi.IxOSRestInterface import IxRestSession
 
 
 def get_owned_ports(port_data_list):
     op = [item for item in port_data_list if item.get("owner")]
-    print("******************* Ports ownership details ***********************")
-    print (pd.DataFrame(op))
     return len(op), op
 
     
@@ -32,6 +29,7 @@ def get_chassis_information(session):
     """ Fetch chassis information from RestPy
     """
     temp_dict = {}
+    no_serial_string = ""
     chassis_filter_dict = {}
     chassisInfo = session.get_chassis()
     perf = session.get_perfcounters().data[0]
@@ -42,8 +40,11 @@ def get_chassis_information(session):
     for item in list_of_ixos_protocols:
         temp_dict.update({item["name"]: item["version"]})
 
+    if d["type"] == "Ixia Virtual Test Appliance":
+        no_serial_string = "IxiaVM"
+        
     chassis_filter_dict.update(temp_dict)
-    chassis_filter_dict.update({"chassisSerielNumber": d["serialNumber"],
+    chassis_filter_dict.update({"chassisSerielNumber": d.get("serialNumber", no_serial_string),
                                 "mgmtIp": d["managementIp"],
                                 "controllerSerialNumber": d.get("controllerSerialNumber", "NA"),
                                 "type": d["type"],
@@ -69,35 +70,41 @@ def get_chassis_cards_information(session):
 def get_chassis_ports_information(session):
     """_summary_
     """
+    port_summary = {}
+    m = []
     # Ports on Chassis
     port_data_list = []
     port_list = session.get_ports().data
-    df = pd.DataFrame(port_list)
-    print("******************* Ports details ***********************")
-    print(df)
-    
     for port in port_list:
         port_data_list.append(port)
     total_ports = len(port_list)
-    
-    
         
     # Metric 1: Port Owned vs Ports Free
     op_count, op_result = get_owned_ports(port_data_list)
     free_ports = total_ports - op_count
-    percent_ports_owned = (op_count/total_ports) * 100
-    percent_ports_free = (free_ports/total_ports) * 100
+    if total_ports:
+        percent_ports_owned = (op_count/total_ports) * 100
+        percent_ports_free = (free_ports/total_ports) * 100
+    else: 
+        percent_ports_owned = 0
+        percent_ports_free = 0
+        
     
-    print("\n******************* Percentage ports having owners ***********************\n")
     print("% ports owned total",  percent_ports_owned)
     print("% ports free total",  percent_ports_free)
+    
+    #port_summary["ownership_details"] = op_result
+    port_summary["% ports owned"] = percent_ports_owned
+    port_summary["% ports free"] = percent_ports_free
+    
 
-
+    
     # Metric 2: Users on Chassis + #ports used
-    list_of_users = [user["owner"].split("/")[-1] for user in op_result]
-    print("\n******************* Users on Chassis ***********************\n")
+    list_of_users = [user["owner"] for user in op_result]
     for x in set(list_of_users):
-        print ("{0}:--{1}".format(x, list_of_users.count(x)))
+        m.append("{0}:--{1}".format(x, list_of_users.count(x)))
+    port_summary["users_on_chassis"] =  m
+    return port_summary
         
 def get_license_activation(session):
     license_info = session.get_license_activation().json()
@@ -121,4 +128,5 @@ def start_chassis_rest_data_fetch(chassis, username, password):
     complete_response["chassis_information"] = get_chassis_information(session)
     complete_response["cards_information"] = get_chassis_cards_information(session)
     complete_response["license_information"] = get_license_activation(session)
+    complete_response["port_information"] = get_chassis_ports_information(session)
     return complete_response

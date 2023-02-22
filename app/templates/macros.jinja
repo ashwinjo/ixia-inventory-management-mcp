@@ -1,6 +1,6 @@
 <!-- Chassis Info Modal-->
 {% macro chassis_item(id, ip_address, type) %}
-<div class="portfolio-item mx-auto" data-bs-toggle="modal" data-bs-target="#{{ id }}">
+<div class="container text-center justify-content-center mx-auto" data-bs-toggle="modal" data-bs-target="#{{ id }}">
     <h3><span class="badge bg-secondary">{{type}}</span><button type="button" class="btn btn-warning">{{ip_address}}</button></h3>
 </div>
 {% endmacro %}
@@ -32,8 +32,10 @@
                                 </div>
                                 <ul class="list-group list-group-flush">
                                  {% for key, value in chassis["chassis_information"].items() %}
-                                 <li class="list-group-item"><h5><span class="badge bg-secondary">{{key}}:</span>&nbsp;<span class="badge bg-primary">{{value}}</span></h5></li>
-                                {% endfor %}
+                                    {% if key not in ["chassis_model_img_src"]%}
+                                         <li class="list-group-item"><h5><span class="badge bg-secondary">{{key}}:</span>&nbsp;<span class="badge bg-primary">{{value}}</span></h5></li>
+                                    {% endif%}
+                                         {% endfor %}
                                 </ul>
                             </div>
                         <div><br/></div>
@@ -52,7 +54,6 @@
                                     {% endfor %}
                                     </ul>
                                 {% endfor %}
-                                
                         </div>
                         
                         <!-- Portfolio Modal - Text-->
@@ -70,6 +71,24 @@
                                 </ul>
                             {% endfor %}
                                 
+                        </div>
+                        <div><br/></div>
+                            <div class="col d-flex justify-content-center card ">
+                                <div class="card-header bg-info">
+                                Port Summary
+                                </div>
+                                    <ul class="list-group list-group-flush">
+                                    {% for key, value in chassis["port_information"].items() %}
+                                        {% if key == 'users_on_chassis' %}
+                                            <li class="list-group-item"><h5><span class="badge bg-secondary">users_on_chassis</span></h5></li>
+                                            {% for user in value %}
+                                            <li class="list-group-item"><h5><span class="badge bg-primary">{{user}}</span></h5></li>
+                                            {% endfor %}
+                                        {% else %}
+                                        <li class="list-group-item"><h5><span class="badge bg-secondary">{{key}}:</span>&nbsp;<span class="badge bg-primary">{{value}}</span></h5></li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
                         </div>
                     </div>
                 </div>
