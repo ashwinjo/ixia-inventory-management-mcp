@@ -41,6 +41,19 @@
         <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
         <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
         <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script>
+            function myFunction(ip) {
+                axios.post('/getLogs',{
+                    ip: ip
+                  })
+                  .then((response) => {
+                    console.log(response.data);
+                  }, (error) => {
+                    console.log(error);
+                  });
+            }
+        </script>
         {% endblock %}
 
     </body>

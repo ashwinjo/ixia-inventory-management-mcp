@@ -1,8 +1,9 @@
-from flask import render_template
+from flask import render_template, request, jsonify
 import sys
 from app import create_app
 from IxOSRest import start_chassis_rest_data_fetch
 from config import CHASSIS_LIST
+
 
 
 app = create_app()
@@ -33,3 +34,8 @@ def home():
         list_of_chassis_information.append(complete_chassis_repsonse)
 
     return render_template("index.html", data=list_of_chassis_information)
+
+@app.post("/getLogs")
+def getlogs():
+    input_json = request.get_json(force=True) 
+    return jsonify(input_json)
