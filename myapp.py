@@ -1,7 +1,7 @@
 from flask import render_template, request, jsonify
-import sys
 from app import create_app
 from IxOSRest import start_chassis_rest_data_fetch
+from  RestApi.IxOSRestInterface import IxRestSession
 from config import CHASSIS_LIST
 
 
@@ -38,4 +38,11 @@ def home():
 @app.post("/getLogs")
 def getlogs():
     input_json = request.get_json(force=True) 
-    return jsonify(input_json)
+    chassis_ip = input_json['ip']
+    for chassis_item in CHASSIS_LIST:
+        if chassis_item["ip"] == chassis_ip:
+            chassis = chassis_item
+            break
+    session = IxRestSession(chassis["ip"], chassis["username"], chassis["password"])
+    out = session.collect_chassis_logs(session)
+    return jsonify({"resultUrl" : out, "message": "Please login to your chassis and enter this url in browser to download logs"})

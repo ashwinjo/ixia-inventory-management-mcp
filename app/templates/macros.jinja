@@ -1,10 +1,10 @@
 <!-- Chassis Info Modal-->
 {% macro chassis_item(id, ip_address, type) %}
-<div class="container text-center justify-content-center mx-auto" data-bs-toggle="modal" data-bs-target="#{{ id }}">
-    <h3><span class="badge bg-secondary">{{type}}</span>
-        <button type="button" class="btn btn-warning">{{ip_address}}</button>
+<div data-bs-toggle="modal" data-bs-target="#{{ id }}">
+        <h3><span class="badge bg-secondary">{{type}}</span>
+        <button type="button" class="btn btn-warning">{{ip_address}}</button></h3>       
 </div>
-<div><button type="button" class="btn btn-danger" onclick="myFunction('{{ip_address}}')">Collect Logs</button></h3></div>
+<button type="button" class="btn btn-danger" onclick="myFunction('{{ip_address}}')">Collect IxOS Logs</button>
 {% endmacro %}
 
 {% macro chassis_modal(id, title, chassis) %}

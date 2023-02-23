@@ -42,16 +42,20 @@
         <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
         <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script>
             function myFunction(ip) {
+                
+                document.getElementsByClassName("loader")[0].style.display = "block";
                 axios.post('/getLogs',{
                     ip: ip
                   })
                   .then((response) => {
-                    console.log(response.data);
+                    document.getElementsByClassName("loader")[0].style.display = "none";
+                    swal("LogFetch URL:\n\n"+response.data.resultUrl+"\n\n"+ response.data.message);
                   }, (error) => {
                     console.log(error);
-                  });
+                  }); 
             }
         </script>
         {% endblock %}

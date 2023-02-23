@@ -148,6 +148,7 @@ class IxRestSession(object):
             while operation_status == 'IN_PROGRESS':
                 response = self.http_request('GET', response_body['url'])
                 response_body = response.data
+                print(response_body)
                 operation_status = response_body['state']
                 if int(time.time() - start_time) > self.timeout:
                     raise IxRestException(
@@ -156,6 +157,8 @@ class IxRestSession(object):
                 time.sleep(self.poll_interval)
 
             if operation_status == 'SUCCESS':
+                return response.data['resultUrl']
+            elif operation_status == 'COMPLETED':
                 return response.data['resultUrl']
             else:
                 raise IxRestException('async operation failed')
@@ -232,6 +235,14 @@ class IxRestSession(object):
             id_url = f'https://{self.chassis_ip}/platform/api/v2/licensing/servers/1/operations/retrievelicenses/1/result'
             return self.http_request('GET', id_url, params=params)
 
+    def collect_chassis_logs(self, params=None):
+        chassis_info = self.get_chassis()
+        chassis_info = json.loads(json.dumps(chassis_info.data[0]))
+        card_id = chassis_info["id"]
+        resultUrl = self.http_request('POST', self.get_ixos_uri() + f"/chassis/{card_id}/operations/collectlogs", params=" ")
+        #resp_log_download = self.http_request('GET', resultUrl, params=" ")
+        return resultUrl     
+     
 
 if __name__ == '__main__':
     print('''

@@ -53,7 +53,8 @@ def get_chassis_information(session):
                                 "memoryInUseBytes": perf["memoryInUseBytes"], 
                                 "memoryTotalBytes": perf["memoryTotalBytes"], 
                                 "diskIOBytesPerSecond": perf["diskIOBytesPerSecond"],  
-                                "cpuUsagePercent": perf["cpuUsagePercent"]
+                                "cpuUsagePercent": perf["cpuUsagePercent"],
+                                "id": d["id"]
                                 })
     return chassis_filter_dict
     
@@ -121,6 +122,10 @@ def get_portstats(session):
     print("\n******************* Port Statistics ***********************\n")
     df = pd.DataFrame(license_info)
     print(df)
+    
+def collect_chassis_logs(session):
+    resultURL = session.collect_chassis_logs()
+    return resultURL
 
 def start_chassis_rest_data_fetch(chassis, username, password):
     session = IxRestSession(chassis, username= username, password=password, verbose=False)
