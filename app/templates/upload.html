@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<!-- Portfolio Section-->
+<section class="page-section portfolio">
+
+<html>
+    <body>
+    <div class="container form-group mb-3">
+      <form action = "/uploader" method = "POST"  enctype = "multipart/form-data">
+         <input class="form-control form-control-lg" type = "file" name = "file" /><br/>
+         <input  class="btn btn-primary mb-3"  type = "submit" value="Upload and Get Chassis Information"/>
+      </form>
+    </div>    
+    <div class="container form-group">
+        <form action = "/goDirectToHome" method = "POST"  enctype = "multipart/form-data">
+            <input class="btn btn-info"  type = "submit" value="No change in list if Ixia Servers to monitor. Get Chassis Information" />
+        </form>
+    </div>
+    </tbody>   
+</html>
+</section>
+{% endblock %}
