@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 
 app = create_app()
 
-@app.get("/chassisDetails")
+@app.get("/")
 def chassisDetails():
     try:
         from config import CHASSIS_LIST
@@ -55,7 +55,7 @@ def getlogs():
     return jsonify({"resultUrl" : out, "message": "Please login to your chassis and enter this url in browser to download logs"})
 
 
-@app.get('/')
+@app.get('/upload')
 def upload_file():
    return render_template('upload.html')
 	
