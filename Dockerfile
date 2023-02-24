@@ -10,4 +10,4 @@ RUN pip3 install -r requirements.txt
 COPY . .
 EXPOSE 3000
 
-CMD ["flask", "--app","/python-docker/myapp.py", "run", "--host=0.0.0.0", "-p", "3000"]
+CMD ["flask", "--app","/python-docker/myapp.py", "--debug", "run", "--host=0.0.0.0", "-p", "3000"]
