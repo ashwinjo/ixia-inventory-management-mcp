@@ -53,6 +53,7 @@
                   .then((response) => {
                     document.getElementsByClassName("loader")[0].style.display = "none";
                     swal("LogFetch URL:\n\n"+response.data.resultUrl+"\n\n"+ response.data.message);
+
                   }, (error) => {
                     console.log(error);
                   }); 

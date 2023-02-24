@@ -1,15 +1,21 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, redirect
 from app import create_app
 from IxOSRest import start_chassis_rest_data_fetch
 from  RestApi.IxOSRestInterface import IxRestSession
-from config import CHASSIS_LIST
+from werkzeug.utils import secure_filename
+
+
 
 
 
 app = create_app()
 
-@app.get("/")
-def home():
+@app.get("/chassisDetails")
+def chassisDetails():
+    try:
+        from config import CHASSIS_LIST
+    except Exception:
+        return "No config file present. Please upload one first."
     list_of_chassis_information = []
     img_link = ""
     for idx, chassis in enumerate(CHASSIS_LIST):
@@ -37,6 +43,7 @@ def home():
 
 @app.post("/getLogs")
 def getlogs():
+    from config import CHASSIS_LIST
     input_json = request.get_json(force=True) 
     chassis_ip = input_json['ip']
     for chassis_item in CHASSIS_LIST:
@@ -46,3 +53,19 @@ def getlogs():
     session = IxRestSession(chassis["ip"], chassis["username"], chassis["password"])
     out = session.collect_chassis_logs(session)
     return jsonify({"resultUrl" : out, "message": "Please login to your chassis and enter this url in browser to download logs"})
+
+
+@app.get('/')
+def upload_file():
+   return render_template('upload.html')
+	
+@app.post('/uploader')
+def uploader():
+   if request.method == 'POST':
+      f = request.files['file']
+      f.save(secure_filename(f.filename))
+      return redirect("/chassisDetails", code=302)
+  
+@app.post('/goDirectToHome')
+def goDirectToHome():
+    return redirect("/chassisDetails", code=302)
