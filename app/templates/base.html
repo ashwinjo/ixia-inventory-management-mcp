@@ -27,12 +27,16 @@
                 <a class="navbar-brand" href="#page-top">Ixia Inventory Explorer</a>
             </div>
             <div class="form-group row text-right">
-                <form action = "/upload" method = "GET">
+                <div class="container form-group">
+                    <form action = "/goDirectToHome" method = "POST"  enctype = "multipart/form-data">
+                        <input class="btn btn-warning"  type = "submit" value="Refresh Chassis Information" />
+                    </form>
+                    <form action = "/upload" method = "GET">
                     <input class="btn btn-info"  type = "submit" value="Add / Update Ixia Servers to be monitored" />
-                </form>
+                    </form>
             </div> 
         </nav>
-        <div> <br/><br/> </div>
+        <div> <br/><br/></div>
         {% block content %}{% endblock %}
         <!-- Portfolio Modals-->
 
