@@ -15,6 +15,7 @@ def chassisDetails():
         CHASSIS_LIST = []
     list_of_chassis_information = []
     img_link = ""
+    list_of_available_chassis_types= []
     if CHASSIS_LIST:
         for idx, chassis in enumerate(CHASSIS_LIST):
             complete_chassis_repsonse = start_chassis_rest_data_fetch(chassis["ip"], chassis["username"], chassis["password"])
@@ -33,11 +34,11 @@ def chassisDetails():
             elif "Novus" in complete_chassis_repsonse["chassis_information"]["type"]:
                 img_link = "https://www.keysight.com/content/dam/keysight/en/img/prd/network-test/ixia/network-test-hardware/novus-one-plus-3-5-speed-l2-7-fixed-chassis/NovusOneRight-700px.png?"
                 
-            
+            list_of_available_chassis_types.append(complete_chassis_repsonse["chassis_information"]["type"].replace(" ", "_"))
             complete_chassis_repsonse["chassis_information"].update({"chassis_model_img_src": img_link})
             list_of_chassis_information.append(complete_chassis_repsonse)
 
-    return render_template("index.html", data=list_of_chassis_information)
+    return render_template("index.html", data=list_of_chassis_information, type_list= list(set(list_of_available_chassis_types)))
 
 @app.post("/getLogs")
 def getlogs():

@@ -47,7 +47,7 @@ def get_chassis_information(session):
     chassis_filter_dict.update({"chassisSerielNumber": d.get("serialNumber", no_serial_string),
                                 "mgmtIp": d["managementIp"],
                                 "controllerSerialNumber": d.get("controllerSerialNumber", "NA"),
-                                "type": d["type"],
+                                "type": d["type"].replace(" ", "_"),
                                 "numberOfPhysicalCards": str(d.get("numberOfPhysicalCards", "NA")),
                                 "state": chassis_state,
                                 "memoryInUseBytes": perf["memoryInUseBytes"], 

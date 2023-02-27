@@ -16,6 +16,13 @@
         </div>
         
         <!-- Portfolio Grid Items-->
+        <div class = "row text-center justify-content-center"> 
+            <div>
+            {% for type in type_list %}
+                <input type="checkbox" id={{type}} value={{type}} class="form-check-input" name={{type}} checked> {{type}}
+            {% endfor %}
+            </div>
+        </div>
         <div class="row text-center justify-content-center">
             <!-- Portfolio Item cabin-->
             {% for chassis in data %}
