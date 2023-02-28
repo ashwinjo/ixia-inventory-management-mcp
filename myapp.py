@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 
 app = create_app()
 
-@app.get("/")
+@app.get("/oldChassisDetails")
 def chassisDetails():
     try:
         from config import CHASSIS_LIST
@@ -70,8 +70,8 @@ def uploader():
 def goDirectToHome():
     return redirect("/", code=302)
 
-@app.get('/chassisDetailCards')
-def abc():
+@app.get("/")
+def chassisDetailCards():
     complete_chassis_repsonse = '<div class="container">'
     try:
         from config import CHASSIS_LIST
@@ -94,13 +94,66 @@ def abc():
         <!-- Placed at the end of the document so the pages load faster -->
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     </body>
-    </html>"""        
-
+    </html>"""   
+    
+    l = [] 
+    fl = []  
     for chassis in CHASSIS_LIST:
         
-            rv = '<h3 align="center"><span class="label label-primary">'+chassis["ip"]+'</span></label></h3><br/>'+ scrdf(chassis["ip"], chassis["username"], chassis["password"]) + "<br/><br/>"
-            complete_chassis_repsonse += rv
+    #         rv = '<h3 align="center"><span class="label label-primary">'+chassis["ip"]+'</span></label></h3><br/>'+ scrdf(chassis["ip"], chassis["username"], chassis["password"]) + "<br/><br/>"
+    #         complete_chassis_repsonse += rv
+            out = scrdf(chassis["ip"], chassis["username"], chassis["password"])
+            l.append(out[0])
             
-    complete_chassis_repsonse = base_temp + complete_chassis_repsonse+'</div>'
+    for record in l:
+        fl.append(list(record.values()))
+
+   
+    # complete_chassis_repsonse = base_temp + complete_chassis_repsonse+'</div>'
             
-    return complete_chassis_repsonse.replace("<table>", "<table class='table table-condensed table-bordered'>")
+    #return complete_chassis_repsonse.replace("<table>", "<table class='table table-condensed table-bordered'>")
+    return render_template("chassisDetails.html", headers=list(l[0].keys()), rows = fl)
+
+
+@app.get("/cardDetails")
+def cardDetails():
+    try:
+        from config import CHASSIS_LIST
+    except Exception:
+        CHASSIS_LIST = []
+    l= []
+    for chassis in CHASSIS_LIST:
+        out, out1, out2 = scrdf(chassis["ip"], chassis["username"], chassis["password"])
+        l.append(out1)
+        
+    fl = []
+    headers = ""
+    for cd in l:
+        list_of_cards = cd["cardDetails"]
+        fl.append(list_of_cards)
+        if not headers:
+            headers = list(list_of_cards[0].keys())
+    return render_template("chassisCardsDetails.html", headers=headers, rows = fl)
+
+@app.get("/licenseDetails")
+def licenseDetails():
+    try:
+        from config import CHASSIS_LIST
+    except Exception:
+        CHASSIS_LIST = []
+    l= []
+    for chassis in CHASSIS_LIST:
+        out, out1, out2 = scrdf(chassis["ip"], chassis["username"], chassis["password"])
+        l.append(out2)
+        
+    fl = []
+    headers = ""
+    for cd in l:
+        list_of_cards = cd["licenseDetails"]
+        fl.append(list_of_cards)
+        if not headers:
+            headers = list(list_of_cards[0].keys())
+        
+    print(fl)
+    return render_template("chassisLicenseDetails.html", headers=headers, rows = fl)
+    

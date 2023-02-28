@@ -160,8 +160,10 @@ class IxRestSession(object):
                 return response.data['resultUrl']
             elif operation_status == 'COMPLETED':
                 return response.data['resultUrl']
+            elif operation_status == 'ERROR':
+                return response.data['message']
             else:
-                raise IxRestException('async operation failed')
+                raise IxRestException("async failed")
         except:
             raise
         finally:
@@ -215,15 +217,23 @@ class IxRestSession(object):
             self.get_ixos_uri() + '/cards/%d/operations/hotswap' % resource_id
         )
         
-    def get_license(self, params=None):
+    def get_license_server_host_id(self, params=None):
+        hids = []
         url = f'https://{self.chassis_ip}/platform/api/v2/licensing/servers'
         output = self.http_request('GET', url, params=params).data
-        for i in range(len(output)):
-            license_dict = { output[i]['host'] : {'host_id': ""}}
-            license_dict['license_server'] =  output[i]['license_server'] if output[i].get('license_server') else None
-        return license_dict   
+        for lic_s in output:
+            url_for_info_fetch =  f'https://{self.chassis_ip}/platform/api/v2/licensing/servers/{lic_s["id"]}/operations/retrievehostid'
 
-
+            resultUrl = self.http_request('POST', url_for_info_fetch, params=" ")
+            if "http" in resultUrl:
+                host_id_info = self.http_request('GET', resultUrl, params=" ").json().get("hostId", "NA")
+                hids.append(host_id_info)
+        print(hids)
+        return "::".join(hids)
+                
+    def get_license_host_id(session):
+        return session.get_license_server_host_id()
+    
     def get_license_activation(self, params=None):
         url = f'https://{self.chassis_ip}/platform/api/v2/licensing/servers/1/operations/retrievelicenses'
         url = self.http_request('POST', url, params=params)
@@ -240,7 +250,6 @@ class IxRestSession(object):
         chassis_info = json.loads(json.dumps(chassis_info.data[0]))
         card_id = chassis_info["id"]
         resultUrl = self.http_request('POST', self.get_ixos_uri() + f"/chassis/{card_id}/operations/collectlogs", params=" ")
-        #resp_log_download = self.http_request('GET', resultUrl, params=" ")
         return resultUrl     
      
 

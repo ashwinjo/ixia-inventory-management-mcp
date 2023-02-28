@@ -37,25 +37,26 @@ def get_chassis_information(session):
     
     d = json.loads(json.dumps(chassisInfo.data[0]))
     chassis_state = chassisInfo.data[0]['state'].upper()
+    
+    
+    chassis_filter_dict.update({ "IP": d["managementIp"],
+                                 "chassisSN": d.get("serialNumber", no_serial_string),
+                                 "controllerSN": d.get("controllerSerialNumber", "NA"),
+                                 "type": d["type"].replace(" ", "_"),
+                                 "# PhysicalCards": str(d.get("numberOfPhysicalCards", "NA")),
+                                })
+    
+    # List of Application on Ix CHhssis
     list_of_ixos_protocols = d["ixosApplications"]
+    
     for item in list_of_ixos_protocols:
-        temp_dict.update({item["name"]: item["version"]})
+        if item["name"] != "IxOS REST":
+           temp_dict.update({item["name"]: item["version"]})
 
     if d["type"] == "Ixia Virtual Test Appliance":
         no_serial_string = "IxiaVM"
         
     chassis_filter_dict.update(temp_dict)
-    chassis_filter_dict.update({"chassisSerielNumber": d.get("serialNumber", no_serial_string),
-                                "mgmtIp": d["managementIp"],
-                                "controllerSerialNumber": d.get("controllerSerialNumber", "NA"),
-                                "type": d["type"].replace(" ", "_"),
-                                "numberOfPhysicalCards": str(d.get("numberOfPhysicalCards", "NA")),
-                                "memoryInUseBytes": perf["memoryInUseBytes"], 
-                                "memoryTotalBytes": perf["memoryTotalBytes"], 
-                                "diskIOBytesPerSecond": perf["diskIOBytesPerSecond"],  
-                                "cpuUsagePercent": perf["cpuUsagePercent"],
-                                # "id": d["id"]
-                                })
     return chassis_filter_dict
     
 def get_chassis_cards_information(session):
@@ -119,27 +120,30 @@ def get_license_activation(session):
         
     return data
         
-    
+def get_license_host_id(session):
+    return session.get_license_server_host_id()
+
     
 def get_portstats(session):
     license_info = session.get_portstats().json()
     print("\n******************* Port Statistics ***********************\n")
     df = pd.DataFrame(license_info)
     print(df)
-    
-def collect_chassis_logs(session):
-    resultURL = session.collect_chassis_logs()
-    return resultURL
 
 def start_chassis_rest_data_fetch(chassis, username, password):
     final_table_dict = {}
+    final_table_dict_1 = {}
+    final_table_dict_2 = {}
     session = IxRestSession(chassis, username= username, password=password, verbose=False)
     final_table_dict = get_chassis_information(session)
-    final_table_dict.update({"cardDetails": get_chassis_cards_information(session)})
-    final_table_dict.update({"licenseDetails": get_license_activation(session)})
+    final_table_dict.update({'hostId': get_license_host_id(session)})
+    
+    final_table_dict_1.update({"cardDetails": get_chassis_cards_information(session)})
+    final_table_dict_2.update({"licenseDetails": get_license_activation(session)})
     
     
+    return final_table_dict , final_table_dict_1, final_table_dict_2
+
     infoFromJson = json.loads(json.dumps(final_table_dict))
     build_direction = "LEFT_TO_RIGHT"
     return json2table.convert(infoFromJson, build_direction=build_direction)
-    

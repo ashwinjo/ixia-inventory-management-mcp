@@ -127,11 +127,15 @@ def collect_chassis_logs(session):
     resultURL = session.collect_chassis_logs()
     return resultURL
 
+def get_license_host_id(session):
+    a = session.get_license_server_host_id()
+    print(a)
+
 def start_chassis_rest_data_fetch(chassis, username, password):
     session = IxRestSession(chassis, username= username, password=password, verbose=False)
     complete_response = {} 
-    complete_response["chassis_information"] = get_chassis_information(session)
-    complete_response["cards_information"] = get_chassis_cards_information(session)
-    complete_response["license_information"] = get_license_activation(session)
-    complete_response["port_information"] = get_chassis_ports_information(session)
+    # complete_response["chassis_information"] = get_chassis_information(session)
+    # complete_response["cards_information"] = get_chassis_cards_information(session)
+    # complete_response["license_information"] = get_license_activation(session)
+    # complete_response["port_information"] = get_chassis_ports_information(session)
     return complete_response
