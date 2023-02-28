@@ -1,7 +1,6 @@
 from flask import render_template, request, jsonify, redirect
 from app import create_app
-from IxOSRest import start_chassis_rest_data_fetch
-from IxOSRest_charter import start_chassis_rest_data_fetch as scrdf
+from IxOSRest_charter import start_chassis_rest_data_fetch
 from  RestApi.IxOSRestInterface import IxRestSession
 from werkzeug.utils import secure_filename
 
@@ -24,11 +23,11 @@ def chassisDetails():
             complete_chassis_repsonse["chassis_information"].update({"chassisName": f"Chassis{idx+1}"})
             if "XGS12" in complete_chassis_repsonse["chassis_information"]["type"]:
                 img_link = "https://cdn.cs.1worldsync.com/50/53/5053b84f-311b-4f29-bf7e-2d451293a688.jpg"
-            elif "Ixia PerfectStorm One" in complete_chassis_repsonse["chassis_information"]["type"]:
+            elif "Ixia_PerfectStorm_One" in complete_chassis_repsonse["chassis_information"]["type"]:
                 img_link = "https://keysight-h.assetsadobe.com/is/image/content/dam/keysight/en/img/prd/network-test/ixia/network-test-hardware/perfectstorm-one1/Allmodels_right_PerfectStormONE-40G_870-0128_L20-550x550.png"
             elif "XGS2" in complete_chassis_repsonse["chassis_information"]["type"]:
                 img_link = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRduxtkTM6vPYDHhwlUUse8Np4_Zd5xTeuJNa_G9wJyUw&s"
-            elif "Ixia Virtual Test Appliance" in complete_chassis_repsonse["chassis_information"]["type"]:
+            elif "Ixia_Virtual_Test_Appliance" in complete_chassis_repsonse["chassis_information"]["type"]:
                 img_link = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJEZ8qzIPaSZbld6HkjbcGXg9Eb51DT5HN7aRZVQzPn2Myo93Onq7PXtWMglYnTnMqy3c&usqp=CAU"
             elif "AresONE" in complete_chassis_repsonse["chassis_information"]["type"]:
                 img_link = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsSpRIJSWrDlzpzaNg9URqT3IOfqZPAGrdNOWA0w0MpeVhpU1E9-nhws6GgYdr53Gcmc4&usqp=CAU"
@@ -70,37 +69,5 @@ def uploader():
 def goDirectToHome():
     return redirect("/", code=302)
 
-@app.get('/chassisDetailCards')
-def abc():
-    complete_chassis_repsonse = '<div class="container">'
-    try:
-        from config import CHASSIS_LIST
-    except Exception:
-        CHASSIS_LIST = []
-        
-    base_temp = """<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <meta name="description" content="">
-        <meta name="author" content="">
-        <link rel="icon" href="/docs/4.1/assets/img/favicons/favicon.ico">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-        <nav align="center" class="navbar navbar-light bg-light">
-            <a class="navbar-brand" href="#">Ixia Chassis Information </a>
-        </nav>
-        <!-- Bootstrap core JavaScript
-        ================================================== -->
-        <!-- Placed at the end of the document so the pages load faster -->
-        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    </body>
-    </html>"""        
 
-    for chassis in CHASSIS_LIST:
-        
-            rv = '<h3 align="center"><span class="label label-primary">'+chassis["ip"]+'</span></label></h3><br/>'+ scrdf(chassis["ip"], chassis["username"], chassis["password"]) + "<br/><br/>"
-            complete_chassis_repsonse += rv
-            
-    complete_chassis_repsonse = base_temp + complete_chassis_repsonse+'</div>'
-            
-    return complete_chassis_repsonse.replace("<table>", "<table class='table table-condensed table-bordered'>")
+
