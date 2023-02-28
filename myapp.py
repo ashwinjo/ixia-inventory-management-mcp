@@ -71,47 +71,22 @@ def goDirectToHome():
     return redirect("/", code=302)
 
 @app.get("/")
-def chassisDetailCards():
+def chassisSummary():
     complete_chassis_repsonse = '<div class="container">'
     try:
         from config import CHASSIS_LIST
     except Exception:
         CHASSIS_LIST = []
-        
-    base_temp = """<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <meta name="description" content="">
-        <meta name="author" content="">
-        <link rel="icon" href="/docs/4.1/assets/img/favicons/favicon.ico">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-        <nav align="center" class="navbar navbar-light bg-light">
-            <a class="navbar-brand" href="#">Ixia Chassis Information </a>
-        </nav>
-        <!-- Bootstrap core JavaScript
-        ================================================== -->
-        <!-- Placed at the end of the document so the pages load faster -->
-        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    </body>
-    </html>"""   
     
     l = [] 
     fl = []  
     for chassis in CHASSIS_LIST:
-        
-    #         rv = '<h3 align="center"><span class="label label-primary">'+chassis["ip"]+'</span></label></h3><br/>'+ scrdf(chassis["ip"], chassis["username"], chassis["password"]) + "<br/><br/>"
-    #         complete_chassis_repsonse += rv
-            out = scrdf(chassis["ip"], chassis["username"], chassis["password"])
-            l.append(out[0])
+        out = scrdf(chassis["ip"], chassis["username"], chassis["password"])
+        l.append(out[0])
             
     for record in l:
         fl.append(list(record.values()))
 
-   
-    # complete_chassis_repsonse = base_temp + complete_chassis_repsonse+'</div>'
-            
-    #return complete_chassis_repsonse.replace("<table>", "<table class='table table-condensed table-bordered'>")
     return render_template("chassisDetails.html", headers=list(l[0].keys()), rows = fl)
 
 

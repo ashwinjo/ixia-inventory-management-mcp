@@ -31,15 +31,24 @@
             </div>
             <div class="form-group row text-right">
                 <div class="container form-group">
-                    <form action = "/goDirectToHome" method = "POST"  enctype = "multipart/form-data">
-                        <input class="btn btn-warning"  type = "submit" value="Refresh Chassis Information" />
+                    <form action = "/" method = "GET">
+                        <input class="btn btn-success"  type = "submit" value="Get Chassis Summary Details" />
                     </form>
+                    <br/>
+                    <form action = "/cardDetails" method = "GET">
+                        <input class="btn btn-danger"  type = "submit" value="Get Chassis Cards Details" />
+                    </form>
+                    <br/>
+                    <form action = "/licenseDetails" method = "GET">
+                        <input class="btn btn-warning"  type = "submit" value="Get Chassis License Details" />
+                    </form>
+                    <br/>
                     <form action = "/upload" method = "GET">
                     <input class="btn btn-info"  type = "submit" value="Add / Update Ixia Servers to be monitored" />
                     </form>
             </div> 
         </nav>
-        <div> <br/><br/></div>
+        <div> <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></div>
         {% block content %}{% endblock %}
         <!-- Portfolio Modals-->
 
@@ -60,7 +69,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script>
             function myFunction(ip) {
-                
+                alert(ip)
                 document.getElementsByClassName("loader")[0].style.display = "block";
                 axios.post('/getLogs',{
                     ip: ip

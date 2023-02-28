@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Portfolio Section-->
+<section class="page-section container">
+  {% for row in rows %}
+    <table id="data" class="table table-striped table-bordered">
+      <thead>
+        <tr>
+        {% for h in headers %}
+          <th bgcolor="green">{{ h }} </th>
+        {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+            {% for entry in row %}
+              <tr >
+                  <td>{{entry["cardNumber"]}}</td>
+                  <td>{{entry["type"]}}</td>
+                  <td>{{entry["numberOfPorts"]}}</td>
+            </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+    {% endfor %}
+</section>
+{% endblock %}
