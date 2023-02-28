@@ -17,7 +17,6 @@ It collects the below info from the chassis:
 
 import json
 import pandas as pd
-import json2table
 from  RestApi.IxOSRestInterface import IxRestSession
 
 
@@ -130,20 +129,16 @@ def get_portstats(session):
     df = pd.DataFrame(license_info)
     print(df)
 
-def start_chassis_rest_data_fetch(chassis, username, password):
+def start_chassis_rest_data_fetch(chassis, username, password, operation=None):
     final_table_dict = {}
-    final_table_dict_1 = {}
-    final_table_dict_2 = {}
     session = IxRestSession(chassis, username= username, password=password, verbose=False)
-    final_table_dict = get_chassis_information(session)
-    final_table_dict.update({'hostId': get_license_host_id(session)})
-    
-    final_table_dict_1.update({"cardDetails": get_chassis_cards_information(session)})
-    final_table_dict_2.update({"licenseDetails": get_license_activation(session)})
-    
-    
-    return final_table_dict , final_table_dict_1, final_table_dict_2
-
-    infoFromJson = json.loads(json.dumps(final_table_dict))
-    build_direction = "LEFT_TO_RIGHT"
-    return json2table.convert(infoFromJson, build_direction=build_direction)
+    cin = get_chassis_information(session)
+    type_chassis = cin["type"]
+    if operation == "chassisSummary":
+        final_table_dict.update(cin)
+    elif operation == "cardDetails":
+        final_table_dict.update({"cardDetails": get_chassis_cards_information(session), "ip": f"{chassis} ===> {type_chassis}"})
+    elif operation == "licenseDetails":
+        host_id = get_license_host_id(session)
+        final_table_dict.update({"licenseDetails": get_license_activation(session), "ip": f"{chassis} ===> {type_chassis} ::: hostId - {host_id}"})
+    return final_table_dict

@@ -3,7 +3,7 @@
 {% block content %}
 <!-- Portfolio Section-->
 <section class="page-section container">
-    <table id="data" class="table table-striped table-bordered">
+    <table id="data" class="table table-striped table-bordered thead-dark">
       <thead>
         <tr>
         {% for h in headers %}
@@ -18,10 +18,14 @@
             {% for entry in row %}
                 <td>{{entry}}</td>
             {% endfor %}
-            <td><button type="button" class="btn btn-danger" onclick='myFunction("{{row}}")'> Get IxOS Logs</button></td>
+            <td><button type="button" class="btn btn-danger" onclick='myFunction("{{row[0]}}")'> Get IxOS Logs</button></td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
+    <div class="loader">
+        <div class="loading">
+        </div>
+    </div>
 </section>
 {% endblock %}
