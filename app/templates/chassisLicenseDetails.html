@@ -18,10 +18,17 @@
       <tbody>
             {% for entry in row[:-1] %}
               <tr >
+                  <td>{{entry["partNumber"]}}</td>
                   <td>{{entry["activationCode"]}}</td>
                   <td>{{entry["quantity"]}}</td>
                   <td>{{entry["description"]}}</td>
-                  <td>{{entry["expiryDate"]}}</td>
+                  {% if entry["isExpired"] == True %}
+                    <td class="table-danger">{{entry["expiryDate"]}}
+                    <td class="table-danger">{{entry["isExpired"]}}
+                  {% else %}
+                    <td class="table-success">{{entry["expiryDate"]}}
+                    <td class="table-success">{{entry["isExpired"]}}
+                {% endif %}
             </tr>
           {% endfor %}
       </tbody>

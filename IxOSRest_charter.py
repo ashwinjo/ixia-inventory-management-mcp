@@ -118,11 +118,13 @@ def get_license_activation(session):
     license_info = session.get_license_activation().json()
     data= []
     for item in license_info:
-        data.append({"activationCode": item["activationCode"], 
+        data.append({
+                "partNumber": item["partNumber"],
+                "activationCode": item["activationCode"], 
                 "quantity": item["quantity"], 
                 "description": item["description"], 
-                "expiryDate": item["expiryDate"]})
-        
+                "expiryDate": item["expiryDate"],
+                "isExpired": item["isExpired"]})
     return data
         
 def get_license_host_id(session):

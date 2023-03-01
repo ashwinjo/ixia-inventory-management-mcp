@@ -16,7 +16,11 @@
         {% for row in rows %}
           <tr>
             {% for entry in row %}
-                <td>{{entry}}</td>
+                {% if entry == "UP" %}
+                  <td class="table-success">{{entry}}</td>
+                {% else %}
+                  <td>{{entry}}</td>
+                {% endif %} 
             {% endfor %}
             <td><button type="button" class="btn btn-danger" onclick='myFunction("{{row[0]}}")'> Get IxOS Logs</button></td>
           </tr>
