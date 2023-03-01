@@ -32,24 +32,29 @@ def get_chassis_information(session):
     no_serial_string = ""
     chassis_filter_dict = {}
     chassisInfo = session.get_chassis()
-    perf = session.get_perfcounters().data[0]
+    try:
+        perf = session.get_perfcounters().data[0]
+    except Exception:
+        pass
+    
     
     d = json.loads(json.dumps(chassisInfo.data[0]))
+    
     chassis_state = chassisInfo.data[0]['state'].upper()
     
-    
-    chassis_filter_dict.update({ "IP": d["managementIp"],
+    chassis_filter_dict.update({ "IP": d.get("managementIp"),
                                  "chassisSN": d.get("serialNumber", no_serial_string),
                                  "controllerSN": d.get("controllerSerialNumber", "NA"),
                                  "type": d["type"].replace(" ", "_"),
                                  "# PhysicalCards": str(d.get("numberOfPhysicalCards", "NA")),
+                                 "status": chassis_state
                                 })
     
     # List of Application on Ix CHhssis
     list_of_ixos_protocols = d["ixosApplications"]
     
     for item in list_of_ixos_protocols:
-        if item["name"] != "IxOS REST":
+        if item["name"] != "IxOS REST" or item["name"] != "LicenseServerPlus":
            temp_dict.update({item["name"]: item["version"]})
 
     if d["type"] == "Ixia Virtual Test Appliance":
@@ -65,8 +70,9 @@ def get_chassis_cards_information(session):
     final_card_details_list= []
     # Cards on Chassis
     sorted_cards = sorted(card_list, key=lambda d: d['cardNumber'])
+    print(sorted_cards)
     for sc  in sorted_cards:
-        final_card_details_list.append({"cardNumber":sc.get("cardNumber"), "type": sc.get("type"), "numberOfPorts":sc.get("numberOfPorts")})
+        final_card_details_list.append({"cardNumber":sc.get("cardNumber"), "type": sc.get("type"), "numberOfPorts":sc.get("numberOfPorts", "Windows XGS2 - No data")})
     return final_card_details_list
     
 def get_chassis_ports_information(session):
@@ -120,7 +126,9 @@ def get_license_activation(session):
     return data
         
 def get_license_host_id(session):
-    return session.get_license_server_host_id()
+    hid = session.get_license_server_host_id()
+    print(hid)
+    return hid
 
     
 def get_portstats(session):
