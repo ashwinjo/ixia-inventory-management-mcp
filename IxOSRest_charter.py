@@ -72,7 +72,7 @@ def get_chassis_cards_information(session):
     sorted_cards = sorted(card_list, key=lambda d: d['cardNumber'])
     print(sorted_cards)
     for sc  in sorted_cards:
-        final_card_details_list.append({"cardNumber":sc.get("cardNumber"), "type": sc.get("type"), "numberOfPorts":sc.get("numberOfPorts", "Windows XGS2 - No data")})
+        final_card_details_list.append({"cardNumber":sc.get("cardNumber"), "type": sc.get("type"), "numberOfPorts":sc.get("numberOfPorts", "No data")})
     return final_card_details_list
     
 def get_chassis_ports_information(session):
