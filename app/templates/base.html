@@ -25,20 +25,21 @@
     </head>
     <body id="page-top">
         <!-- Navigation-->
+        <div>
         <nav class="navbar navbar-expand-lg bg-secondary text-uppercase fixed-top" id="mainNav">
             <div class="container">
                 <a class="navbar-brand" href="#page-top"><img class="img-fluid rounded mb-5" width="100" height="30" src="https://support.ixiacom.com/sites/default/files/styles/thumbnail/public/ixia_logo_new_white.png" alt="..." /> ventory Explorer</a>
             </div>
                 <div class="container form-group">
-                    <form action = "/" method = "GET">
+                    <form id="tabForms1" action = "/" method = "GET">
                         <input class="btn btn-success"  type = "submit" value="Chassis Summary Details" />
                     </form>
                     
-                    <form action = "/cardDetails" method = "GET">
+                    <form id="tabForms2" action="/cardDetails" method = "GET">
                         <input class="btn btn-danger"  type = "submit" value="Chassis Cards Details" />
                     </form>
                     
-                    <form action = "/licenseDetails" method = "GET">
+                    <form id="tabForms3" action="/licenseDetails" method = "GET">
                         <input class="btn btn-warning"  type = "submit" value="Chassis License Details" />
                     </form>
                     
@@ -47,7 +48,8 @@
                     </form>
             </div> 
         </nav>
-        <div><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></div>
+    </div>
+        <div><br/><br/><br/><br/><br/><br/></div>
         {% block content %}{% endblock %}
         <!-- Portfolio Modals-->
 
@@ -95,10 +97,132 @@
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
         <script>
             $(document).ready(function () {
-              $('.table').DataTable();
-            });
-            
+              $('.table').DataTable({"lengthMenu": [ 100, 200, 500, 1000 ], "fixedHeader": true,"pageLength": 100, "columnDefs": [
+              { "width": "20%", "targets": 0 },
+                    { "searchable": true, "targets": 0 }]
+            })});
           </script>
+
+          <script type="text/javascript">
+            function tableToCSV() {
+     
+                // Variable to store the final csv data
+                var csv_data = [];
+     
+                // Get each row data
+                var rows = document.getElementsByTagName('tr');
+                for (var i = 0; i < rows.length; i++) {
+     
+                    // Get each column data
+                    var cols = rows[i].querySelectorAll('td,th');
+     
+                    // Stores each csv row data
+                    var csvrow = [];
+                    for (var j = 0; j < cols.length; j++) {
+     
+                        // Get the text data of each cell
+                        // of a row and push it to csvrow
+                        csvrow.push(cols[j].innerHTML);
+                    }
+     
+                    // Combine each column value with comma
+                    csv_data.push(csvrow.join(","));
+                }
+     
+                // Combine each row data with new line character
+                csv_data = csv_data.join('\n');
+     
+                // Call this function to download csv file 
+                downloadCSVFile(csv_data);
+     
+            }
+     
+            function downloadCSVFile(csv_data) {
+     
+                // Create CSV file object and feed
+                // our csv_data into it
+                CSVFile = new Blob([csv_data], {
+                    type: "text/csv"
+                });
+     
+                // Create to temporary link to initiate
+                // download process
+                var temp_link = document.createElement('a');
+     
+                // Download csv file
+                temp_link.download = "GfG.csv";
+                var url = window.URL.createObjectURL(CSVFile);
+                temp_link.href = url;
+     
+                // This link should not be displayed
+                temp_link.style.display = "none";
+                document.body.appendChild(temp_link);
+     
+                // Automatically click the link to
+                // trigger download
+                temp_link.click();
+                document.body.removeChild(temp_link);
+            }
+        </script>
+        <style>
+            section {
+              margin-right: 1%;
+              margin-left: 1%;
+            }
+        </style>
+        <script>
+            $(document).ready(function() {
+                $(".page-section").prepend("<div id='PleaseWait' style='justify-content: center; display: none;'><img src='https://media.tenor.com/YPOStjIfQ2IAAAAM/loading-waiting.gif'/></div>");
+            });
+
+            $('#tabForms1').submit(function() {
+                var pass = true;
+                //some validations
+
+                if(pass == false){
+                    return false;
+                }
+                $("#overlay, #PleaseWait").show();
+            
+                return true;
+            });
+
+            $('#tabForms2').submit(function() {
+                var pass = true;
+                //some validations
+
+                if(pass == false){
+                    return false;
+                }
+                $("#overlay, #PleaseWait").show();
+            
+                return true;
+            });
+
+            $('#tabForms3').submit(function() {
+                var pass = true;
+                //some validations
+
+                if(pass == false){
+                    return false;
+                }
+                $("#overlay, #PleaseWait").show();
+            
+                return true;
+            });
+
+            $('#uploader').submit(function() {
+                var pass = true;
+                //some validations
+
+                if(pass == false){
+                    return false;
+                }
+                $("#overlay, #PleaseWait").show();
+            
+                return true;
+            });
+        </script>
         {% endblock %}
 
     </body>

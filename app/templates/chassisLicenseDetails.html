@@ -2,37 +2,48 @@
 
 {% block content %}
 <!-- Portfolio Section-->
-<section class="page-section container">
-  {% for row in rows %}
-    <div class="alert alert-info" role="alert">
-        {{row[-1]}}
-    </div>
-    <table id="data" class="table table-striped table-bordered thead-dark">
-      <thead>
+<section class="page-section">
+    <div>
+      <button type="button" class="btn btn-outline-primary" onclick="tableToCSV()">
+        Download CSV
+      </button>
+    <div>
+    <br/>
+    <table class="table table-striped table-bordered table-responsive table-condensed">
+      <thead class="table-primary">
         <tr>
+        <th> ChassisIP </th>
+        <th> ChassisType </th>
+        <th> HostID </th>
         {% for h in headers %}
           <th>{{ h }} </th>
         {% endfor %}
         </tr>
       </thead>
       <tbody>
-            {% for entry in row[:-1] %}
+        {% for row in rows %}
+            {% for entry in row[:-3] %}
               <tr >
-                  <td>{{entry["partNumber"]}}</td>
-                  <td>{{entry["activationCode"]}}</td>
-                  <td>{{entry["quantity"]}}</td>
-                  <td>{{entry["description"]}}</td>
+                  <td style="width:auto">{{row[-1]}}</td>
+                  <td style="width:auto">{{row[-2]}}</td>
+                  <td style="width:auto">{{row[-3]}}</td>
+                  <td style="width:auto">{{entry["partNumber"]}}</td>
+                  <td style="width:auto">{{entry["activationCode"]}}</td>
+                  <td style="width:auto">{{entry["quantity"]}}</td>
+                  <td style="width:auto">{{entry["description"]}}</td>
                   {% if entry["isExpired"] == True %}
-                    <td class="table-danger">{{entry["expiryDate"]}}
-                    <td class="table-danger">{{entry["isExpired"]}}
+                    <td style="width:auto" class="table-danger">{{entry["maintenanceDate"]}}</td>
+                    <td style="width:auto" class="table-danger">{{entry["expiryDate"]}}
+                    <td style="width:auto" class="table-danger">{{entry["isExpired"]}}
                   {% else %}
-                    <td class="table-success">{{entry["expiryDate"]}}
-                    <td class="table-success">{{entry["isExpired"]}}
+                    <td style="width:auto" class="table-success">{{entry["maintenanceDate"]}}</td>
+                    <td style="width:auto" class="table-success">{{entry["expiryDate"]}}
+                    <td style="width:auto" class="table-success">{{entry["isExpired"]}}
                 {% endif %}
             </tr>
           {% endfor %}
+        {% endfor %}
       </tbody>
     </table>
-    {% endfor %}
 </section>
 {% endblock %}

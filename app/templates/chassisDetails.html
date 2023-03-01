@@ -2,9 +2,16 @@
 
 {% block content %}
 <!-- Portfolio Section-->
-<section class="page-section container">
-    <table id="data" class="table table-striped table-bordered thead-dark">
-      <thead>
+<section class="page-section">
+    <div class="waiter"></div>
+    <div>
+      <button type="button" class="btn btn-outline-primary" onclick="tableToCSV()">
+        Download CSV
+      </button>
+    <div>
+    <br/>
+    <table class="table table-striped table-bordered table-responsive table-condensed">
+    <thead class="table-primary">
         <tr>
         {% for h in headers %}
           <th bgcolor="green">{{ h }} </th>
@@ -29,7 +36,8 @@
     </table>
     <div class="loader">
         <div class="loading">
-        </div>
+    </div>
+    <div id="loading"></div>
     </div>
 </section>
 {% endblock %}

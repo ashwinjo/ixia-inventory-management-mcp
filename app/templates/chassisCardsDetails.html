@@ -2,29 +2,39 @@
 
 {% block content %}
 <!-- Portfolio Section-->
-<section class="page-section container">
-  {% for row in rows %}
-  <div class="alert alert-success" role="alert">
-    {{row[-1]}}
+<section class="page-section">
   </div>
-    <table id="data" class="table table-striped table-bordered thead-dark">
-      <thead>
+  <div>
+    <button type="button" class="btn btn-outline-primary" onclick="tableToCSV()">
+      Download CSV
+    </button>
+  <div>
+  <br/>
+    <table class="table table-striped table-bordered table-responsive table-condensed">
+      <thead class="table-primary">
         <tr>
+        <th> ChassisIP </th>
+        <th> ChassisType </th>
         {% for h in headers %}
           <th>{{ h }} </th>
         {% endfor %}
         </tr>
+        
       </thead>
       <tbody>
-            {% for entry in row[:-1] %}
-              <tr >
+        {% for row in rows %}
+            {% for entry in row[:-2] %}
+              <tr>
+                  <td>{{row[-1]}} </td>
+                  <td>{{row[-2]}} </td>
                   <td>{{entry["cardNumber"]}}</td>
+                  <td>{{entry["serialNumber"]}}</td>
                   <td>{{entry["type"]}}</td>
                   <td>{{entry["numberOfPorts"]}}</td>
             </tr>
           {% endfor %}
+        {% endfor %}
       </tbody>
     </table>
-    {% endfor %}
 </section>
 {% endblock %}

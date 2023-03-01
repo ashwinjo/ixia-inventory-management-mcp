@@ -57,7 +57,7 @@ def get_chassis_information(session):
         if item["name"] != "IxOS REST" or item["name"] != "LicenseServerPlus":
            temp_dict.update({item["name"]: item["version"]})
 
-    if d["type"] == "Ixia Virtual Test Appliance":
+    if d["type"] == "Ixia_Virtual_Test_Appliance":
         no_serial_string = "IxiaVM"
         
     chassis_filter_dict.update(temp_dict)
@@ -72,7 +72,7 @@ def get_chassis_cards_information(session):
     sorted_cards = sorted(card_list, key=lambda d: d['cardNumber'])
     print(sorted_cards)
     for sc  in sorted_cards:
-        final_card_details_list.append({"cardNumber":sc.get("cardNumber"), "type": sc.get("type"), "numberOfPorts":sc.get("numberOfPorts", "No data")})
+        final_card_details_list.append({"cardNumber":sc.get("cardNumber"), "serialNumber": sc.get("serialNumber"),"type": sc.get("type"), "numberOfPorts":sc.get("numberOfPorts", "No data")})
     return final_card_details_list
     
 def get_chassis_ports_information(session):
@@ -122,7 +122,8 @@ def get_license_activation(session):
                 "partNumber": item["partNumber"],
                 "activationCode": item["activationCode"], 
                 "quantity": item["quantity"], 
-                "description": item["description"], 
+                "description": item["description"],
+                "maintenanceDate": item["maintenanceDate"], 
                 "expiryDate": item["expiryDate"],
                 "isExpired": item["isExpired"]})
     return data
@@ -147,8 +148,9 @@ def start_chassis_rest_data_fetch(chassis, username, password, operation=None):
     if operation == "chassisSummary":
         final_table_dict.update(cin)
     elif operation == "cardDetails":
-        final_table_dict.update({"cardDetails": get_chassis_cards_information(session), "ip": f"{chassis} ===> {type_chassis}"})
+        final_table_dict.update({"cardDetails": get_chassis_cards_information(session), "ctype": f"{type_chassis}", "ip": f"{chassis}"})
+        print(final_table_dict)
     elif operation == "licenseDetails":
         host_id = get_license_host_id(session)
-        final_table_dict.update({"licenseDetails": get_license_activation(session), "ip": f"{chassis} ===> {type_chassis} ::: hostId - {host_id}"})
+        final_table_dict.update({"licenseDetails": get_license_activation(session), "hostId": host_id, "ctype": f"{type_chassis}", "ip": f"{chassis}"})
     return final_table_dict

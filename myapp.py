@@ -123,13 +123,15 @@ def cardDetails():
     """
     for cd in l:
         list_of_cards = cd["cardDetails"]
+        list_of_cards.append(cd["ctype"])
         list_of_cards.append(cd["ip"])
         fl.append(list_of_cards)
         if not headers:
             if len(list_of_cards) > 1:
                 headers = list(list_of_cards[0].keys())
             else:
-                headers = ["cardNumber", "type", "numberOfPorts"]
+                headers = ["cardNumber", "serialNumber", "type", "numberOfPorts"]
+    print(fl)
     return render_template("chassisCardsDetails.html", headers=headers, rows = fl)
 
 @app.get("/licenseDetails")
@@ -148,6 +150,8 @@ def licenseDetails():
     
     for cd in l:
         list_of_cards = cd["licenseDetails"]
+        list_of_cards.append(cd["hostId"])
+        list_of_cards.append(cd["ctype"])
         list_of_cards.append(cd["ip"])
         fl.append(list_of_cards)
         if not headers:
