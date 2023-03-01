@@ -28,7 +28,7 @@
         <div>
         <nav class="navbar navbar-expand-lg bg-secondary text-uppercase fixed-top" id="mainNav">
             <div class="container">
-                <a class="navbar-brand" href="#page-top"><img class="img-fluid rounded mb-5" width="100" height="30" src="https://support.ixiacom.com/sites/default/files/styles/thumbnail/public/ixia_logo_new_white.png" alt="..." /> ventory Explorer</a>
+                <a class="navbar-brand" href="#page-top"><img class="img-fluid rounded mb-5" width="100" height="30" src="{{url_for('static', filename='assets/img/KEYS.png')}}" alt="..." /> Ixia Inventory Explorer</a>
             </div>
                 <div class="container form-group">
                     <form id="tabForms1" action = "/" method = "GET">
@@ -173,8 +173,10 @@
         <script>
             $(document).ready(function() {
                 $(".page-section").prepend("<div id='PleaseWait' style='justify-content: center; display: none;'><img src='https://media.tenor.com/YPOStjIfQ2IAAAAM/loading-waiting.gif'/></div>");
+                $(".page-section").prepend("<div id='LongWait' style='justify-content: center; display: none;'><img src='https://media.tenor.com/CB8YG54MNQoAAAAC/this-could-take-a-while-hold-on.gif'/></div>");
             });
 
+            
             $('#tabForms1').submit(function() {
                 var pass = true;
                 //some validations
@@ -206,7 +208,7 @@
                 if(pass == false){
                     return false;
                 }
-                $("#overlay, #PleaseWait").show();
+                $("#LongWait").show();
             
                 return true;
             });
