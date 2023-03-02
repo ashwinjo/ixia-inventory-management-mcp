@@ -32,9 +32,11 @@
                 {% endif %} 
             {% endfor %}
             <td>
-              {% for tag in ip_tags_dict[row[0]] %}
-                    <button type="button" class="btn btn-warning btn-sm">{{tag}}</button>
-              {% endfor %}
+                {% for tag in ip_tags_dict[row[0]] %}
+                    {% if tag != "[]" %}
+                      <button type="button" class="btn btn-warning btn-sm">{{tag}}</button>
+                    {% endif %}
+                 {% endfor %}
             </td>
               <td><button onclick='addTag("{{row[0]}}")' type="button" class="btn btn-primary btn-sm">Add</button>
                   <button onclick='removeTag("{{row[0]}}")' type="button" class="btn btn-primary btn-sm">Remove</button>
