@@ -3,7 +3,7 @@ from app import create_app
 from IxOSRest_charter import start_chassis_rest_data_fetch as scrdf
 from  RestApi.IxOSRestInterface import IxRestSession
 from werkzeug.utils import secure_filename
-
+import sqlite3
 
 app = create_app()
 
@@ -89,7 +89,8 @@ def chassisSummary():
         headers=list(l[0].keys())
     else:
         headers = ["IP","type","chassisSN","controllerSN", "# PhysicalCards"]
-    return render_template("chassisDetails.html", headers=headers, rows = fl)
+    ip_tags_dict = _getTagsFromCurrentDatabase()
+    return render_template("chassisDetails.html", headers=headers, rows = fl, ip_tags_dict=ip_tags_dict)
 
 
 @app.get("/cardDetails")
@@ -160,4 +161,53 @@ def licenseDetails():
             else:
                 headers = ["activationCode", "quantity", "description", "expiryDate"]
     return render_template("chassisLicenseDetails.html", headers=headers, rows = fl)
+
+
+@app.post("/addTags")
+def addTags():
+    input_json = request.get_json(force=True) 
+    ip = input_json["ip"]
+    tags = input_json["tags"]
+    resp = _writeTags(ip, tags)
     
+    return resp
+    
+
+def _get_db_connection():
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def _writeTags(ip, tags):
+    str_currenttags = ""
+    ip_tags_dict = _getTagsFromCurrentDatabase()
+    currenttags = ip_tags_dict.get(ip)
+    new_tags =  tags.split(",")
+   
+    conn = _get_db_connection()
+    cur = conn.cursor()
+    if currenttags: # There is a record present
+        str_currenttags = ",".join(currenttags+new_tags)
+        
+        a = cur.execute(f"UPDATE user_ip_tags SET tags = '{str_currenttags}' where ip = '{ip}'")
+        print(str_currenttags)
+    else: # New Record
+        nt = "_".join(tags.split(","))
+        q = f"INSERT INTO user_ip_tags (ip, tags) VALUES ({ip}, {nt})"
+        print(q)
+        cur.execute(f"INSERT INTO user_ip_tags (ip, tags) VALUES ('{ip}', '{tags}')")
+    conn.commit()
+    cur.close()
+    conn.close()
+    return "Records successfully updated"
+        
+def _getTagsFromCurrentDatabase():
+    ip_tags_dict = {}
+    conn = _get_db_connection()
+    cur = conn.cursor()
+    posts = cur.execute(f"SELECT * FROM user_ip_tags").fetchall()
+    cur.close()
+    conn.close()
+    for post in posts:
+        ip_tags_dict.update({post["ip"]: post["tags"].split(",")})
+    return ip_tags_dict
