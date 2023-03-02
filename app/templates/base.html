@@ -86,8 +86,20 @@
         </script>
         <script>
             function addTag(ip) {
-                let tags = prompt("Please enter tags", "Harry Potter");
+                let tags = prompt("Please enter tags to be added(tag1,tag2,tag3). No spaces after commas");
                 axios.post('/addTags',{
+                    ip: ip,
+                    tags: tags
+                  })
+                  .then((response) => {
+                      console.log(response)
+                      window.location.replace("/");
+                  }); 
+            }
+
+            function removeTag(ip) {
+                let tags = prompt("Please enter tags to be deleted(tag1,tag2,tag3). No spaces after commas");
+                axios.post('/removeTags',{
                     ip: ip,
                     tags: tags
                   })

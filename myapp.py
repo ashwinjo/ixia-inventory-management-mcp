@@ -74,6 +74,7 @@ def chassisSummary():
     try:
         from config import CHASSIS_LIST
     except Exception:
+        import init_db
         CHASSIS_LIST = []
     
     l = [] 
@@ -168,7 +169,15 @@ def addTags():
     input_json = request.get_json(force=True) 
     ip = input_json["ip"]
     tags = input_json["tags"]
-    resp = _writeTags(ip, tags)
+    resp = _writeTags(ip, tags, operation="add")
+    return resp
+
+@app.post("/removeTags")
+def removeTags():
+    input_json = request.get_json(force=True) 
+    ip = input_json["ip"]
+    tags = input_json["tags"]
+    resp = _writeTags(ip, tags, operation="remove")
     
     return resp
     
@@ -178,7 +187,7 @@ def _get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-def _writeTags(ip, tags):
+def _writeTags(ip, tags, operation=None):
     str_currenttags = ""
     ip_tags_dict = _getTagsFromCurrentDatabase()
     currenttags = ip_tags_dict.get(ip)
@@ -187,14 +196,14 @@ def _writeTags(ip, tags):
     conn = _get_db_connection()
     cur = conn.cursor()
     if currenttags: # There is a record present
-        str_currenttags = ",".join(currenttags+new_tags)
-        
-        a = cur.execute(f"UPDATE user_ip_tags SET tags = '{str_currenttags}' where ip = '{ip}'")
-        print(str_currenttags)
+        if operation == "add":
+            str_currenttags = ",".join(currenttags+new_tags)
+        elif operation == "remove":
+            for t in new_tags:
+                currenttags.remove(t)
+            str_currenttags = currenttags
+        cur.execute(f"UPDATE user_ip_tags SET tags = '{str_currenttags}' where ip = '{ip}'")
     else: # New Record
-        nt = "_".join(tags.split(","))
-        q = f"INSERT INTO user_ip_tags (ip, tags) VALUES ({ip}, {nt})"
-        print(q)
         cur.execute(f"INSERT INTO user_ip_tags (ip, tags) VALUES ('{ip}', '{tags}')")
     conn.commit()
     cur.close()
