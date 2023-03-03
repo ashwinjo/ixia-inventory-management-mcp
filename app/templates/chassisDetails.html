@@ -5,7 +5,7 @@
 <section class="page-section">
     <div class="waiter"></div>
     <div>
-      <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('2')">
+      <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('3')">
         Download CSV
       </button>
     <div>
@@ -32,12 +32,12 @@
             {% endfor %}
             <td>
                 {% for tag in ip_tags_dict[row[0]] %}
-                    {% if tag != "[]" %}
-                      <button type="button" class="btn btn-warning btn-sm">{{tag}}</button><br/>
+                    {% if tag|length > 0 %}
+                      <button type="button" class="btn btn-warning btn-sm">{{tag}}</button>
                     {% endif %}
-                    <button onclick='addTag("{{row[0]}}")' type="button" class="btn btn-primary btn-sm">+</button>
-                    <button onclick='removeTag("{{row[0]}}")' type="button" class="btn btn-primary btn-sm">X</button>
                  {% endfor %}
+                 <button onclick='addTag("{{row[0]}}")' type="button" class="btn btn-primary btn-sm">+</button>
+                 <button onclick='removeTag("{{row[0]}}")' type="button" class="btn btn-primary btn-sm">X</button>
             </td>
               <td><button type="button" class="btn btn-danger" onclick='myFunction("{{row[0]}}")'> Get IxOS Logs</button></td>
           </tr>
