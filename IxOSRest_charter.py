@@ -19,11 +19,6 @@ import json
 import pandas as pd
 from  RestApi.IxOSRestInterface import IxRestSession
 
-
-def get_owned_ports(port_data_list):
-    op = [item for item in port_data_list if item.get("owner")]
-    return len(op), op
-
     
 def get_chassis_information(session):
     """ Fetch chassis information from RestPy
@@ -80,39 +75,73 @@ def get_chassis_ports_information(session):
     """
     port_summary = {}
     m = []
-    # Ports on Chassis
+
     port_data_list = []
     port_list = session.get_ports().data
+    keys_to_keep = ['owner', 'transceiverModel', 'transceiverManufacturer', 'cardNumber', 'portNumber', 'phyMode']
+
+    """{
+	'owner': 'BreakingPoint/admin/8',
+	'transceiverModel': 'FCBN425QB1C03',
+	'captureState': False,
+	'ownedState': '',
+	'simulatedCableState': 'NotSimulated',
+	'type': '100GBASE SR4 - BreakingPoint',
+	'portMemory': 16384,
+	'pcpuStatus': 'PCPUREADY',
+	'fullyQualifiedPortName': 'N/A',
+	'transceiverManufacturer': 'FINISAR',
+	'portNumber': 1,
+	'speed': 100000,
+	'parentId': 1118,
+	'linkState': 'UP',
+	'managementIp': '10.0.3.1',
+	'transmitState': False,
+	'transceiverSerialNumber': 'DTS01WE',
+	'id': 1119,
+	'phyMode': 'COPPER',
+	'cardNumber': 3
+}
+    """
+    if port_list:
+        a = list(port_list[0].keys())
+    else:
+        a = []
+    keys_to_remove = [x for x in a if x not in keys_to_keep]
+    
+    for port_data in port_list:
+        for k in keys_to_remove:
+            port_data.pop(k)
+    
     for port in port_list:
         port_data_list.append(port)
-    total_ports = len(port_list)
-        
-    # Metric 1: Port Owned vs Ports Free
-    op_count, op_result = get_owned_ports(port_data_list)
-    free_ports = total_ports - op_count
-    if total_ports:
-        percent_ports_owned = (op_count/total_ports) * 100
-        percent_ports_free = (free_ports/total_ports) * 100
-    else: 
-        percent_ports_owned = 0
-        percent_ports_free = 0
-        
     
-    print("% ports owned total",  percent_ports_owned)
-    print("% ports free total",  percent_ports_free)
+    if port_data_list:
+        used_port_details = [item for item in port_data_list if item.get("owner")]
+        total_ports = len(port_list)
+        used_ports = len(used_port_details)
+    else:
+        used_port_details = []
+        total_ports = []
+        used_ports = []
     
-    #port_summary["ownership_details"] = op_result
-    port_summary["% ports owned"] = percent_ports_owned
-    port_summary["% ports free"] = percent_ports_free
+    return {"used_port_details": used_port_details, "total_ports": total_ports, "used_ports": used_ports}
+
+
+
+def get_port_usage_stats():
+    # port_summary["% ports owned"] = percent_ports_owned
+    # port_summary["% ports free"] = percent_ports_free
     
 
     
-    # Metric 2: Users on Chassis + #ports used
-    list_of_users = [user["owner"] for user in op_result]
-    for x in set(list_of_users):
-        m.append("{0}:--{1}".format(x, list_of_users.count(x)))
-    port_summary["users_on_chassis"] =  m
-    return port_summary
+    # # Metric 2: Users on Chassis + #ports used
+    # list_of_users = [user["owner"] for user in op_result]
+    # for x in set(list_of_users):
+    #     m.append("{0}:--{1}".format(x, list_of_users.count(x)))
+    # port_summary["users_on_chassis"] =  m
+    # return port_summary
+    pass
         
 def get_license_activation(session):
     license_info = session.get_license_activation().json()
@@ -129,16 +158,7 @@ def get_license_activation(session):
     return data
         
 def get_license_host_id(session):
-    hid = session.get_license_server_host_id()
-    print(hid)
-    return hid
-
-    
-def get_portstats(session):
-    license_info = session.get_portstats().json()
-    print("\n******************* Port Statistics ***********************\n")
-    df = pd.DataFrame(license_info)
-    print(df)
+    return session.get_license_server_host_id()
 
 def start_chassis_rest_data_fetch(chassis, username, password, operation=None):
     final_table_dict = {}
@@ -153,4 +173,11 @@ def start_chassis_rest_data_fetch(chassis, username, password, operation=None):
     elif operation == "licenseDetails":
         host_id = get_license_host_id(session)
         final_table_dict.update({"licenseDetails": get_license_activation(session), "hostId": host_id, "ctype": f"{type_chassis}", "ip": f"{chassis}"})
+    elif operation == "portDetails":
+        out = get_chassis_ports_information(session)
+        final_table_dict.update({"portDetails": out.get("used_port_details"), 
+                                 "used_ports":  out.get("used_ports"),
+                                 "total_ports" :  out.get("total_ports"),
+                                 "ctype": f"{type_chassis}", 
+                                 "ip": f"{chassis}"})
     return final_table_dict

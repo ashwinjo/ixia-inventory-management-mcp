@@ -26,9 +26,12 @@
     <body id="page-top">
         <!-- Navigation-->
         <div>
-        <nav class="navbar navbar-expand-lg bg-secondary text-uppercase fixed-top" id="mainNav">
+        <nav class="navbar bg-secondary text-uppercase fixed-top" id="mainNav">
             <div class="container">
-                <a class="navbar-brand" href="#page-top"><img class="img-fluid rounded mb-5" width="100" height="30" src="{{url_for('static', filename='assets/img/KEYS.png')}}" alt="..." /> Ixia Inventory Explorer</a>
+                <a class="navbar-brand d-flex justify-content-center flex-nowrap" href="https://www.keysight.com/us/en/products/network-test/network-test-hardware.html">
+                    <img class="img-fluid rounded mb-5" width="100" height="30" src="{{url_for('static', filename='assets/img/KEYS.png')}}" alt="..." /> 
+                    Ixia Inventory Explorer
+                </a>
             </div>
                 <div class="container form-group">
                     <form id="tabForms1" action = "/" method = "GET">
@@ -39,9 +42,14 @@
                         <input class="btn btn-danger"  type = "submit" value="Chassis Cards Details" />
                     </form>
                     
+                    <form id="tabForms4" action = "/portDetails" method = "GET">
+                        <input class="btn btn-primary"  type = "submit" value="Chassis Ports Details" />
+                    </form>
+
                     <form id="tabForms3" action="/licenseDetails" method = "GET">
                         <input class="btn btn-warning"  type = "submit" value="Chassis License Details" />
                     </form>
+                    
                     
                     <form action = "/upload" method = "GET">
                     <input class="btn btn-info"  type = "submit" value="Add / Update Ixia Servers" />
@@ -130,7 +138,7 @@
           </script>
 
           <script type="text/javascript">
-            function tableToCSV() {
+            function tableToCSV(rows_to_omit) {
      
                 // Variable to store the final csv data
                 var csv_data = [];
@@ -144,7 +152,7 @@
      
                     // Stores each csv row data
                     var csvrow = [];
-                    for (var j = 0; j < cols.length; j++) {
+                    for (var j = 0; j < (cols.length)-parseInt(rows_to_omit) ; j++) {
      
                         // Get the text data of each cell
                         // of a row and push it to csvrow
@@ -235,6 +243,18 @@
                     return false;
                 }
                 $("#LongWait").show();
+            
+                return true;
+            });
+
+            $('#tabForms4').submit(function() {
+                var pass = true;
+                //some validations
+
+                if(pass == false){
+                    return false;
+                }
+                $("#overlay, #PleaseWait").show();
             
                 return true;
             });

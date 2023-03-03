@@ -11550,3 +11550,8 @@ html {
   width: 100%;
   z-index: 9999999;
 }
+
+.wrapper {
+  display: grid;
+  grid-template-columns: 200px 200px 200px;
+}

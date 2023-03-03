@@ -1,4 +1,5 @@
 import sqlite3
+import time
 
 connection = sqlite3.connect('database.db')
 
@@ -7,3 +8,4 @@ with open('schema.sql') as f:
 
 connection.commit()
 connection.close()
+time.sleep(5)

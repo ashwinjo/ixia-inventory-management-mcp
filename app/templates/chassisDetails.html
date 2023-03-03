@@ -5,7 +5,7 @@
 <section class="page-section">
     <div class="waiter"></div>
     <div>
-      <button type="button" class="btn btn-outline-primary" onclick="tableToCSV()">
+      <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('2')">
         Download CSV
       </button>
     <div>
@@ -17,7 +17,6 @@
           <th bgcolor="green">{{ h }} </th>
         {% endfor %}
         <th>Tags</th>
-        <th>Tag Operations</th>
         <th></th>
         </tr>
       </thead>
@@ -34,13 +33,12 @@
             <td>
                 {% for tag in ip_tags_dict[row[0]] %}
                     {% if tag != "[]" %}
-                      <button type="button" class="btn btn-warning btn-sm">{{tag}}</button>
+                      <button type="button" class="btn btn-warning btn-sm">{{tag}}</button><br/>
                     {% endif %}
+                    <button onclick='addTag("{{row[0]}}")' type="button" class="btn btn-primary btn-sm">+</button>
+                    <button onclick='removeTag("{{row[0]}}")' type="button" class="btn btn-primary btn-sm">X</button>
                  {% endfor %}
             </td>
-              <td><button onclick='addTag("{{row[0]}}")' type="button" class="btn btn-primary btn-sm">Add</button>
-                  <button onclick='removeTag("{{row[0]}}")' type="button" class="btn btn-primary btn-sm">Remove</button>
-              </td>
               <td><button type="button" class="btn btn-danger" onclick='myFunction("{{row[0]}}")'> Get IxOS Logs</button></td>
           </tr>
         {% endfor %}

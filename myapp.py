@@ -94,6 +94,32 @@ def chassisSummary():
     return render_template("chassisDetails.html", headers=headers, rows = fl, ip_tags_dict=ip_tags_dict)
 
 
+@app.get("/portDetails")
+def get_chassis_ports_information():
+    try:
+        from config import CHASSIS_LIST
+    except Exception:
+        CHASSIS_LIST = []
+    l= []
+    for chassis in CHASSIS_LIST:
+        out1 = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="portDetails")
+        l.append(out1)
+        
+        
+    fl = []
+    headers = ""
+    for cd in l:
+        print(cd)
+        list_of_ports = cd["portDetails"]
+        list_of_ports.append(cd["used_ports"])
+        list_of_ports.append(cd["total_ports"])
+        list_of_ports.append(cd["ctype"])
+        list_of_ports.append(cd["ip"])
+        fl.append(list_of_ports)
+        headers = ["cardNumber", "portNumber", "phyMode", "transceiverModel", "transceiverManufacturer", "owner"]
+    return render_template("chassisPortDetails.html", headers=headers, rows = fl)
+    
+
 @app.get("/cardDetails")
 def cardDetails():
     try:
@@ -133,7 +159,6 @@ def cardDetails():
                 headers = list(list_of_cards[0].keys())
             else:
                 headers = ["cardNumber", "serialNumber", "type", "numberOfPorts"]
-    print(fl)
     return render_template("chassisCardsDetails.html", headers=headers, rows = fl)
 
 @app.get("/licenseDetails")
@@ -201,7 +226,7 @@ def _writeTags(ip, tags, operation=None):
         elif operation == "remove":
             for t in new_tags:
                 currenttags.remove(t)
-            str_currenttags = currenttags
+            str_currenttags = ",".join(currenttags)
         cur.execute(f"UPDATE user_ip_tags SET tags = '{str_currenttags}' where ip = '{ip}'")
     else: # New Record
         cur.execute(f"INSERT INTO user_ip_tags (ip, tags) VALUES ('{ip}', '{tags}')")

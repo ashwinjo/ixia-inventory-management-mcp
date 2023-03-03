@@ -15,6 +15,8 @@
         <tr>
         <th> ChassisIP </th>
         <th> ChassisType </th>
+        <th> Total Ports </th>
+        <th> Used Ports </th>
         {% for h in headers %}
           <th>{{ h }} </th>
         {% endfor %}
@@ -23,14 +25,18 @@
       </thead>
       <tbody>
         {% for row in rows %}
-            {% for entry in row[:-2] %}
+            {% for entry in row[:-4] %}
               <tr>
                   <td>{{row[-1]}} </td>
                   <td>{{row[-2]}} </td>
+                  <td>{{row[-3]}} </td>
+                  <td>{{row[-4]}} </td>
                   <td>{{entry["cardNumber"]}}</td>
-                  <td>{{entry["serialNumber"]}}</td>
-                  <td>{{entry["type"]}}</td>
-                  <td>{{entry["numberOfPorts"]}}</td>
+                  <td>{{entry["portNumber"]}}</td>
+                  <td>{{entry["phyMode"]}}</td>
+                  <td>{{entry["transceiverModel"]}}</td>
+                  <td>{{entry["transceiverManufacturer"]}}</td>
+                  <td>{{entry["owner"]}}</td>
             </tr>
           {% endfor %}
         {% endfor %}
