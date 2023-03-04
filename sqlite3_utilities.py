@@ -12,6 +12,7 @@ def write_data_to_database(table_name=None, records=None, ip_tag_list=None):
     
     #Drop previous table and refresh data
     cur.execute(f"DELETE FROM {table_name}")
+    print("XXXXXXXXX")
     print(records)
     
     # [['10.36.236.121', 'XGS12-S0250241', '096061', 'Ixia_XGS12-HSL', '4', 'UP', '9.30.3001.12 ', '9.30.2212.1', '1.8.1.10']]
@@ -24,13 +25,19 @@ def write_data_to_database(table_name=None, records=None, ip_tag_list=None):
                         '{record[7]}','{record[8]}','{record[9]}')""")
             
         if table_name == "license_details_records":
-            
-            cur.execute(f"""INSERT INTO {table_name} (chassisIp, typeOfChassis, hostId, partNumber, 
-                        activationCode, quantity, description, maintenanceDate, expiryDate, isExpired) VALUES 
-                        ('{record["chassisIp"]}', '{record["typeOfChassis"]}',
-                        '{record["hostId"]}','{record["partNumber"]}',
-                        '{record["activationCode"]}','{str(record["quantity"])}','{record["description"]}',
-                        '{record["maintenanceDate"]}','{record["expiryDate"]}','{str(record["isExpired"])}')""")
+            for rcd in record:
+                cur.execute(f"""INSERT INTO {table_name} (chassisIp, typeOfChassis, hostId, partNumber, 
+                            activationCode, quantity, description, maintenanceDate, expiryDate, isExpired) VALUES 
+                            ('{rcd["chassisIp"]}', '{rcd["typeOfChassis"]}',
+                            '{rcd["hostId"]}','{rcd["partNumber"]}',
+                            '{rcd["activationCode"]}','{str(rcd["quantity"])}','{rcd["description"]}',
+                            '{rcd["maintenanceDate"]}','{rcd["expiryDate"]}','{str(rcd["isExpired"])}')""")
+                
+        if table_name == "cards_details_records":
+            for rcd in record:
+                cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,cardNumber,serialNumber,cardType,numberOfPorts) VALUES 
+                            ('{rcd["chassisIp"]}', '{rcd["chassisType"]}', '{rcd["cardNumber"]}','{rcd["serialNumber"]}',
+                            '{rcd["cardType"]}','{rcd["numberOfPorts"]}')""")
             
     cur.close()
     conn.commit()

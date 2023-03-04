@@ -26,11 +26,11 @@
         {% for row in rows %}
             {% for entry in row %}
               <tr>
-                  <td>{{entry["ip"]}} </td>
-                  <td>{{entry["type_of_chassis"]}} </td>
+                  <td>{{entry["chassisIp"]}} </td>
+                  <td>{{entry["chassisType"]}} </td>
                   <td>{{entry["cardNumber"]}}</td>
                   <td>{{entry["serialNumber"]}}</td>
-                  <td>{{entry["type"]}}</td>
+                  <td>{{entry["cardType"]}}</td>
                   <td>{{entry["numberOfPorts"]}}</td>
             </tr>
           {% endfor %}

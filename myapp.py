@@ -34,7 +34,12 @@ def uploader():
    if request.method == 'POST':
       f = request.files['file']
       f.save(secure_filename(f.filename))
-      return redirect("/", code=302)
+      return redirect("/getBaseData")
+  
+@app.get('/getBaseData')
+def getBaseData():
+    load_base_data()
+    return redirect("/fromDBPoll", code=302)
   
 @app.post('/goDirectToHome')
 def goDirectToHome():
@@ -83,17 +88,30 @@ def chassisSummary(refreshState):
 @app.get("/cardDetails", defaults={'refreshState': "freshPoll"})
 @app.get("/cardDetails/<refreshState>")
 def cardDetails(refreshState):
-    headers = ["ChassisIP", "ChassisType", "cardNumber", "serialNumber", "type", "numberOfPorts"]
+    headers = ["chassisIP", "ChassisType", "cardNumber", "serialNumber", "cardType", "numberOfPorts"]
     list_of_cards= []
     try:
         from config import CHASSIS_LIST
     except Exception:
         CHASSIS_LIST = []
-        
-    for chassis in CHASSIS_LIST:
-        out1 = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="cardDetails")
-        list_of_cards.append(out1)
-        
+    
+    if refreshState == "freshPoll": 
+        for chassis in CHASSIS_LIST:
+            out = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="cardDetails")
+            list_of_cards.append(out)
+        write_data_to_database(table_name="cards_details_records", records=list_of_cards)
+
+    elif refreshState == "fromDBPoll":
+        records = read_data_from_database(table_name="cards_details_records")
+        for record in records:
+            print(record["chassisIp"])
+            a = [{"chassisIp": record["chassisIp"], 
+                  "chassisType": record["typeOfChassis"],
+                  "cardNumber": record["cardNumber"],
+                  "serialNumber": record["serialNumber"],
+                  "cardType": record["cardType"],
+                  "numberOfPorts": record["numberOfPorts"]}]
+            list_of_cards.append(a)
     return render_template("chassisCardsDetails.html", headers=headers, rows = list_of_cards)
 
 
@@ -113,7 +131,7 @@ def licenseDetails(refreshState):
         for chassis in CHASSIS_LIST:
             out2 = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="licenseDetails")
             list_of_licenses.append(out2)
-        write_data_to_database(table_name="license_details_records", records=list_of_licenses[0])
+        write_data_to_database(table_name="license_details_records", records=list_of_licenses)
     elif refreshState == "fromDBPoll":
         records = read_data_from_database(table_name="license_details_records")
         print(records)
@@ -215,3 +233,9 @@ def _getTagsFromCurrentDatabase():
     for post in posts:
         ip_tags_dict.update({post["ip"]: post["tags"].split(",")})
     return ip_tags_dict
+
+def load_base_data():
+    chassisSummary(refreshState="freshPoll")
+    cardDetails(refreshState="freshPoll")
+    licenseDetails(refreshState="freshPoll")
+   

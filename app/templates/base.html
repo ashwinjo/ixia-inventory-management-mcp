@@ -38,7 +38,7 @@
                         <input class="btn btn-success"  type = "submit" value="Chassis Summary" />
                     </form>
                     
-                    <form action="/cardDetails" method = "GET">
+                    <form action="/cardDetails/fromDBPoll" method = "GET">
                         <input class="btn btn-danger"  type = "submit" value="Chassis Cards" />
                     </form>
                     
@@ -51,7 +51,7 @@
                     </form>
                     
                     
-                    <form action = "/upload" method = "GET">
+                    <form id="uploadAndPopulate" action = "/upload" method = "GET">
                     <input class="btn btn-info"  type = "submit" value="Add / Update Ixia Servers" />
                     </form>
             </div> 
@@ -266,7 +266,7 @@
                 if(pass == false){
                     return false;
                 }
-                $("#overlay, #PleaseWait").show();
+                $("#LongWait").show();
             
                 return true;
             });

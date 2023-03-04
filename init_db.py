@@ -66,16 +66,34 @@ def main():
                                             'expiryDate' TEXT,
                                             'isExpired' TEXT
                                             );"""
-
+                                            
+    create_card_details_records_sql = """CREATE TABLE IF NOT EXISTS cards_details_records (
+                                            'chassisIp' VARCHAR(255) NOT NULL,
+                                            'typeOfChassis' TEXT,
+                                            'cardNumber' TEXT,
+                                            'serialNumber' TEXT,
+                                            'cardType' TEXT,
+                                            'numberOfPorts' TEXT   
+                                            );"""
+                                            
+    drop_chassis_summary_sql = "DROP TABLE IF EXISTS chassis_summary_records" 
+    drop_license_details_sql = "DROP TABLE IF EXISTS license_details_records" 
+    drop_card_details_sql = "DROP TABLE IF EXISTS cards_details_records" 
+                                            
     # create a database connection
     conn = create_connection(database)
 
     # create tables
     if conn is not None:
         # create projects table
+        create_table(conn, drop_chassis_summary_sql)
+        create_table(conn, drop_license_details_sql)
+        create_table(conn, drop_card_details_sql)
+        
         create_table(conn, create_ip_tags_sql)
         create_table(conn, create_chassis_summary_sql)
         create_table(conn, create_license_details_records_sql)
+        create_table(conn, create_card_details_records_sql)
         time.sleep(5)
     else:
         print("Error! cannot create the database connection.")

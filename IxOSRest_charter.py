@@ -66,10 +66,11 @@ def get_chassis_cards_information(session, ip, type_of_chassis):
     # Cards on Chassis
     sorted_cards = sorted(card_list, key=lambda d: d['cardNumber'])
     for sc  in sorted_cards:
-        final_card_details_list.append({"ip": ip, "type_of_chassis": type_of_chassis,
+        final_card_details_list.append({"chassisIp": ip, 
+                                        "chassisType": type_of_chassis,
                                         "cardNumber":sc.get("cardNumber"), 
                                         "serialNumber": sc.get("serialNumber"),
-                                        "type": sc.get("type"), 
+                                        "cardType": sc.get("type"), 
                                         "numberOfPorts":sc.get("numberOfPorts", "No data")})
     return final_card_details_list
     
