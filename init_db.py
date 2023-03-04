@@ -120,5 +120,3 @@ def main():
         time.sleep(5)
     else:
         print("Error! cannot create the database connection.")
-        
-main()

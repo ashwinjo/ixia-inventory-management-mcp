@@ -7,6 +7,11 @@
 
 <html>
     <body>
+    <div>
+        <div class="text-center alert alert-danger" role="alert">
+            <h4>If this is your first time using the system, you need to upload config.py configuration file to continue.</h4>
+        </div>
+    </div<
     <div class="container form-group mb-3">
       <form id="uploader" action = "/uploader" method = "POST"  enctype = "multipart/form-data">
          <input class="form-control form-control-lg" type = "file" name = "file" /><br/>
@@ -16,3 +21,4 @@
 </html>
 </section>
 {% endblock %}
+

@@ -37,12 +37,13 @@ def get_chassis_information(session):
     
     chassis_state = chassisInfo.data[0]['state'].upper()
     last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
-    chassis_filter_dict.update({ "IP": d.get("managementIp"),
-                                 "chassisSN": d.get("serialNumber", no_serial_string),
-                                 "controllerSN": d.get("controllerSerialNumber", "NA"),
-                                 "type": d["type"].replace(" ", "_"),
-                                 "# PhysicalCards": str(d.get("numberOfPhysicalCards", "NA")),
-                                 "status": chassis_state,
+    
+    chassis_filter_dict.update({ "chassisIp": d.get("managementIp"),
+                                 "chassisSerial#": d.get("serialNumber", no_serial_string),
+                                 "controllerSerial#": d.get("controllerSerialNumber", "NA"),
+                                 "chassisType": d["type"].replace(" ", "_"),
+                                 "physicalCards#": str(d.get("numberOfPhysicalCards", "NA")),
+                                 "chassisStatus": chassis_state,
                                  "lastUpdatedAt_UTC": last_update_at
                                 })
     
@@ -165,7 +166,8 @@ def start_chassis_rest_data_fetch(chassis, username, password, operation=None):
     final_table_dict = {}
     session = IxRestSession(chassis, username= username, password=password, verbose=False)
     cin = get_chassis_information(session)
-    type_chassis = cin["type"]
+    type_chassis = cin["chassisType"]
+    
     if operation == "chassisSummary":
         final_table_dict.update(cin)
     elif operation == "cardDetails":

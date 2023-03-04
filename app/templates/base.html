@@ -34,7 +34,7 @@
                 </a>
             </div>
                 <div class="container form-group">
-                    <form action = "/fromDBPoll" method = "GET">
+                    <form action = "/chassisDetails/fromDBPoll" method = "GET">
                         <input class="btn btn-success"  type = "submit" value="Chassis Summary" />
                     </form>
                     
@@ -42,11 +42,11 @@
                         <input class="btn btn-danger"  type = "submit" value="Chassis Cards" />
                     </form>
                     
-                    <form id="tabForms4" action = "/portDetails/fromDBPoll" method = "GET">
+                    <form action = "/portDetails/fromDBPoll" method = "GET">
                         <input class="btn btn-primary"  type = "submit" value="Chassis Ports" />
                     </form>
 
-                    <form id="tabForms3" action="/licenseDetails/fromDBPoll" method = "GET">
+                    <form action="/licenseDetails/fromDBPoll" method = "GET">
                         <input class="btn btn-warning"  type = "submit" value="Chassis Licenses" />
                     </form>
                     
@@ -101,7 +101,7 @@
                   })
                   .then((response) => {
                       console.log(response)
-                      window.location.replace("/");
+                      window.location.replace("/chassisDetails/freshPoll");
                   }); 
             }
 
@@ -113,7 +113,7 @@
                   })
                   .then((response) => {
                       console.log(response)
-                      window.location.replace("/");
+                      window.location.replace("/chassisDetails/freshPoll");
                   }); 
             }
         </script>
@@ -207,7 +207,7 @@
         <script>
             $(document).ready(function() {
                 $(".page-section").prepend("<div id='PleaseWait' style='justify-content: center; display: none;'><img src='https://media.tenor.com/YPOStjIfQ2IAAAAM/loading-waiting.gif'/></div>");
-                $(".page-section").prepend("<div id='LongWait' style='justify-content: center; display: none;'><img src='https://media.tenor.com/CB8YG54MNQoAAAAC/this-could-take-a-while-hold-on.gif'/></div>");
+                $(".page-section").prepend("<div id='LongWait' style='justify-content: center; display: none;'><img src='https://media.tenor.com/XasjKGMk_wAAAAAM/load-loading.gif'/></div>");
             });
 
             

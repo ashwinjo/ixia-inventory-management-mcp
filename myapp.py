@@ -3,7 +3,7 @@ from app import create_app
 from IxOSRest_charter import start_chassis_rest_data_fetch as scrdf
 from  RestApi.IxOSRestInterface import IxRestSession
 from werkzeug.utils import secure_filename
-from sqlite3_utilities import read_data_from_database, write_data_to_database, _getTagsFromCurrentDatabase, _writeTags
+from sqlite3_utilities import read_data_from_database, write_data_to_database, getTagsFromCurrentDatabase, writeTags
 from init_db import main
 
 
@@ -24,7 +24,7 @@ def getlogs():
     return jsonify({"resultUrl" : out, "message": "Please login to your chassis and enter this url in browser to download logs"})
 
 
-@app.get('/upload')
+@app.get('/')
 def upload_file():
    return render_template('upload.html')
 	
@@ -38,48 +38,54 @@ def uploader():
 @app.get('/getBaseData')
 def getBaseData():
     load_base_data()
-    return redirect("/fromDBPoll", code=302)
+    return redirect("chassisDetails/fromDBPoll", code=302)
   
 @app.post('/goDirectToHome')
 def goDirectToHome():
-    return redirect("/", code=302)
+    return redirect("/chassisDetails/fromDBPoll", code=302)
 
-@app.get("/", defaults={'refreshState': "freshPoll"})
-@app.get("/<refreshState>")
-def chassisSummary(refreshState):
+@app.get("/chassisDetails", defaults={'refreshState': "freshPoll"})
+@app.get("/chassisDetails/<refreshState>")
+def chassisDetails(refreshState):
     headers = ["IP","type","chassisSN","controllerSN", "# PhysicalCards", "Status", "IxOS", "IxNetwork Protocols", "IxOS REST"]
     try:
         from config import CHASSIS_LIST
     except Exception:
         # This will create the blank tables for you the first time you load the application
-        main()
         CHASSIS_LIST = []
     
-    l = [] 
-    fl = []
-    ip_tags_dict = _getTagsFromCurrentDatabase()
+    list_of_chassis = [] 
+    ip_tags_dict = getTagsFromCurrentDatabase()
+    
     if refreshState == "freshPoll": 
         if CHASSIS_LIST:  
             for chassis in CHASSIS_LIST:
                 out = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="chassisSummary")
-                l.append(out)
-        
-            for record in l:
-                fl.append(list(record.values()))
-            write_data_to_database(table_name="chassis_summary_records", records=fl, ip_tag_list=ip_tags_dict)
+                list_of_chassis.append(out)
+
+            
+            print(list_of_chassis, ip_tags_dict)
+            write_data_to_database(table_name="chassis_summary_records", records=list_of_chassis, ip_tags_dict=ip_tags_dict)
             
     elif refreshState == "fromDBPoll":
         records = read_data_from_database(table_name="chassis_summary_records")
-        print(records)
+        if not records: last_updated_at="N/A"
         for record in records:
-            a = [record["ip"], record["chassisSN"],record["controllerSN"],
-                 record["type_of_chassis"],record["physicalCards"],record["status_status"],record["lastUpdatedAt_UTC"],
-                 record["ixOS"],record["ixNetwork_Protocols"],record["ixOS_REST"], record["tags"]]
-            
-            fl.append(a)
+            a = {"chassisIp": record["ip"], 
+                 "chassisSerial#": record["chassisSN"],
+                 "controllerSerial#":record["controllerSN"],
+                 "chassisType": record["type_of_chassis"],
+                 "physicalCards#": record["physicalCards"],
+                 "chassisStatus": record["status_status"],
+                 "lastUpdatedAt_UTC": record["lastUpdatedAt_UTC"],
+                 "IxOS": record["ixOS"],
+                 "IxNetwork Protocols": record["ixNetwork_Protocols"],
+                 "IxOS REST": record["ixOS_REST"], 
+                 "tags": record["tags"].split(",")}
+            list_of_chassis.append(a)
 
-    print(fl, ip_tags_dict)
-    return render_template("chassisDetails.html", headers=headers, rows = fl, ip_tags_dict=ip_tags_dict, oprn=refreshState)
+    print(list_of_chassis, ip_tags_dict)
+    return render_template("chassisDetails.html", headers=headers, rows = list_of_chassis, ip_tags_dict=ip_tags_dict)
 
 
 
@@ -197,7 +203,7 @@ def addTags():
     input_json = request.get_json(force=True) 
     ip = input_json["ip"]
     tags = input_json["tags"]
-    resp = _writeTags(ip, tags, operation="add")
+    resp = writeTags(ip, tags, operation="add")
     return resp
 
 @app.post("/removeTags")
@@ -205,14 +211,16 @@ def removeTags():
     input_json = request.get_json(force=True) 
     ip = input_json["ip"]
     tags = input_json["tags"]
-    resp = _writeTags(ip, tags, operation="remove")
+    resp = writeTags(ip, tags, operation="remove")
     
     return resp
     
 
 def load_base_data():
+    """Only load this when getting in through upload portal
+    """
+    main() # This will delete existing table and create new data
     chassisSummary(refreshState="freshPoll")
-    cardDetails(refreshState="freshPoll")
-    licenseDetails(refreshState="freshPoll")
-    get_chassis_ports_information(refreshState="freshPoll")
-    
+    # cardDetails(refreshState="freshPoll")
+    # licenseDetails(refreshState="freshPoll")
+    # get_chassis_ports_information(refreshState="freshPoll")

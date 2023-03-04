@@ -6,24 +6,35 @@ def _get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-def write_data_to_database(table_name=None, records=None, ip_tag_list=None):
+def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
+    print(records, ip_tags_dict)
     conn = _get_db_connection()
     cur = conn.cursor()
     
     #Drop previous table and refresh data
     cur.execute(f"DELETE FROM {table_name}")
-    print("XXXXXXXXX")
     print(records)
-    
-    # [['10.36.236.121', 'XGS12-S0250241', '096061', 'Ixia_XGS12-HSL', '4', 'UP', '9.30.3001.12 ', '9.30.2212.1', '1.8.1.10']]
     for record in records:
         if table_name == "chassis_summary_records":
-            record = record+ip_tag_list.get(record[0], ["NoTags"])
+            print(ip_tags_dict)
+            if ip_tags_dict:
+                tags = ip_tags_dict.get(record["chassisIp"]) #This is a list
+                tags = ",".join(tags)
+            else:
+                tags = ""
+                
+            record.update({"tags": tags })
+            
+            print(record)
             cur.execute(f"""INSERT INTO {table_name} (ip, chassisSN, controllerSN, type_of_chassis, 
                         physicalCards, status_status, ixOS, ixNetwork_Protocols, ixOS_REST, tags, lastUpdatedAt_UTC) VALUES 
-                        ('{record[0]}', '{record[1]}','{record[2]}','{record[3]}','{record[4]}','{record[5]}','{record[6]}',
-                        '{record[7]}','{record[8]}','{record[9]}', datetime('now'))""")
+                        ('{record["chassisIp"]}', '{record['chassisSerial#']}',
+                        '{record['controllerSerial#']}','{record['chassisType']}','{record['physicalCards#']}',
+                        '{record['chassisStatus']}',
+                        '{record['IxOS']}','{record['IxNetwork Protocols']}','{record['IxOS REST']}','{record['tags']}', datetime('now'))""")
             
+            cur.execute(f"UPDATE user_ip_tags SET tags = '{tags}' where ip = '{record['chassisIp']}'")
+        
         if table_name == "license_details_records":
             for rcd in record:
                 cur.execute(f"""INSERT INTO {table_name} (chassisIp, typeOfChassis, hostId, partNumber, 
@@ -63,22 +74,27 @@ def read_data_from_database(table_name=None):
     return records
 
 
-def _writeTags(ip, tags, operation=None):
-    str_currenttags = ""
-    ip_tags_dict = _getTagsFromCurrentDatabase()
-    currenttags = ip_tags_dict.get(ip)
-    new_tags =  tags.split(",")
-   
+def writeTags(ip, tags, operation=None):
+    updated_tags = ""
     conn = _get_db_connection()
     cur = conn.cursor()
-    if currenttags: # There is a record present
+    
+    # Get Present Tags from DB
+    ip_tags_dict = getTagsFromCurrentDatabase()
+    
+    currenttags = ip_tags_dict.get(ip) # This is a list
+    new_tags = tags.split(",")
+    
+   # There is a record present
+    if currenttags: 
         if operation == "add":
-            str_currenttags = ",".join(currenttags+new_tags)
+            updated_tags = ",".join(currenttags + new_tags)
         elif operation == "remove":
             for t in new_tags:
                 currenttags.remove(t)
-            str_currenttags = ",".join(currenttags)
-        cur.execute(f"UPDATE user_ip_tags SET tags = '{str_currenttags}' where ip = '{ip}'")
+            updated_tags = ",".join(currenttags)
+        cur.execute(f"UPDATE user_ip_tags SET tags = '{updated_tags}' where ip = '{ip}'")
+        cur.execute(f"UPDATE chassis_summary_records SET tags = '{updated_tags}' where ip = '{ip}'")
     else: # New Record
         cur.execute(f"INSERT INTO user_ip_tags (ip, tags) VALUES ('{ip}', '{tags}')")
     conn.commit()
@@ -86,7 +102,7 @@ def _writeTags(ip, tags, operation=None):
     conn.close()
     return "Records successfully updated"
         
-def _getTagsFromCurrentDatabase():
+def getTagsFromCurrentDatabase():
     ip_tags_dict = {}
     conn = _get_db_connection()
     cur = conn.cursor()
