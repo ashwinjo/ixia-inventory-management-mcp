@@ -16,8 +16,8 @@ It collects the below info from the chassis:
 """
 
 import json
-import pandas as pd
 from  RestApi.IxOSRestInterface import IxRestSession
+from datetime import datetime, timezone
 
     
 def get_chassis_information(session):
@@ -63,6 +63,7 @@ def get_chassis_cards_information(session, ip, type_of_chassis):
     """
     card_list= session.get_cards().data
     final_card_details_list= []
+    last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
     # Cards on Chassis
     sorted_cards = sorted(card_list, key=lambda d: d['cardNumber'])
     for sc  in sorted_cards:
@@ -71,10 +72,11 @@ def get_chassis_cards_information(session, ip, type_of_chassis):
                                         "cardNumber":sc.get("cardNumber"), 
                                         "serialNumber": sc.get("serialNumber"),
                                         "cardType": sc.get("type"), 
-                                        "numberOfPorts":sc.get("numberOfPorts", "No data")})
+                                        "numberOfPorts":sc.get("numberOfPorts", "No data"),
+                                        "lastUpdatedAt_UTC": last_update_at})
     return final_card_details_list
     
-def get_chassis_ports_information(session):
+def get_chassis_ports_information(session, chassisIp, chassisType):
     """_summary_
     """
     port_summary = {}
@@ -84,29 +86,6 @@ def get_chassis_ports_information(session):
     port_list = session.get_ports().data
     keys_to_keep = ['owner', 'transceiverModel', 'transceiverManufacturer', 'cardNumber', 'portNumber', 'phyMode']
 
-    """{
-	'owner': 'BreakingPoint/admin/8',
-	'transceiverModel': 'FCBN425QB1C03',
-	'captureState': False,
-	'ownedState': '',
-	'simulatedCableState': 'NotSimulated',
-	'type': '100GBASE SR4 - BreakingPoint',
-	'portMemory': 16384,
-	'pcpuStatus': 'PCPUREADY',
-	'fullyQualifiedPortName': 'N/A',
-	'transceiverManufacturer': 'FINISAR',
-	'portNumber': 1,
-	'speed': 100000,
-	'parentId': 1118,
-	'linkState': 'UP',
-	'managementIp': '10.0.3.1',
-	'transmitState': False,
-	'transceiverSerialNumber': 'DTS01WE',
-	'id': 1119,
-	'phyMode': 'COPPER',
-	'cardNumber': 3
-}
-    """
     if port_list:
         a = list(port_list[0].keys())
     else:
@@ -129,7 +108,19 @@ def get_chassis_ports_information(session):
         total_ports = []
         used_ports = []
     
-    return {"used_port_details": used_port_details, "total_ports": total_ports, "used_ports": used_ports}
+    if not total_ports: total_ports=0
+    if not used_ports: used_ports=0
+    last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
+    
+    for used_port_details_item in used_port_details:
+        used_port_details_item.update({
+                                "lastUpdatedAt_UTC": last_update_at,
+                                "totalPorts": total_ports,
+                                "ownedPorts": used_ports, 
+                                "freePorts": (total_ports-used_ports),
+                                "chassisIp": chassisIp,
+                                "typeOfChassis": chassisType })
+    return used_port_details
 
 
 
@@ -149,6 +140,7 @@ def get_port_usage_stats():
         
 def get_license_activation(session, ip, type_chassis, host_id):
     license_info = session.get_license_activation().json()
+    last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
     data= []
     for item in license_info:
         data.append({
@@ -161,7 +153,8 @@ def get_license_activation(session, ip, type_chassis, host_id):
                 "description": item["description"],
                 "maintenanceDate": item["maintenanceDate"], 
                 "expiryDate": item["expiryDate"],
-                "isExpired": str(item["isExpired"])})
+                "isExpired": str(item["isExpired"]),
+                "lastUpdatedAt_UTC": last_update_at})
     return data
         
 def get_license_host_id(session):
@@ -180,10 +173,5 @@ def start_chassis_rest_data_fetch(chassis, username, password, operation=None):
         host_id = get_license_host_id(session)
         final_table_dict = get_license_activation(session, chassis, type_chassis, host_id)
     elif operation == "portDetails":
-        out = get_chassis_ports_information(session)
-        final_table_dict.update({"portDetails": out.get("used_port_details"), 
-                                 "used_ports":  out.get("used_ports"),
-                                 "total_ports" :  out.get("total_ports"),
-                                 "ctype": f"{type_chassis}", 
-                                 "ip": f"{chassis}"})
+        final_table_dict = get_chassis_ports_information(session, chassis, type_chassis)
     return final_table_dict

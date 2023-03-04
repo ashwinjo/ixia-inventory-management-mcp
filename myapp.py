@@ -3,8 +3,7 @@ from app import create_app
 from IxOSRest_charter import start_chassis_rest_data_fetch as scrdf
 from  RestApi.IxOSRestInterface import IxRestSession
 from werkzeug.utils import secure_filename
-import sqlite3
-from sqlite3_utilities import read_data_from_database, write_data_to_database
+from sqlite3_utilities import read_data_from_database, write_data_to_database, _getTagsFromCurrentDatabase, _writeTags
 from init_db import main
 
 
@@ -110,7 +109,8 @@ def cardDetails(refreshState):
                   "cardNumber": record["cardNumber"],
                   "serialNumber": record["serialNumber"],
                   "cardType": record["cardType"],
-                  "numberOfPorts": record["numberOfPorts"]}]
+                  "numberOfPorts": record["numberOfPorts"],
+                  "lastUpdatedAt_UTC": record["lastUpdatedAt_UTC"]}]
             list_of_cards.append(a)
     return render_template("chassisCardsDetails.html", headers=headers, rows = list_of_cards)
 
@@ -132,6 +132,7 @@ def licenseDetails(refreshState):
             out2 = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="licenseDetails")
             list_of_licenses.append(out2)
         write_data_to_database(table_name="license_details_records", records=list_of_licenses)
+        
     elif refreshState == "fromDBPoll":
         records = read_data_from_database(table_name="license_details_records")
         print(records)
@@ -145,36 +146,50 @@ def licenseDetails(refreshState):
                   "description": record["description"],
                   "maintenanceDate": record["maintenanceDate"],
                   "expiryDate":record["expiryDate"],
-                  "isExpired": record["isExpired"]}]
+                  "isExpired": record["isExpired"],
+                  "lastUpdatedAt_UTC": record["lastUpdatedAt_UTC"]}]
             
             list_of_licenses.append(a)
     return render_template("chassisLicenseDetails.html", headers=headers, rows = list_of_licenses)
 
 
-@app.get("/portDetails")
-def get_chassis_ports_information():
+@app.get("/portDetails", defaults={'refreshState': "freshPoll"})
+@app.get("/portDetails/<refreshState>")
+def get_chassis_ports_information(refreshState):
+    headers = ["chassisIp", "typeOfChassis", "ownedPorts", "freePorts", "totalPorts",
+               "cardNumber", "portNumber", "phyMode", "transceiverModel", 
+               "transceiverManufacturer", "owner"]
+    port_list_details = []
     try:
         from config import CHASSIS_LIST
     except Exception:
         CHASSIS_LIST = []
-    l= []
-    for chassis in CHASSIS_LIST:
-        out1 = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="portDetails")
-        l.append(out1)
         
+    if refreshState == "freshPoll":
+        for chassis in CHASSIS_LIST:
+            out = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="portDetails")
+            port_list_details.append(out)
+        write_data_to_database(table_name="port_details_records", records=port_list_details)
         
-    fl = []
-    headers = ""
-    for cd in l:
-        print(cd)
-        list_of_ports = cd["portDetails"]
-        list_of_ports.append(cd["used_ports"])
-        list_of_ports.append(cd["total_ports"])
-        list_of_ports.append(cd["ctype"])
-        list_of_ports.append(cd["ip"])
-        fl.append(list_of_ports)
-        headers = ["cardNumber", "portNumber", "phyMode", "transceiverModel", "transceiverManufacturer", "owner"]
-    return render_template("chassisPortDetails.html", headers=headers, rows = fl)
+    elif refreshState == "fromDBPoll":
+        records = read_data_from_database(table_name="port_details_records")
+        print(records)
+        for record in records:
+            a = [{"chassisIp": record["chassisIp"], 
+                  "typeOfChassis": record["typeOfChassis"],
+                  "cardNumber": record["cardNumber"],
+                  "portNumber": record["portNumber"],
+                  "phyMode": record["phyMode"],
+                  "transceiverModel": record["transceiverModel"],
+                  "transceiverManufacturer": record["transceiverManufacturer"],
+                  "owner": record["owner"],
+                  "totalPorts":record["totalPorts"],
+                  "ownedPorts": record["ownedPorts"],
+                  "freePorts": record["freePorts"],
+                  "lastUpdatedAt_UTC": record["lastUpdatedAt_UTC"]}]
+            port_list_details.append(a)    
+    
+    return render_template("chassisPortDetails.html", headers=headers, rows = port_list_details)
 
 
 @app.post("/addTags")
@@ -195,47 +210,9 @@ def removeTags():
     return resp
     
 
-def _get_db_connection():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
-    return conn
-
-def _writeTags(ip, tags, operation=None):
-    str_currenttags = ""
-    ip_tags_dict = _getTagsFromCurrentDatabase()
-    currenttags = ip_tags_dict.get(ip)
-    new_tags =  tags.split(",")
-   
-    conn = _get_db_connection()
-    cur = conn.cursor()
-    if currenttags: # There is a record present
-        if operation == "add":
-            str_currenttags = ",".join(currenttags+new_tags)
-        elif operation == "remove":
-            for t in new_tags:
-                currenttags.remove(t)
-            str_currenttags = ",".join(currenttags)
-        cur.execute(f"UPDATE user_ip_tags SET tags = '{str_currenttags}' where ip = '{ip}'")
-    else: # New Record
-        cur.execute(f"INSERT INTO user_ip_tags (ip, tags) VALUES ('{ip}', '{tags}')")
-    conn.commit()
-    cur.close()
-    conn.close()
-    return "Records successfully updated"
-        
-def _getTagsFromCurrentDatabase():
-    ip_tags_dict = {}
-    conn = _get_db_connection()
-    cur = conn.cursor()
-    posts = cur.execute(f"SELECT * FROM user_ip_tags").fetchall()
-    cur.close()
-    conn.close()
-    for post in posts:
-        ip_tags_dict.update({post["ip"]: post["tags"].split(",")})
-    return ip_tags_dict
-
 def load_base_data():
     chassisSummary(refreshState="freshPoll")
     cardDetails(refreshState="freshPoll")
     licenseDetails(refreshState="freshPoll")
-   
+    get_chassis_ports_information(refreshState="freshPoll")
+    

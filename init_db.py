@@ -50,7 +50,8 @@ def main():
                                 ixOS TEXT,
                                 ixNetwork_Protocols TEXT,
                                 ixOS_REST TEXT,
-                                tags TEXT
+                                tags TEXT,  
+                                'lastUpdatedAt_UTC' TEXT
                                 );"""
                                 
                                 
@@ -64,7 +65,8 @@ def main():
                                             'description' TEXT,
                                             'maintenanceDate' TEXT,
                                             'expiryDate' TEXT,
-                                            'isExpired' TEXT
+                                            'isExpired' TEXT,  
+                                            'lastUpdatedAt_UTC' TEXT
                                             );"""
                                             
     create_card_details_records_sql = """CREATE TABLE IF NOT EXISTS cards_details_records (
@@ -73,12 +75,30 @@ def main():
                                             'cardNumber' TEXT,
                                             'serialNumber' TEXT,
                                             'cardType' TEXT,
-                                            'numberOfPorts' TEXT   
+                                            'numberOfPorts' TEXT,  
+                                            'lastUpdatedAt_UTC' TEXT
                                             );"""
+                                            
+    create_port_details_records_sql = """CREATE TABLE IF NOT EXISTS port_details_records (
+                                            'chassisIp' VARCHAR(255) NOT NULL,
+                                            'typeOfChassis' TEXT,
+                                            'cardNumber' TEXT,
+                                            'portNumber' TEXT,
+                                            'phyMode' TEXT,
+                                            'transceiverModel' TEXT,
+                                            'transceiverManufacturer' TEXT,
+                                            'owner' TEXT,
+                                            'totalPorts' TEXT,  
+                                            'ownedPorts' TEXT,
+                                            'freePorts' TEXT,
+                                            'lastUpdatedAt_UTC' TEXT
+                                            );"""
+                                    
                                             
     drop_chassis_summary_sql = "DROP TABLE IF EXISTS chassis_summary_records" 
     drop_license_details_sql = "DROP TABLE IF EXISTS license_details_records" 
     drop_card_details_sql = "DROP TABLE IF EXISTS cards_details_records" 
+    drop_create_port_details_sql = "DROP TABLE IF EXISTS port_details_records" 
                                             
     # create a database connection
     conn = create_connection(database)
@@ -89,11 +109,14 @@ def main():
         create_table(conn, drop_chassis_summary_sql)
         create_table(conn, drop_license_details_sql)
         create_table(conn, drop_card_details_sql)
-        
+        create_table(conn, drop_create_port_details_sql)
+         
+                 
         create_table(conn, create_ip_tags_sql)
         create_table(conn, create_chassis_summary_sql)
         create_table(conn, create_license_details_records_sql)
         create_table(conn, create_card_details_records_sql)
+        create_table(conn, create_port_details_records_sql)
         time.sleep(5)
     else:
         print("Error! cannot create the database connection.")
