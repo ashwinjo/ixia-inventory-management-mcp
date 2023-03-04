@@ -7,25 +7,22 @@ def _get_db_connection():
     return conn
 
 def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
-    print(records, ip_tags_dict)
     conn = _get_db_connection()
     cur = conn.cursor()
     
     #Drop previous table and refresh data
     cur.execute(f"DELETE FROM {table_name}")
-    print(records)
     for record in records:
         if table_name == "chassis_summary_records":
-            print(ip_tags_dict)
             if ip_tags_dict:
                 tags = ip_tags_dict.get(record["chassisIp"]) #This is a list
+                print(tags)
                 tags = ",".join(tags)
             else:
                 tags = ""
                 
             record.update({"tags": tags })
             
-            print(record)
             cur.execute(f"""INSERT INTO {table_name} (ip, chassisSN, controllerSN, type_of_chassis, 
                         physicalCards, status_status, ixOS, ixNetwork_Protocols, ixOS_REST, tags, lastUpdatedAt_UTC) VALUES 
                         ('{record["chassisIp"]}', '{record['chassisSerial#']}',
@@ -81,8 +78,7 @@ def writeTags(ip, tags, operation=None):
     
     # Get Present Tags from DB
     ip_tags_dict = getTagsFromCurrentDatabase()
-    
-    currenttags = ip_tags_dict.get(ip) # This is a list
+    currenttags = ip_tags_dict.get(ip) # This is a list    
     new_tags = tags.split(",")
     
    # There is a record present
@@ -93,6 +89,7 @@ def writeTags(ip, tags, operation=None):
             for t in new_tags:
                 currenttags.remove(t)
             updated_tags = ",".join(currenttags)
+            
         cur.execute(f"UPDATE user_ip_tags SET tags = '{updated_tags}' where ip = '{ip}'")
         cur.execute(f"UPDATE chassis_summary_records SET tags = '{updated_tags}' where ip = '{ip}'")
     else: # New Record

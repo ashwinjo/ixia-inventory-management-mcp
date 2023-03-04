@@ -46,7 +46,7 @@
                       <button type="button" class="btn btn-warning btn-sm">{{tag}}</button>
                  {% endfor %}
                  <button onclick='addTag("{{entry["chassisIp"]}}")' type="button" class="btn btn-primary btn-sm">+</button>
-                 <button onclick='removeTag("")' type="button" class="btn btn-primary btn-sm">X</button>
+                 <button onclick='removeTag("{{entry["chassisIp"]}}")' type="button" class="btn btn-primary btn-sm">X</button>
             </td>
               <td><button type="button" class="btn btn-danger" onclick='myFunction(entry["chassisIP"])'> Get IxOS Logs</button></td>
           </tr>
