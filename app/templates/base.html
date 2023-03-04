@@ -34,20 +34,20 @@
                 </a>
             </div>
                 <div class="container form-group">
-                    <form id="tabForms1" action = "/" method = "GET">
-                        <input class="btn btn-success"  type = "submit" value="Chassis Summary Details" />
+                    <form action = "/fromDBPoll" method = "GET">
+                        <input class="btn btn-success"  type = "submit" value="Chassis Summary" />
                     </form>
                     
                     <form id="tabForms2" action="/cardDetails" method = "GET">
-                        <input class="btn btn-danger"  type = "submit" value="Chassis Cards Details" />
+                        <input class="btn btn-danger"  type = "submit" value="Chassis Cards" />
                     </form>
                     
                     <form id="tabForms4" action = "/portDetails" method = "GET">
-                        <input class="btn btn-primary"  type = "submit" value="Chassis Ports Details" />
+                        <input class="btn btn-primary"  type = "submit" value="Chassis Ports" />
                     </form>
 
                     <form id="tabForms3" action="/licenseDetails" method = "GET">
-                        <input class="btn btn-warning"  type = "submit" value="Chassis License Details" />
+                        <input class="btn btn-warning"  type = "submit" value="Chassis Licenses" />
                     </form>
                     
                     
@@ -132,7 +132,7 @@
         <script>
             $(document).ready(function () {
               $('.table').DataTable({"lengthMenu": [ 100, 200, 500, 1000 ], "fixedHeader": true,"pageLength": 100, "columnDefs": [
-              { "width": "20%", "targets": 0 },
+                { "width": "20%", "targets": 0 },
                     { "searchable": true, "targets": 0 }]
             })});
           </script>

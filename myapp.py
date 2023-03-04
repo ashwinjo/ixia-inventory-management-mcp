@@ -4,41 +4,12 @@ from IxOSRest_charter import start_chassis_rest_data_fetch as scrdf
 from  RestApi.IxOSRestInterface import IxRestSession
 from werkzeug.utils import secure_filename
 import sqlite3
+from sqlite3_utilities import read_data_from_database, write_data_to_database
+from init_db import main
+
 
 app = create_app()
 
-# @app.get("/oldChassisDetails")
-# def chassisDetails():
-#     try:
-#         from config import CHASSIS_LIST
-#     except Exception:
-#         CHASSIS_LIST = []
-#     list_of_chassis_information = []
-#     img_link = ""
-#     list_of_available_chassis_types= []
-#     if CHASSIS_LIST:
-#         for idx, chassis in enumerate(CHASSIS_LIST):
-#             complete_chassis_repsonse = start_chassis_rest_data_fetch(chassis["ip"], chassis["username"], chassis["password"])
-            
-#             complete_chassis_repsonse["chassis_information"].update({"chassisName": f"Chassis{idx+1}"})
-#             if "XGS12" in complete_chassis_repsonse["chassis_information"]["type"]:
-#                 img_link = "https://cdn.cs.1worldsync.com/50/53/5053b84f-311b-4f29-bf7e-2d451293a688.jpg"
-#             elif "Ixia PerfectStorm One" in complete_chassis_repsonse["chassis_information"]["type"]:
-#                 img_link = "https://keysight-h.assetsadobe.com/is/image/content/dam/keysight/en/img/prd/network-test/ixia/network-test-hardware/perfectstorm-one1/Allmodels_right_PerfectStormONE-40G_870-0128_L20-550x550.png"
-#             elif "XGS2" in complete_chassis_repsonse["chassis_information"]["type"]:
-#                 img_link = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRduxtkTM6vPYDHhwlUUse8Np4_Zd5xTeuJNa_G9wJyUw&s"
-#             elif "Ixia Virtual Test Appliance" in complete_chassis_repsonse["chassis_information"]["type"]:
-#                 img_link = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJEZ8qzIPaSZbld6HkjbcGXg9Eb51DT5HN7aRZVQzPn2Myo93Onq7PXtWMglYnTnMqy3c&usqp=CAU"
-#             elif "AresONE" in complete_chassis_repsonse["chassis_information"]["type"]:
-#                 img_link = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsSpRIJSWrDlzpzaNg9URqT3IOfqZPAGrdNOWA0w0MpeVhpU1E9-nhws6GgYdr53Gcmc4&usqp=CAU"
-#             elif "Novus" in complete_chassis_repsonse["chassis_information"]["type"]:
-#                 img_link = "https://www.keysight.com/content/dam/keysight/en/img/prd/network-test/ixia/network-test-hardware/novus-one-plus-3-5-speed-l2-7-fixed-chassis/NovusOneRight-700px.png?"
-                
-#             list_of_available_chassis_types.append(complete_chassis_repsonse["chassis_information"]["type"].replace(" ", "_"))
-#             complete_chassis_repsonse["chassis_information"].update({"chassis_model_img_src": img_link})
-#             list_of_chassis_information.append(complete_chassis_repsonse)
-
-#     return render_template("index.html", data=list_of_chassis_information, type_list= list(set(list_of_available_chassis_types)))
 
 @app.post("/getLogs")
 def getlogs():
@@ -69,29 +40,42 @@ def uploader():
 def goDirectToHome():
     return redirect("/", code=302)
 
-@app.get("/")
-def chassisSummary():
+@app.get("/", defaults={'refreshState': "freshPoll"})
+@app.get("/<refreshState>")
+def chassisSummary(refreshState):
+    headers = ["IP","type","chassisSN","controllerSN", "# PhysicalCards", "Status", "IxOS", "IxNetwork Protocols", "IxOS REST"]
     try:
         from config import CHASSIS_LIST
     except Exception:
-        import init_db
+        # This will create the blank tables for you the first time you load the application
+        main()
         CHASSIS_LIST = []
     
     l = [] 
     fl = []
-    if CHASSIS_LIST:  
-        for chassis in CHASSIS_LIST:
-            out = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="chassisSummary")
-            l.append(out)
-                
-        for record in l:
-            fl.append(list(record.values()))
-        
-        headers=list(l[0].keys())
-    else:
-        headers = ["IP","type","chassisSN","controllerSN", "# PhysicalCards"]
     ip_tags_dict = _getTagsFromCurrentDatabase()
-    return render_template("chassisDetails.html", headers=headers, rows = fl, ip_tags_dict=ip_tags_dict)
+    if refreshState == "freshPoll": 
+        if CHASSIS_LIST:  
+            for chassis in CHASSIS_LIST:
+                out = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="chassisSummary")
+                l.append(out)
+        
+            for record in l:
+                fl.append(list(record.values()))
+            write_data_to_database(table_name="chassis_summary_records", records=fl, ip_tag_list=ip_tags_dict)
+            
+    elif refreshState == "fromDBPoll":
+        records = read_data_from_database(table_name="chassis_summary_records")
+        print(records)
+        for record in records:
+            a = [record["ip"], record["chassisSN"],record["controllerSN"],
+                 record["type_of_chassis"],record["physicalCards"],record["status_status"],
+                 record["ixOS"],record["ixNetwork_Protocols"],record["ixOS_REST"], record["tags"]]
+            
+            fl.append(a)
+
+    print(fl, ip_tags_dict)
+    return render_template("chassisDetails.html", headers=headers, rows = fl, ip_tags_dict=ip_tags_dict, oprn=refreshState)
 
 
 @app.get("/portDetails")
