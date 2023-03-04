@@ -16,8 +16,10 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
         if table_name == "chassis_summary_records":
             if ip_tags_dict:
                 tags = ip_tags_dict.get(record["chassisIp"]) #This is a list
-                print(tags)
-                tags = ",".join(tags)
+                if tags:
+                    tags = ",".join(tags)
+                else:
+                    tags = ""
             else:
                 tags = ""
                 

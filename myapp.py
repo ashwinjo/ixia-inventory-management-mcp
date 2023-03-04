@@ -132,13 +132,13 @@ def licenseDetails(refreshState):
         from config import CHASSIS_LIST
     except Exception:
         CHASSIS_LIST = []
-    if refreshState == "freshPoll": 
+    if refreshState == "freshPoll"  or refreshState == "initData": 
         for chassis in CHASSIS_LIST:
             out2 = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="licenseDetails")
             list_of_licenses.append(out2)
         write_data_to_database(table_name="license_details_records", records=list_of_licenses)
         
-    elif refreshState == "fromDBPoll" or refreshState == "initData":
+    elif refreshState == "fromDBPoll":
         records = read_data_from_database(table_name="license_details_records")
         for record in records:
             a = [{"chassisIp": record["chassisIp"], 
