@@ -13,6 +13,9 @@
       </form>
     <div>
     <br/>
+    <div>
+      <h5> Last Updated at (UTC): {{rows[0][-4]}} </h5>
+  </div>
     <table class="table table-striped table-bordered table-responsive table-condensed">
     <thead class="table-primary">
         <tr>
@@ -20,6 +23,7 @@
           <th bgcolor="green">{{ h }} </th>
         {% endfor %}
         <th>Tags</th>
+        <th></th>
         <th></th>
         {% if oprn == "fromDBPoll" %}
           <th></th>

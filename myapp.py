@@ -73,7 +73,7 @@ def chassisSummary(refreshState):
         print(records)
         for record in records:
             a = [record["ip"], record["chassisSN"],record["controllerSN"],
-                 record["type_of_chassis"],record["physicalCards"],record["status_status"],
+                 record["type_of_chassis"],record["physicalCards"],record["status_status"],record["lastUpdatedAt_UTC"],
                  record["ixOS"],record["ixNetwork_Protocols"],record["ixOS_REST"], record["tags"]]
             
             fl.append(a)
