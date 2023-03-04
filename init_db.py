@@ -54,17 +54,17 @@ def main():
                                 );"""
                                 
                                 
-    create_chassis_cards_summary_sql = """CREATE TABLE IF NOT EXISTS chassis_summary_records (
-                                            ip VARCHAR(255) NOT NULL,
-                                            chassisSN TEXT,
-                                            controllerSN TEXT,
-                                            type_of_chassis TEXT,
-                                            physicalCards TEXT,
-                                            status_status TEXT,
-                                            ixOS TEXT,
-                                            ixNetwork_Protocols TEXT,
-                                            ixOS_REST TEXT,
-                                            tags TEXT
+    create_license_details_records_sql = """CREATE TABLE IF NOT EXISTS license_details_records (
+                                            'chassisIp'VARCHAR(255) NOT NULL,
+                                            'typeOfChassis' TEXT,
+                                            'hostId' TEXT,
+                                            'partNumber' TEXT,
+                                            'activationCode' TEXT,
+                                            'quantity' TEXT,
+                                            'description' TEXT,
+                                            'maintenanceDate' TEXT,
+                                            'expiryDate' TEXT,
+                                            'isExpired' TEXT
                                             );"""
 
     # create a database connection
@@ -73,10 +73,9 @@ def main():
     # create tables
     if conn is not None:
         # create projects table
-        create_table(conn, "DROP TABLE chassis_summary_records")
         create_table(conn, create_ip_tags_sql)
-        # create tasks table
         create_table(conn, create_chassis_summary_sql)
+        create_table(conn, create_license_details_records_sql)
         time.sleep(5)
     else:
         print("Error! cannot create the database connection.")

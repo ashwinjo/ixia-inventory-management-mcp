@@ -58,16 +58,19 @@ def get_chassis_information(session):
     chassis_filter_dict.update(temp_dict)
     return chassis_filter_dict
     
-def get_chassis_cards_information(session):
+def get_chassis_cards_information(session, ip, type_of_chassis):
     """_summary_
     """
     card_list= session.get_cards().data
     final_card_details_list= []
     # Cards on Chassis
     sorted_cards = sorted(card_list, key=lambda d: d['cardNumber'])
-    print(sorted_cards)
     for sc  in sorted_cards:
-        final_card_details_list.append({"cardNumber":sc.get("cardNumber"), "serialNumber": sc.get("serialNumber"),"type": sc.get("type"), "numberOfPorts":sc.get("numberOfPorts", "No data")})
+        final_card_details_list.append({"ip": ip, "type_of_chassis": type_of_chassis,
+                                        "cardNumber":sc.get("cardNumber"), 
+                                        "serialNumber": sc.get("serialNumber"),
+                                        "type": sc.get("type"), 
+                                        "numberOfPorts":sc.get("numberOfPorts", "No data")})
     return final_card_details_list
     
 def get_chassis_ports_information(session):
@@ -143,18 +146,21 @@ def get_port_usage_stats():
     # return port_summary
     pass
         
-def get_license_activation(session):
+def get_license_activation(session, ip, type_chassis, host_id):
     license_info = session.get_license_activation().json()
     data= []
     for item in license_info:
         data.append({
+                "chassisIp": ip,
+                "typeOfChassis": type_chassis,
+                "hostId": host_id,
                 "partNumber": item["partNumber"],
                 "activationCode": item["activationCode"], 
                 "quantity": item["quantity"], 
                 "description": item["description"],
                 "maintenanceDate": item["maintenanceDate"], 
                 "expiryDate": item["expiryDate"],
-                "isExpired": item["isExpired"]})
+                "isExpired": str(item["isExpired"])})
     return data
         
 def get_license_host_id(session):
@@ -168,11 +174,10 @@ def start_chassis_rest_data_fetch(chassis, username, password, operation=None):
     if operation == "chassisSummary":
         final_table_dict.update(cin)
     elif operation == "cardDetails":
-        final_table_dict.update({"cardDetails": get_chassis_cards_information(session), "ctype": f"{type_chassis}", "ip": f"{chassis}"})
-        print(final_table_dict)
+        final_table_dict = get_chassis_cards_information(session, chassis, type_chassis)
     elif operation == "licenseDetails":
         host_id = get_license_host_id(session)
-        final_table_dict.update({"licenseDetails": get_license_activation(session), "hostId": host_id, "ctype": f"{type_chassis}", "ip": f"{chassis}"})
+        final_table_dict = get_license_activation(session, chassis, type_chassis, host_id)
     elif operation == "portDetails":
         out = get_chassis_ports_information(session)
         final_table_dict.update({"portDetails": out.get("used_port_details"), 

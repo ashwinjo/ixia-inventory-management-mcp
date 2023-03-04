@@ -9,7 +9,11 @@ def _get_db_connection():
 def write_data_to_database(table_name=None, records=None, ip_tag_list=None):
     conn = _get_db_connection()
     cur = conn.cursor()
+    
+    #Drop previous table and refresh data
     cur.execute(f"DELETE FROM {table_name}")
+    print(records)
+    
     # [['10.36.236.121', 'XGS12-S0250241', '096061', 'Ixia_XGS12-HSL', '4', 'UP', '9.30.3001.12 ', '9.30.2212.1', '1.8.1.10']]
     for record in records:
         if table_name == "chassis_summary_records":
@@ -18,6 +22,16 @@ def write_data_to_database(table_name=None, records=None, ip_tag_list=None):
                         physicalCards, status_status, ixOS, ixNetwork_Protocols, ixOS_REST, tags) VALUES 
                         ('{record[0]}', '{record[1]}','{record[2]}','{record[3]}','{record[4]}','{record[5]}','{record[6]}',
                         '{record[7]}','{record[8]}','{record[9]}')""")
+            
+        if table_name == "license_details_records":
+            
+            cur.execute(f"""INSERT INTO {table_name} (chassisIp, typeOfChassis, hostId, partNumber, 
+                        activationCode, quantity, description, maintenanceDate, expiryDate, isExpired) VALUES 
+                        ('{record["chassisIp"]}', '{record["typeOfChassis"]}',
+                        '{record["hostId"]}','{record["partNumber"]}',
+                        '{record["activationCode"]}','{str(record["quantity"])}','{record["description"]}',
+                        '{record["maintenanceDate"]}','{record["expiryDate"]}','{str(record["isExpired"])}')""")
+            
     cur.close()
     conn.commit()
     conn.close()

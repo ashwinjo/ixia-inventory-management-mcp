@@ -78,6 +78,61 @@ def chassisSummary(refreshState):
     return render_template("chassisDetails.html", headers=headers, rows = fl, ip_tags_dict=ip_tags_dict, oprn=refreshState)
 
 
+
+    
+@app.get("/cardDetails", defaults={'refreshState': "freshPoll"})
+@app.get("/cardDetails/<refreshState>")
+def cardDetails(refreshState):
+    headers = ["ChassisIP", "ChassisType", "cardNumber", "serialNumber", "type", "numberOfPorts"]
+    list_of_cards= []
+    try:
+        from config import CHASSIS_LIST
+    except Exception:
+        CHASSIS_LIST = []
+        
+    for chassis in CHASSIS_LIST:
+        out1 = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="cardDetails")
+        list_of_cards.append(out1)
+        
+    return render_template("chassisCardsDetails.html", headers=headers, rows = list_of_cards)
+
+
+@app.get("/licenseDetails", defaults={'refreshState': "freshPoll"})
+@app.get("/licenseDetails/<refreshState>")
+def licenseDetails(refreshState):
+    headers = ["chassisIP", "chassisType", "hostID", "partNumber", "activationCode", 
+               "quantity", "description", "maintenanceDate", "expiryDate", "isExpired"]
+    list_of_licenses= []
+    
+    try:
+        from config import CHASSIS_LIST
+    except Exception:
+        CHASSIS_LIST = []
+    print(refreshState)
+    if refreshState == "freshPoll": 
+        for chassis in CHASSIS_LIST:
+            out2 = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="licenseDetails")
+            list_of_licenses.append(out2)
+        write_data_to_database(table_name="license_details_records", records=list_of_licenses[0])
+    elif refreshState == "fromDBPoll":
+        records = read_data_from_database(table_name="license_details_records")
+        print(records)
+        for record in records:
+            a = [{"chassisIp": record["chassisIp"], 
+                  "typeOfChassis": record["typeOfChassis"],
+                  "hostId": record["hostId"],
+                  "partNumber": record["partNumber"],
+                  "activationCode": record["activationCode"],
+                  "quantity": record["quantity"],
+                  "description": record["description"],
+                  "maintenanceDate": record["maintenanceDate"],
+                  "expiryDate":record["expiryDate"],
+                  "isExpired": record["isExpired"]}]
+            
+            list_of_licenses.append(a)
+    return render_template("chassisLicenseDetails.html", headers=headers, rows = list_of_licenses)
+
+
 @app.get("/portDetails")
 def get_chassis_ports_information():
     try:
@@ -102,75 +157,6 @@ def get_chassis_ports_information():
         fl.append(list_of_ports)
         headers = ["cardNumber", "portNumber", "phyMode", "transceiverModel", "transceiverManufacturer", "owner"]
     return render_template("chassisPortDetails.html", headers=headers, rows = fl)
-    
-
-@app.get("/cardDetails")
-def cardDetails():
-    try:
-        from config import CHASSIS_LIST
-    except Exception:
-        CHASSIS_LIST = []
-    l= []
-    for chassis in CHASSIS_LIST:
-        out1 = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="cardDetails")
-        l.append(out1)
-        
-    fl = []
-    headers = ""
-    """[{
-        'cardDetails': [{
-        'cardNumber': 1,
-        'type': 'Ixia Virtual Load Module',
-        'numberOfPorts': 1
-        }],
-        'ip': 'ec2-44-205-197-56.compute-1.amazonaws.com'
-        }, {
-        'cardDetails': [{
-        'cardNumber': 1,
-        'type': 'Ixia Virtual Load Module',
-        'numberOfPorts': 1
-        }],
-        'ip': 'ec2-44-207-84-108.compute-1.amazonaws.com'
-        }]
-    """
-    for cd in l:
-        list_of_cards = cd["cardDetails"]
-        list_of_cards.append(cd["ctype"])
-        list_of_cards.append(cd["ip"])
-        fl.append(list_of_cards)
-        if not headers:
-            if len(list_of_cards) > 1:
-                headers = list(list_of_cards[0].keys())
-            else:
-                headers = ["cardNumber", "serialNumber", "type", "numberOfPorts"]
-    return render_template("chassisCardsDetails.html", headers=headers, rows = fl)
-
-@app.get("/licenseDetails")
-def licenseDetails():
-    try:
-        from config import CHASSIS_LIST
-    except Exception:
-        CHASSIS_LIST = []
-    l= []
-    for chassis in CHASSIS_LIST:
-        out2 = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="licenseDetails")
-        l.append(out2)
-        
-    fl = []
-    headers = ""
-    
-    for cd in l:
-        list_of_cards = cd["licenseDetails"]
-        list_of_cards.append(cd["hostId"])
-        list_of_cards.append(cd["ctype"])
-        list_of_cards.append(cd["ip"])
-        fl.append(list_of_cards)
-        if not headers:
-            if len(list_of_cards) > 1:
-                headers = list(list_of_cards[0].keys())
-            else:
-                headers = ["activationCode", "quantity", "description", "expiryDate"]
-    return render_template("chassisLicenseDetails.html", headers=headers, rows = fl)
 
 
 @app.post("/addTags")
