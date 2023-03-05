@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base_html_modified.html" %}
 
 
 {% block content %}
@@ -9,8 +9,7 @@
     <body>
     <div>
         <div class="text-center alert alert-danger" role="alert">
-            <h4>If this is your first time using the system OR you want to add/remove ixia servers to be monitored,
-                <h2> you need to upload config.py configuration file to continue. <h2></h4>
+            <h4> You need to upload config.py configuration file to add/update/remove Ixia Servers for monitoring. <h2></h4>
         </div>
     </div<
     <div class="container form-group mb-3">
@@ -19,6 +18,11 @@
          <input  class="btn btn-primary mb-3"  type = "submit" value="Get all data and Proceed"/>
       </form>
     </div>  
+    <div>
+        <form action="/chassisDetails/fromDBPoll" method = "GET">
+            <input  class="btn btn-info mb-3"  type = "submit" value="Retrun to Chassis Summary Page"/>
+        </form>
+    </div>
 </html>
 </section>
 {% endblock %}

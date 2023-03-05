@@ -26,7 +26,17 @@ def getlogs():
 
 @app.get('/')
 def upload_file():
-   return render_template('upload.html')
+    try:
+        from config import CHASSIS_LIST
+        return redirect("/chassisDetails/fromDBPoll", code=302)
+    except Exception:
+        return render_template('upload.html')
+    
+    
+@app.get('/upload_file_after_first_load')
+def upload_file_after_first_load():
+    return render_template('upload.html')
+    
 	
 @app.post('/uploader')
 def uploader():

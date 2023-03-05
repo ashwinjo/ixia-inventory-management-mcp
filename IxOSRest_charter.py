@@ -152,7 +152,7 @@ def get_license_activation(session, ip, type_chassis, host_id):
                 "partNumber": item["partNumber"],
                 "activationCode": item["activationCode"], 
                 "quantity": item["quantity"], 
-                "description": item["description"],
+                "description": item["description"].replace(",","_"),
                 "maintenanceDate": item["maintenanceDate"], 
                 "expiryDate": item["expiryDate"],
                 "isExpired": str(item.get("isExpired", "NA")),
