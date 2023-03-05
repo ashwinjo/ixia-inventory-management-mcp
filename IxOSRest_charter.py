@@ -83,7 +83,7 @@ def get_chassis_ports_information(session, chassisIp, chassisType):
     """
     port_summary = {}
     m = []
-
+    
     port_data_list = []
     port_list = session.get_ports().data
     keys_to_keep = ['owner', 'transceiverModel', 'transceiverManufacturer', 'cardNumber', 'portNumber', 'phyMode']

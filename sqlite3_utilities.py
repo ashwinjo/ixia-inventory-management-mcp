@@ -7,6 +7,7 @@ def _get_db_connection():
     return conn
 
 def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
+    tags = ""
     conn = _get_db_connection()
     cur = conn.cursor()
     
@@ -45,10 +46,22 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                 
         if table_name == "cards_details_records":
             for rcd in record:
-                cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,cardNumber,serialNumber,cardType,numberOfPorts, lastUpdatedAt_UTC) VALUES 
-                            ('{rcd["chassisIp"]}', '{rcd["chassisType"]}', '{rcd["cardNumber"]}','{rcd["serialNumber"]}',
-                            '{rcd["cardType"]}','{rcd["numberOfPorts"]}', datetime('now'))""")
                 
+                if ip_tags_dict:
+                    tags = ip_tags_dict.get(record["chassisIp"]) #This is a list
+                    if tags:
+                        tags = ",".join(tags)
+                    else:
+                        tags = ""
+                else:
+                    tags = ""    
+                rcd.update({"tags": tags })
+                cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,cardNumber,serialNumber,cardType,numberOfPorts,tags,lastUpdatedAt_UTC) VALUES 
+                            ('{rcd["chassisIp"]}', '{rcd["chassisType"]}', '{rcd["cardNumber"]}','{rcd["serialNumber"]}',
+                            '{rcd["cardType"]}','{rcd["numberOfPorts"]}', '{rcd['tags']}', datetime('now'))""")
+                
+                cur.execute(f"UPDATE user_ip_tags SET tags = '{tags}' where ip = '{rcd['serialNumber']}'")
+            
         if table_name == "port_details_records":
             for rcd in record:
                 cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,cardNumber,portNumber,phyMode,transceiverModel,
@@ -73,13 +86,22 @@ def read_data_from_database(table_name=None):
     return records
 
 
-def writeTags(ip, tags, operation=None):
+def writeTags(ip, tags, type_of_update=None, operation=None):
     updated_tags = ""
+    if type_of_update == "chassis":
+        table = 'user_ip_tags'
+        field = 'ip'
+            
+            
+    if type_of_update == "card":
+        table = 'user_card_tags'
+        field = 'serialNumber'
+        
     conn = _get_db_connection()
     cur = conn.cursor()
     
     # Get Present Tags from DB
-    ip_tags_dict = getTagsFromCurrentDatabase()
+    ip_tags_dict = getTagsFromCurrentDatabase(type_of_update)
     currenttags = ip_tags_dict.get(ip) # This is a list    
     new_tags = tags.split(",")
     
@@ -92,22 +114,37 @@ def writeTags(ip, tags, operation=None):
                 currenttags.remove(t)
             updated_tags = ",".join(currenttags)
             
-        cur.execute(f"UPDATE user_ip_tags SET tags = '{updated_tags}' where ip = '{ip}'")
+        cur.execute(f"UPDATE {table} SET tags = '{updated_tags}' where {field} = '{ip}'")
         cur.execute(f"UPDATE chassis_summary_records SET tags = '{updated_tags}' where ip = '{ip}'")
     else: # New Record
-        cur.execute(f"INSERT INTO user_ip_tags (ip, tags) VALUES ('{ip}', '{tags}')")
+        print(f"INSERT INTO {table} ({field}, tags) VALUES ('{ip}', '{tags}')")
+        cur.execute(f"INSERT INTO {table} ({field}, tags) VALUES ('{ip}', '{tags}')")
+        
+        
     conn.commit()
     cur.close()
     conn.close()
     return "Records successfully updated"
         
-def getTagsFromCurrentDatabase():
+def getTagsFromCurrentDatabase(type_of_update=None):
+    print(type_of_update)
     ip_tags_dict = {}
+    if type_of_update == "chassis":
+        table = "user_ip_tags"
+        field = "ip"
+        
+    if type_of_update == "card":
+        table = "user_card_tags"
+        field = "serialNumber"
+    
     conn = _get_db_connection()
     cur = conn.cursor()
-    posts = cur.execute(f"SELECT * FROM user_ip_tags").fetchall()
+
+    query = f"SELECT * FROM {table};"
+    print(query)
+    posts = cur.execute(query).fetchall()
     cur.close()
     conn.close()
     for post in posts:
-        ip_tags_dict.update({post["ip"]: post["tags"].split(",")})
+        ip_tags_dict.update({post[field]: post["tags"].split(",")})
     return ip_tags_dict

@@ -3,6 +3,8 @@
 {% block content %}
 <!-- Portfolio Section-->
 <section class="page-section">
+  <div class="text-center alert alert-success" role="alert">
+    <h4> Chassis Cards Details  </h4>
   </div>
   <div>
     <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('0')">
@@ -22,6 +24,7 @@
         {% for h in headers %}
           <th>{{ h }} </th>
         {% endfor %}
+        <th> Tags </th>
         </tr>
         
       </thead>
@@ -35,6 +38,15 @@
                   <td>{{entry["serialNumber"]}}</td>
                   <td>{{entry["cardType"]}}</td>
                   <td>{{entry["numberOfPorts"]}}</td>
+                  <td>
+                    {% for tag in ip_tags_dict[entry["serialNumber"]] %}
+                        {% if tag|length > 0 %}
+                          <button type="button" class="btn btn-warning btn-sm">{{tag}}</button>
+                        {% endif %}
+                     {% endfor %}
+                     <button onclick='addTagCard("{{entry["serialNumber"]}}")' type="button" class="btn btn-primary btn-sm">+</button>
+                     <button onclick='removeTagCard("{{entry["serialNumber"]}}")' type="button" class="btn btn-primary btn-sm">X</button>
+                </td>
             </tr>
           {% endfor %}
         {% endfor %}

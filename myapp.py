@@ -65,7 +65,7 @@ def chassisDetails(refreshState):
         CHASSIS_LIST = []
     
     list_of_chassis = [] 
-    ip_tags_dict = getTagsFromCurrentDatabase()
+    ip_tags_dict = getTagsFromCurrentDatabase(type_of_update="chassis")
     
     if refreshState == "freshPoll" or refreshState == "initData": 
 
@@ -73,12 +73,11 @@ def chassisDetails(refreshState):
             for chassis in CHASSIS_LIST:
                 out = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="chassisSummary")
                 list_of_chassis.append(out)
-            print(list_of_chassis)
+            
             write_data_to_database(table_name="chassis_summary_records", records=list_of_chassis, ip_tags_dict=ip_tags_dict)
             
     elif refreshState == "fromDBPoll":
         records = read_data_from_database(table_name="chassis_summary_records")
-        if not records: last_updated_at="N/A"
         for record in records:
             a = {"chassisIp": record["ip"], 
                  "chassisSerial#": record["chassisSN"],
@@ -109,6 +108,7 @@ def cardDetails(refreshState):
     except Exception:
         CHASSIS_LIST = []
     
+    ip_tags_dict = getTagsFromCurrentDatabase(type_of_update="card")
     if refreshState == "freshPoll" or refreshState == "initData": 
         for chassis in CHASSIS_LIST:
             out = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="cardDetails")
@@ -128,7 +128,7 @@ def cardDetails(refreshState):
             list_of_cards.append(a)
     if refreshState == "initData":
         return "records written"
-    return render_template("chassisCardsDetails.html", headers=headers, rows = list_of_cards)
+    return render_template("chassisCardsDetails.html", headers=headers, rows = list_of_cards, ip_tags_dict=ip_tags_dict)
 
 
 @app.get("/licenseDetails", defaults={'refreshState': "freshPoll"})
@@ -213,17 +213,30 @@ def get_chassis_ports_information(refreshState):
 @app.post("/addTags")
 def addTags():
     input_json = request.get_json(force=True) 
-    ip = input_json["ip"]
-    tags = input_json["tags"]
-    resp = writeTags(ip, tags, operation="add")
+    ip = input_json.get("ip")
+    serialNumber = input_json.get("serialNumber")
+    tags = input_json.get("tags")
+    if ip:
+        resp = writeTags(ip, tags, type_of_update="chassis",operation="add")
+        
+    if serialNumber:
+        resp = writeTags(serialNumber, tags, type_of_update="card", operation="add")
+        
+        
     return resp
 
 @app.post("/removeTags")
 def removeTags():
     input_json = request.get_json(force=True) 
-    ip = input_json["ip"]
-    tags = input_json["tags"]
-    resp = writeTags(ip, tags, operation="remove")
+    ip = input_json.get("ip")
+    serialNumber = input_json.get("serialNumber")
+    
+    tags = input_json.get("tags")
+    if ip:
+        resp = writeTags(ip, tags, type_of_update="chassis",operation="remove")
+        
+    if serialNumber:
+        resp = writeTags(serialNumber, tags, type_of_update="card", operation="remove")
     
     return resp
     
