@@ -141,7 +141,7 @@ def cardDetails(refreshState):
 @app.get("/licenseDetails/<refreshState>")
 def licenseDetails(refreshState):
     headers = ["chassisIP", "chassisType", "hostID", "partNumber", "activationCode", 
-               "quantity", "description", "maintenanceDate", "expiryDate", "isExpired"]
+               "quantity", "description", "maintenanceDate", "expiryDate"]
     list_of_licenses= []
     
     try:
@@ -179,7 +179,7 @@ def licenseDetails(refreshState):
 @app.get("/portDetails", defaults={'refreshState': "freshPoll"})
 @app.get("/portDetails/<refreshState>")
 def get_chassis_ports_information(refreshState):
-    headers = ["chassisIp", "typeOfChassis", "ownedPorts", "freePorts", "totalPorts",
+    headers = ["chassisIp", "typeOfChassis",
                "cardNumber", "portNumber", "phyMode", "transceiverModel", 
                "transceiverManufacturer", "owner"]
     port_list_details = []

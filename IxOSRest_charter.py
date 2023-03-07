@@ -132,31 +132,16 @@ def get_chassis_ports_information(session, chassisIp, chassisType):
     if not used_ports: used_ports=0
     last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
     
-    for used_port_details_item in used_port_details:
-        used_port_details_item.update({
+    for port_data_list_item in port_data_list:
+        port_data_list_item.update({
                                 "lastUpdatedAt_UTC": last_update_at,
                                 "totalPorts": total_ports,
                                 "ownedPorts": used_ports, 
                                 "freePorts": (total_ports-used_ports),
                                 "chassisIp": chassisIp,
                                 "typeOfChassis": chassisType })
-    return used_port_details
+    return port_data_list
 
-
-
-def get_port_usage_stats():
-    # port_summary["% ports owned"] = percent_ports_owned
-    # port_summary["% ports free"] = percent_ports_free
-    
-
-    
-    # # Metric 2: Users on Chassis + #ports used
-    # list_of_users = [user["owner"] for user in op_result]
-    # for x in set(list_of_users):
-    #     m.append("{0}:--{1}".format(x, list_of_users.count(x)))
-    # port_summary["users_on_chassis"] =  m
-    # return port_summary
-    pass
         
 def get_license_activation(session, ip, type_chassis, host_id):
     license_info = session.get_license_activation().json()

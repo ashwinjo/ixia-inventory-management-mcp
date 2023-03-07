@@ -33,8 +33,12 @@
         {% for entry in rows %}
           <tr> 
                   {% if entry["chassisStatus"] == "UP" %}
-                    <td class="table-success">{{entry["chassisIp"]}}</td>
+                      {% set className = "table-success"%}
+                  {% else %}
+                      {% set className = "table-danger"%}
                   {% endif %} 
+
+                  <td class={{className}}>{{entry["chassisIp"]}}</td>
                   <td>{{entry["chassisSerial#"]}}</td>
                   <td>{{entry["controllerSerial#"]}}</td>
                   <td>{{entry["chassisType"]}}</td>

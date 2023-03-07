@@ -4,7 +4,7 @@
 <!-- Portfolio Section-->
 <section class="page-section">
   <div class="text-center alert alert-success" role="alert">
-    <h4> Chassis Owned Port Details  </h4>
+    <h4> Chassis Port Details  </h4>
   </div>
   <div>
     <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('0')">
@@ -33,9 +33,6 @@
               <tr>
                   <td>{{entry["chassisIp"]}} </td>
                   <td>{{entry["typeOfChassis"]}} </td>
-                  <td>{{entry["ownedPorts"]}} </td>
-                  <td>{{entry["freePorts"]}} </td>
-                  <td>{{entry["totalPorts"]}} </td>
                   <td>{{entry["cardNumber"]}}</td>
                   <td>{{entry["portNumber"]}}</td>
                   <td>{{entry["phyMode"]}}</td>

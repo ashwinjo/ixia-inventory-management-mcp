@@ -29,22 +29,22 @@
       <tbody>
         {% for row in rows %}
             {% for entry in row %}
-                  <td style="width:auto">{{entry["chassisIp"]}}</td>
-                  <td style="width:auto">{{entry["typeOfChassis"]}}</td>
-                  <td style="width:auto">{{entry["hostId"]}}</td>
-                  <td style="width:auto">{{entry["partNumber"]}}</td>
-                  <td style="width:auto">{{entry["activationCode"]}}</td>
-                  <td style="width:auto">{{entry["quantity"]}}</td>
-                  <td style="width:auto">{{entry["description"]}}</td>
+                  
                   {% if entry["isExpired"] == True or entry["isExpired"] == 'True' %}
-                    <td style="width:auto" class="table-danger">{{entry["maintenanceDate"]}}</td>
-                    <td style="width:auto" class="table-danger">{{entry["expiryDate"]}}
-                    <td style="width:auto" class="table-danger">{{entry["isExpired"]}}
+                      {% set className = "table-danger"%}
                   {% else %}
-                    <td style="width:auto" class="table-success">{{entry["maintenanceDate"]}}</td>
-                    <td style="width:auto" class="table-success">{{entry["expiryDate"]}}
-                    <td style="width:auto" class="table-success">{{entry["isExpired"]}}
-                {% endif %}
+                      {% set className = "table-success"%}
+                  {% endif %}
+
+                    <td style="width:auto" class={{className}}>{{entry["chassisIp"]}}</td>
+                    <td style="width:auto" class={{className}}>{{entry["typeOfChassis"]}}</td>
+                    <td style="width:auto" class={{className}}>{{entry["hostId"]}}</td>
+                    <td style="width:auto" class={{className}}>{{entry["partNumber"]}}</td>
+                    <td style="width:auto" class={{className}}>{{entry["activationCode"]}}</td>
+                    <td style="width:auto" class={{className}}>{{entry["quantity"]}}</td>
+                    <td style="width:auto" class={{className}}>{{entry["description"]}}</td>
+                    <td style="width:auto" class={{className}}>{{entry["maintenanceDate"]}}</td>
+                    <td style="width:auto" class={{className}}>{{entry["expiryDate"]}}
             </tr>
           {% endfor %}
         {% endfor %}

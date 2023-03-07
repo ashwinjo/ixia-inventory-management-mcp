@@ -43,7 +43,7 @@
                     </form>
                     
                     <form action = "/portDetails/fromDBPoll" method = "GET">
-                        <input class="btn btn-primary"  type = "submit" value="Owned Chassis Ports" />
+                        <input class="btn btn-primary"  type = "submit" value="Chassis Ports" />
                     </form>
 
                     <form action="/licenseDetails/fromDBPoll" method = "GET">
@@ -160,7 +160,7 @@
                     .columns()
                     .every(function () {
                         var column = this;
-                        var select = $('<select><option value=""></option></select>')
+                        var select = $('<select><option value=""> Select All</option></select>')
                             .appendTo($(column.footer()).empty())
                             .on('change', function () {
                                 var val = $.fn.dataTable.util.escapeRegex($(this).val());
@@ -177,8 +177,8 @@
                             });
                     });
             },
-                "lengthMenu": [ 100, 200, 500, 1000 ], "fixedHeader": true,"pageLength": 100, "columnDefs": [
-                { "width": "20%", "searchable": true, "targets": 0 }]
+                "lengthMenu": [ 50, 100, 200, 500 ,1000 ], "fixedHeader": true, "pageLength": 50, "columnDefs": [
+                { "width": "20%", "searchable": true, "targets": 0 }],
             })});
           </script>
 
