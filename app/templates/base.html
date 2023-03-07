@@ -155,9 +155,30 @@
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
         <script>
             $(document).ready(function () {
-              $('.table').DataTable({"lengthMenu": [ 100, 200, 500, 1000 ], "fixedHeader": true,"pageLength": 100, "columnDefs": [
-                { "width": "20%", "targets": 0 },
-                    { "searchable": true, "targets": 0 }]
+              $('.table').DataTable({initComplete: function () {
+                this.api()
+                    .columns()
+                    .every(function () {
+                        var column = this;
+                        var select = $('<select><option value=""></option></select>')
+                            .appendTo($(column.footer()).empty())
+                            .on('change', function () {
+                                var val = $.fn.dataTable.util.escapeRegex($(this).val());
+     
+                                column.search(val ? '^' + val + '$' : '', true, false).draw();
+                            });
+     
+                        column
+                            .data()
+                            .unique()
+                            .sort()
+                            .each(function (d, j) {
+                                select.append('<option value="' + d + '">' + d + '</option>');
+                            });
+                    });
+            },
+                "lengthMenu": [ 100, 200, 500, 1000 ], "fixedHeader": true,"pageLength": 100, "columnDefs": [
+                { "width": "20%", "searchable": true, "targets": 0 }]
             })});
           </script>
 

@@ -56,6 +56,13 @@
           </tr>
         {% endfor %}
       </tbody>
+      <tfoot>
+        <tr>
+          {% for h in headers %}
+          <th>{{ h }} </th>
+          {% endfor %}
+        </tr>
+    </tfoot>
     </table>
     <div class="loader">
         <div class="loading">
