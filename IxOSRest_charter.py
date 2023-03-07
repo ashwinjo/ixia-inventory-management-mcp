@@ -31,7 +31,7 @@ def convert_size(size_bytes):
    return "%s %s" % (s, size_name[i])
 
     
-def get_chassis_information(session):
+def get_chassis_information(session, host_id):
     """ Fetch chassis information from RestPy
     """
     temp_dict = {}
@@ -46,6 +46,9 @@ def get_chassis_information(session):
     except Exception:
         pass
     
+    os = "Windows"
+    if host_id:
+        os = "Linux"
     
     d = json.loads(json.dumps(chassisInfo.data[0]))
     
@@ -61,7 +64,8 @@ def get_chassis_information(session):
                                  "lastUpdatedAt_UTC": last_update_at,
                                  "mem_bytes": mem_bytes, 
                                  "mem_bytes_total": mem_bytes_total, 
-                                 "cpu_pert_usage": cpu_pert_usage
+                                 "cpu_pert_usage": cpu_pert_usage,
+                                 "os": os
                                 })
     
     # List of Application on Ix CHhssis
@@ -85,6 +89,8 @@ def get_chassis_cards_information(session, ip, type_of_chassis):
     last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
     # Cards on Chassis
     sorted_cards = sorted(card_list, key=lambda d: d['cardNumber'])
+    
+    
     for sc  in sorted_cards:
         final_card_details_list.append({"chassisIp": ip, 
                                         "chassisType": type_of_chassis,
@@ -168,7 +174,8 @@ def get_license_host_id(session):
 def start_chassis_rest_data_fetch(chassis, username, password, operation=None):
     final_table_dict = {}
     session = IxRestSession(chassis, username= username, password=password, verbose=False)
-    cin = get_chassis_information(session)
+    host_id = get_license_host_id(session)
+    cin = get_chassis_information(session, host_id)
     type_chassis = cin["chassisType"]
     
     if operation == "chassisSummary":
@@ -176,7 +183,6 @@ def start_chassis_rest_data_fetch(chassis, username, password, operation=None):
     elif operation == "cardDetails":
         final_table_dict = get_chassis_cards_information(session, chassis, type_chassis)
     elif operation == "licenseDetails":
-        host_id = get_license_host_id(session)
         final_table_dict = get_license_activation(session, chassis, type_chassis, host_id)
     elif operation == "portDetails":
         final_table_dict = get_chassis_ports_information(session, chassis, type_chassis)

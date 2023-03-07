@@ -59,7 +59,7 @@ def goDirectToHome():
 def chassisDetails(refreshState):
     headers = ["IP","type","chassisSN","controllerSN", "# PhysicalCards", 
                "IxOS", "IxNetwork Protocols", "IxOS REST",
-               "MemoryUsed", "TotalMemory", "%CPU Utilization"]
+               "MemoryUsed", "TotalMemory", "%CPU Utilization", "Tags"]
 
     try:
         from config import CHASSIS_LIST
@@ -75,6 +75,7 @@ def chassisDetails(refreshState):
         if CHASSIS_LIST:  
             for chassis in CHASSIS_LIST:
                 out = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="chassisSummary")
+                print(out)
                 list_of_chassis.append(out)
             
             write_data_to_database(table_name="chassis_summary_records", records=list_of_chassis, ip_tags_dict=ip_tags_dict)
@@ -95,7 +96,8 @@ def chassisDetails(refreshState):
                  "tags": record["tags"].split(","),
                  "mem_bytes": record["mem_bytes"], 
                  "mem_bytes_total": record["mem_bytes_total"],
-                 "cpu_pert_usage": record["cpu_pert_usage"]}
+                 "cpu_pert_usage": record["cpu_pert_usage"],
+                 "os": record["os"]}
             list_of_chassis.append(a)
     if refreshState == "initData":
         return "records written"

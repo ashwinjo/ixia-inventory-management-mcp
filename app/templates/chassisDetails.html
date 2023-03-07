@@ -19,13 +19,12 @@
     <div>
       <h5> Last Updated at (UTC): {{rows[0]["lastUpdatedAt_UTC"]}} </h5>
   </div>
-    <table class="table table-striped table-bordered table-responsive table-condensed">
+    <table class="table table-striped table-bordered table-responsive table-condensed ">
     <thead class="table-primary">
         <tr>
         {% for h in headers %}
           <th bgcolor="green">{{ h }} </th>
         {% endfor %}
-        <th> Tags </th>
         <th></th>
         </tr>
       </thead>
@@ -38,10 +37,10 @@
                       {% set className = "table-danger"%}
                   {% endif %} 
 
-                  <td class={{className}}>{{entry["chassisIp"]}}</td>
+                  <td class={{className}}>{{entry["chassisIp"]}}&nbsp;&nbsp;({{entry["os"]}})</td>
+                  <td>{{entry["chassisType"]}}</td>
                   <td>{{entry["chassisSerial#"]}}</td>
                   <td>{{entry["controllerSerial#"]}}</td>
-                  <td>{{entry["chassisType"]}}</td>
                   <td>{{entry["physicalCards#"]}}</td>
                   <td>{{entry["IxOS"]}}</td>
                   <td>{{entry["IxNetwork Protocols"]}}</td>

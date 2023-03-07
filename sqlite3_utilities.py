@@ -27,12 +27,14 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
             record.update({"tags": tags })
             
             cur.execute(f"""INSERT INTO {table_name} (ip, chassisSN, controllerSN, type_of_chassis, 
-                        physicalCards, status_status, ixOS, ixNetwork_Protocols, ixOS_REST, tags, lastUpdatedAt_UTC, mem_bytes, mem_bytes_total, cpu_pert_usage) VALUES 
+                        physicalCards, status_status, ixOS, ixNetwork_Protocols, ixOS_REST, tags, lastUpdatedAt_UTC, 
+                        mem_bytes, mem_bytes_total, cpu_pert_usage, os) VALUES 
                         ('{record["chassisIp"]}', '{record['chassisSerial#']}',
                         '{record['controllerSerial#']}','{record['chassisType']}','{record['physicalCards#']}',
                         '{record['chassisStatus']}',
                         '{record['IxOS']}','{record['IxNetwork Protocols']}','{record['IxOS REST']}','{record['tags']}', 
-                        datetime('now'), '{record['mem_bytes']}','{record['mem_bytes_total']}','{record['cpu_pert_usage']}')""")
+                        datetime('now'), '{record['mem_bytes']}','{record['mem_bytes_total']}','{record['cpu_pert_usage']}',
+                        '{record['os']}')""")
             
             cur.execute(f"UPDATE user_ip_tags SET tags = '{tags}' where ip = '{record['chassisIp']}'")
         
@@ -57,7 +59,8 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                 else:
                     tags = ""    
                 rcd.update({"tags": tags })
-                cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,cardNumber,serialNumber,cardType,numberOfPorts,tags,lastUpdatedAt_UTC) VALUES 
+                cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,cardNumber,serialNumber,cardType,numberOfPorts,tags,
+                            lastUpdatedAt_UTC) VALUES 
                             ('{rcd["chassisIp"]}', '{rcd["chassisType"]}', '{rcd["cardNumber"]}','{rcd["serialNumber"]}',
                             '{rcd["cardType"]}','{rcd["numberOfPorts"]}', '{rcd['tags']}', datetime('now'))""")
                 

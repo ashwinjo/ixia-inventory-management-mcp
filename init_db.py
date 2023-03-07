@@ -59,7 +59,8 @@ def main():
                                 lastUpdatedAt_UTC TEXT,
                                 mem_bytes TEXT, 
                                 mem_bytes_total TEXT, 
-                                cpu_pert_usage TEXT
+                                cpu_pert_usage TEXT,
+                                os TEXT
                                 );"""
                                 
                                 
