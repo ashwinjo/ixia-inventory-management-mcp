@@ -115,8 +115,6 @@ def main():
     # create tables
     if conn is not None:
         # create projects table
-        create_table(conn, drop_ip_tags_sql)
-        create_table(conn, drop_card_tags_sql)
         create_table(conn, drop_chassis_summary_sql)
         create_table(conn, drop_license_details_sql)
         create_table(conn, drop_card_details_sql)
