@@ -27,11 +27,12 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
             record.update({"tags": tags })
             
             cur.execute(f"""INSERT INTO {table_name} (ip, chassisSN, controllerSN, type_of_chassis, 
-                        physicalCards, status_status, ixOS, ixNetwork_Protocols, ixOS_REST, tags, lastUpdatedAt_UTC) VALUES 
+                        physicalCards, status_status, ixOS, ixNetwork_Protocols, ixOS_REST, tags, lastUpdatedAt_UTC, mem_bytes, mem_bytes_total, cpu_pert_usage) VALUES 
                         ('{record["chassisIp"]}', '{record['chassisSerial#']}',
                         '{record['controllerSerial#']}','{record['chassisType']}','{record['physicalCards#']}',
                         '{record['chassisStatus']}',
-                        '{record['IxOS']}','{record['IxNetwork Protocols']}','{record['IxOS REST']}','{record['tags']}', datetime('now'))""")
+                        '{record['IxOS']}','{record['IxNetwork Protocols']}','{record['IxOS REST']}','{record['tags']}', 
+                        datetime('now'), '{record['mem_bytes']}','{record['mem_bytes_total']}','{record['cpu_pert_usage']}')""")
             
             cur.execute(f"UPDATE user_ip_tags SET tags = '{tags}' where ip = '{record['chassisIp']}'")
         

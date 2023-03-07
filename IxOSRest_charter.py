@@ -16,8 +16,19 @@ It collects the below info from the chassis:
 """
 
 import json
+import math
 from  RestApi.IxOSRestInterface import IxRestSession
 from datetime import datetime, timezone
+
+
+def convert_size(size_bytes):
+   if size_bytes == 0:
+       return "0B"
+   size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+   i = int(math.floor(math.log(size_bytes, 1024)))
+   p = math.pow(1024, i)
+   s = round(size_bytes / p, 2)
+   return "%s %s" % (s, size_name[i])
 
     
 def get_chassis_information(session):
@@ -29,6 +40,9 @@ def get_chassis_information(session):
     chassisInfo = session.get_chassis()
     try:
         perf = session.get_perfcounters().data[0]
+        mem_bytes = convert_size(perf["memoryInUseBytes"])
+        mem_bytes_total = convert_size(perf["memoryTotalBytes"])
+        cpu_pert_usage = perf["cpuUsagePercent"]
     except Exception:
         pass
     
@@ -44,7 +58,10 @@ def get_chassis_information(session):
                                  "chassisType": d["type"].replace(" ", "_"),
                                  "physicalCards#": str(d.get("numberOfPhysicalCards", "NA")),
                                  "chassisStatus": chassis_state,
-                                 "lastUpdatedAt_UTC": last_update_at
+                                 "lastUpdatedAt_UTC": last_update_at,
+                                 "mem_bytes": mem_bytes, 
+                                 "mem_bytes_total": mem_bytes_total, 
+                                 "cpu_pert_usage": cpu_pert_usage
                                 })
     
     # List of Application on Ix CHhssis
@@ -75,7 +92,8 @@ def get_chassis_cards_information(session, ip, type_of_chassis):
                                         "serialNumber": sc.get("serialNumber"),
                                         "cardType": sc.get("type"), 
                                         "numberOfPorts":sc.get("numberOfPorts", "No data"),
-                                        "lastUpdatedAt_UTC": last_update_at})
+                                        "lastUpdatedAt_UTC": last_update_at
+                                        })
     return final_card_details_list
     
 def get_chassis_ports_information(session, chassisIp, chassisType):

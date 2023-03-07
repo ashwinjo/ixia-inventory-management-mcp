@@ -56,7 +56,10 @@ def main():
                                 ixNetwork_Protocols TEXT,
                                 ixOS_REST TEXT,
                                 tags TEXT,  
-                                'lastUpdatedAt_UTC' TEXT
+                                lastUpdatedAt_UTC TEXT,
+                                mem_bytes TEXT, 
+                                mem_bytes_total TEXT, 
+                                cpu_pert_usage TEXT
                                 );"""
                                 
                                 

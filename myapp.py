@@ -57,7 +57,10 @@ def goDirectToHome():
 @app.get("/chassisDetails", defaults={'refreshState': "freshPoll"})
 @app.get("/chassisDetails/<refreshState>")
 def chassisDetails(refreshState):
-    headers = ["IP","type","chassisSN","controllerSN", "# PhysicalCards", "Status", "IxOS", "IxNetwork Protocols", "IxOS REST"]
+    headers = ["IP","type","chassisSN","controllerSN", "# PhysicalCards", 
+               "IxOS", "IxNetwork Protocols", "IxOS REST",
+               "MemoryUsed", "TotalMemory", "%CPU Utilization"]
+
     try:
         from config import CHASSIS_LIST
     except Exception:
@@ -89,7 +92,10 @@ def chassisDetails(refreshState):
                  "IxOS": record["ixOS"],
                  "IxNetwork Protocols": record["ixNetwork_Protocols"],
                  "IxOS REST": record["ixOS_REST"], 
-                 "tags": record["tags"].split(",")}
+                 "tags": record["tags"].split(","),
+                 "mem_bytes": record["mem_bytes"], 
+                 "mem_bytes_total": record["mem_bytes_total"],
+                 "cpu_pert_usage": record["cpu_pert_usage"]}
             list_of_chassis.append(a)
     if refreshState == "initData":
         return "records written"

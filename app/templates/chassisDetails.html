@@ -32,17 +32,19 @@
       <tbody>
         {% for entry in rows %}
           <tr> 
-                  <td>{{entry["chassisIp"]}}</td>
+                  {% if entry["chassisStatus"] == "UP" %}
+                    <td class="table-success">{{entry["chassisIp"]}}</td>
+                  {% endif %} 
                   <td>{{entry["chassisSerial#"]}}</td>
                   <td>{{entry["controllerSerial#"]}}</td>
                   <td>{{entry["chassisType"]}}</td>
                   <td>{{entry["physicalCards#"]}}</td>
-                  {% if entry["chassisStatus"] == "UP" %}
-                    <td class="table-success">{{entry["chassisStatus"]}}</td>
-                  {% endif %} 
                   <td>{{entry["IxOS"]}}</td>
                   <td>{{entry["IxNetwork Protocols"]}}</td>
                   <td>{{entry["IxOS REST"]}}</td>
+                  <td>{{entry["mem_bytes"]}}</td>
+                  <td>{{entry["mem_bytes_total"]}}</td>
+                  <td>{{entry["cpu_pert_usage"]}}</td>
             <td>
                 {% for tag in ip_tags_dict[entry["chassisIp"]] %}
                     {% if tag|length > 0 %}
