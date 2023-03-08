@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Portfolio Section-->
+<section class="page-section">
+  <div class="text-center alert alert-success" role="alert">
+    <h4> Chassis Sensor Details  </h4>
+  </div>
+    <div>
+      <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('0')">
+        Download CSV
+      </button>
+      <form id="tabForms3" action = "/licenseDetails" method = "GET">
+        <input class="btn btn-success"  type = "submit" value="Get Latest Data" />
+      </form>
+    <div>
+    <br/>
+    <table class="table table-striped table-bordered table-responsive table-condensed">
+      <thead class="table-primary">
+        <tr>
+        {% for h in headers %}
+          <th>{{ h }} </th>
+        {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+            {% for entry in row %}
+                    <td>{{entry["chassisIp"]}}</td>
+                    <td>{{entry["chassisType"]}}</td>
+                    <td>{{entry["type"]}}</td>
+                    <td>{{entry["name"]}}</td>
+                    <td>{{entry["value"]}} {{entry["unit"]}}</td>
+            </tr>
+          {% endfor %}
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          {% for h in headers %}
+          <th>{{ h }} </th>
+          {% endfor %}
+        </tr>
+    </tfoot>
+    </table>
+</section>
+{% endblock %}

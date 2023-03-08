@@ -171,6 +171,9 @@ class IxRestSession(object):
 
     def get_chassis(self, params=None):
         return self.http_request('GET', self.get_ixos_uri() + '/chassis', params=params)
+    
+    def get_sensors(self, params=None):
+        return self.http_request('GET', self.get_ixos_uri() + '/sensors', params=params)
 
     def get_cards(self, params=None):
         return self.http_request('GET', self.get_ixos_uri() + '/cards', params=params)

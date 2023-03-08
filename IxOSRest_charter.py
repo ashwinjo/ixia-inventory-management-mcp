@@ -21,6 +21,11 @@ from  RestApi.IxOSRestInterface import IxRestSession
 from datetime import datetime, timezone
 
 
+
+def get_sensors_information(session):
+    out = session.get_sensors()
+    print(out)
+
 def convert_size(size_bytes):
    if size_bytes == 0:
        return "0B"
@@ -37,7 +42,12 @@ def get_chassis_information(session, host_id):
     temp_dict = {}
     no_serial_string = ""
     chassis_filter_dict = {}
+    mem_bytes = "NA"
+    mem_bytes_total = "NA"
+    cpu_pert_usage =  "NA"
+    
     chassisInfo = session.get_chassis()
+    
     try:
         perf = session.get_perfcounters().data[0]
         mem_bytes = convert_size(perf["memoryInUseBytes"])
@@ -171,6 +181,16 @@ def get_license_activation(session, ip, type_chassis, host_id):
 def get_license_host_id(session):
     return session.get_license_server_host_id()
 
+def get_sensor_information(session, chassis, type_chassis):
+    td = session.get_sensors().json()
+    keys_to_remove = ["criticalValue", "maxValue", 'parentId', 'id','adapterName','minValue','sensorSetName', 'cpuName']
+    for record in td:
+        for item in keys_to_remove:
+            record.pop(item)
+        record.update({"chassisIp":chassis, "chassisType": type_chassis})
+        
+    return td
+
 def start_chassis_rest_data_fetch(chassis, username, password, operation=None):
     final_table_dict = {}
     session = IxRestSession(chassis, username= username, password=password, verbose=False)
@@ -186,4 +206,6 @@ def start_chassis_rest_data_fetch(chassis, username, password, operation=None):
         final_table_dict = get_license_activation(session, chassis, type_chassis, host_id)
     elif operation == "portDetails":
         final_table_dict = get_chassis_ports_information(session, chassis, type_chassis)
+    elif operation == "sensorDetails":
+        final_table_dict = get_sensor_information(session, chassis, type_chassis)
     return final_table_dict

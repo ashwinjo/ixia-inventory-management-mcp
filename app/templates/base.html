@@ -50,6 +50,9 @@
                         <input class="btn btn-warning"  type = "submit" value="Chassis Licenses" />
                     </form>
                     
+                    <form action="/sensorInformation" method = "GET">
+                        <input class="btn btn btn-light"  type = "submit" value="Chassis Sensors" />
+                    </form>
                     
                     <form id="uploadAndPopulate" action = "/upload_file_after_first_load" method = "GET">
                     <input class="btn btn-info"  type = "submit" value="Add / Update Ixia Servers" />
@@ -252,7 +255,7 @@
         <script>
             $(document).ready(function() {
                 $(".page-section").prepend("<div id='PleaseWait' style='justify-content: center; display: none;'><img src='https://media.tenor.com/YPOStjIfQ2IAAAAM/loading-waiting.gif'/></div>");
-                $(".page-section").prepend("<div id='LongWait' style='justify-content: center; display: none;'><img src='https://media.tenor.com/XasjKGMk_wAAAAAM/load-loading.gif'/></div>");
+                $(".page-section").prepend("<div id='LongWait' style='justify-content: center; display: none;'><img src='http://media.tenor.com/XasjKGMk_wAAAAAM/load-loading.gif'/></div>");
             });
 
             

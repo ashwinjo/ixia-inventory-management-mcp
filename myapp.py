@@ -218,6 +218,23 @@ def get_chassis_ports_information(refreshState):
     return render_template("chassisPortDetails.html", headers=headers, rows = port_list_details)
 
 
+@app.get("/sensorInformation")
+def sensorInformation():
+
+    headers = ["chassisIP", "chassisType", "sensorType", "sensorName", "sensorValue"]
+    sensor_list_details = []
+    try:
+        from config import CHASSIS_LIST
+    except Exception:
+        CHASSIS_LIST = []
+    
+    for chassis in CHASSIS_LIST:
+            out = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="sensorDetails")
+            sensor_list_details.append(out)
+    return render_template("chassisSensorsDetails.html", headers=headers, rows = sensor_list_details)
+
+
+
 @app.post("/addTags")
 def addTags():
     input_json = request.get_json(force=True) 
