@@ -75,7 +75,6 @@ def chassisDetails(refreshState):
         if CHASSIS_LIST:  
             for chassis in CHASSIS_LIST:
                 out = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="chassisSummary")
-                print(out)
                 list_of_chassis.append(out)
             
             write_data_to_database(table_name="chassis_summary_records", records=list_of_chassis, ip_tags_dict=ip_tags_dict)

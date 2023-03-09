@@ -24,7 +24,6 @@ from datetime import datetime, timezone
 
 def get_sensors_information(session):
     out = session.get_sensors()
-    print(out)
 
 def convert_size(size_bytes):
    if size_bytes == 0:

@@ -121,7 +121,6 @@ def writeTags(ip, tags, type_of_update=None, operation=None):
         cur.execute(f"UPDATE {table} SET tags = '{updated_tags}' where {field} = '{ip}'")
         cur.execute(f"UPDATE chassis_summary_records SET tags = '{updated_tags}' where ip = '{ip}'")
     else: # New Record
-        print(f"INSERT INTO {table} ({field}, tags) VALUES ('{ip}', '{tags}')")
         cur.execute(f"INSERT INTO {table} ({field}, tags) VALUES ('{ip}', '{tags}')")
         
         
@@ -131,7 +130,6 @@ def writeTags(ip, tags, type_of_update=None, operation=None):
     return "Records successfully updated"
         
 def getTagsFromCurrentDatabase(type_of_update=None):
-    print(type_of_update)
     ip_tags_dict = {}
     if type_of_update == "chassis":
         table = "user_ip_tags"
@@ -145,7 +143,6 @@ def getTagsFromCurrentDatabase(type_of_update=None):
     cur = conn.cursor()
 
     query = f"SELECT * FROM {table};"
-    print(query)
     posts = cur.execute(query).fetchall()
     cur.close()
     conn.close()
