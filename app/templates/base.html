@@ -186,7 +186,7 @@
           </script>
 
           <script type="text/javascript">
-            function tableToCSV(rows_to_omit) {
+            function tableToCSV(table_name, rows_to_omit) {
      
                 // Variable to store the final csv data
                 var csv_data = [];
@@ -215,11 +215,11 @@
                 csv_data = csv_data.join('\n');
      
                 // Call this function to download csv file 
-                downloadCSVFile(csv_data);
+                downloadCSVFile(table_name, csv_data);
      
             }
      
-            function downloadCSVFile(csv_data) {
+            function downloadCSVFile(table_name, csv_data) {
      
                 // Create CSV file object and feed
                 // our csv_data into it
@@ -232,7 +232,7 @@
                 var temp_link = document.createElement('a');
      
                 // Download csv file
-                temp_link.download = "GfG.csv";
+                temp_link.download = table_name+".csv";
                 var url = window.URL.createObjectURL(CSVFile);
                 temp_link.href = url;
      
