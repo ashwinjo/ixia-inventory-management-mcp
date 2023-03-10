@@ -41,6 +41,8 @@ def create_table(conn, create_table_sql):
     try:
         c = conn.cursor()
         c.execute(create_table_sql)
+        c.close()
+        conn.close()
     except Error as e:
         print(e)
 
@@ -52,14 +54,16 @@ def create_data_tables():
 
     # create tables
     if conn is not None:
+        
+        create_table(conn, db_queries.create_usenname_password_table)
+        
         # create_table(conn, db_queries.create_chassis_summary_sql)
         # create_table(conn, db_queries.create_card_details_records_sql)
         # create_table(conn, db_queries.create_port_details_records_sql)
         # create_table(conn, db_queries.create_license_details_records_sql)
         
-        create_table(conn, db_queries.create_ip_tags_sql)
-        create_table(conn, db_queries.create_card_tags_sql)
-        create_table(conn, db_queries.create_perf_metrics_sql)
-
+        # create_table(conn, db_queries.create_ip_tags_sql)
+        # create_table(conn, db_queries.create_card_tags_sql)
+        # create_table(conn, db_queries.create_perf_metrics_sql)
 
 create_data_tables()

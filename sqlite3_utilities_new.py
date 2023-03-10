@@ -1,9 +1,17 @@
 import sqlite3
+import json
 
 def _get_db_connection():
     conn = sqlite3.connect('inventory.db')
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def write_performace_metrics():
+    conn = _get_db_connection()
+    cur = conn.cursor()
+
+
 
 def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
     tags = ""
@@ -152,5 +160,42 @@ def getChassistypeFromIp(chassisIp):
     
     query = f"SELECT type_of_chassis FROM chassis_summary_details where ip = '{chassisIp}';"
     posts = cur.execute(query).fetchone()
+    cur.close()
+    conn.close()
     return  posts['type_of_chassis']
     
+
+def write_username_password_to_database():
+    conn = _get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE from user_db")
+    user_pw_dict = [{
+    "ip": "10.36.236.121",
+    "username": "admin",
+    "password": "Kimchi123Kimchi123!",
+},
+{
+    "ip": "10.36.196.46",
+    "username": "admin",
+    "password": "Ixia!123_richardson",
+}]
+    json_str_data = json.dumps(user_pw_dict)
+    item = user_pw_dict[0]:
+    q = f"""INSERT INTO user_db (ip, username, password, api_key) VALUES  
+    ('{item.get("ip")}','{item.get("username")}','{item.get("password")}','{item.get("api_key", json_str_data)}')"""
+    cur.execute(q)
+    cur.close()
+    conn.commit()
+    conn.close()
+
+def read_username_password_from_database():
+    conn = _get_db_connection()
+    cur = conn.cursor()
+    query = f"SELECT api_key FROM user_db;"
+    posts = cur.execute(query).fetchone()
+    cur.close()
+    conn.close()
+    return  posts['api_key']
+
+
+write_username_password_to_database()

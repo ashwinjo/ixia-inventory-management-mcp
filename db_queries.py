@@ -94,3 +94,10 @@ create_perf_metrics_sql = """CREATE TABLE IF NOT EXISTS perf_metrics (
                                 mem_bytes_total TEXT ,
                                 cpu_pert_usage TEXT
                                 );"""
+                                
+create_usenname_password_table = """CREATE TABLE IF NOT EXISTS user_db (
+                                ip VARCHAR(255) NOT NULL,
+                                username TEXT ,
+                                password TEXT ,
+                                api_key TEXT
+                                );"""

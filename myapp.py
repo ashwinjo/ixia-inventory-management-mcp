@@ -1,8 +1,9 @@
 from flask import render_template, request, jsonify, redirect
 from app import create_app
 from  RestApi.IxOSRestInterface import IxRestSession
-from sqlite3_utilities_new import read_data_from_database, getTagsFromCurrentDatabase, writeTags
+from sqlite3_utilities_new import read_data_from_database, getTagsFromCurrentDatabase, writeTags, read_username_password_from_database
 from data_poller import controller
+import json
 
 
 app = create_app()
@@ -10,7 +11,7 @@ app = create_app()
 
 @app.post("/getLogs")
 def getlogs():
-    from config import CHASSIS_LIST
+    CHASSIS_LIST = json.loads(read_username_password_from_database())
     input_json = request.get_json(force=True) 
     chassis_ip = input_json['ip']
     for chassis_item in CHASSIS_LIST:
@@ -163,7 +164,7 @@ def removeTags():
 
 @app.get("/pollLatestData/<category>")
 def pollLatestChassisData(category):
-    controller(type_of_poll="onDemand", category_of_poll=category)
+    controller(category_of_poll=category)
     return redirect(categoryToFuntionMap[category]) 
 
 categoryToFuntionMap = {"chassis": "/chassisDetails",
