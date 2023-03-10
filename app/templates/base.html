@@ -34,24 +34,20 @@
                 </a>
             </div>
                 <div class="container form-group">
-                    <form action = "/chassisDetails/fromDBPoll" method = "GET">
+                    <form action = "/chassisDetails" method = "GET">
                         <input class="btn btn-success"  type = "submit" value="Chassis Summary" />
                     </form>
                     
-                    <form action="/cardDetails/fromDBPoll" method = "GET">
+                    <form action="/cardDetails" method = "GET">
                         <input class="btn btn-danger"  type = "submit" value="Chassis Cards" />
                     </form>
                     
-                    <form action = "/portDetails/fromDBPoll" method = "GET">
+                    <form action = "/portDetails" method = "GET">
                         <input class="btn btn-primary"  type = "submit" value="Chassis Ports" />
                     </form>
 
-                    <form action="/licenseDetails/fromDBPoll" method = "GET">
+                    <form action="/licenseDetails" method = "GET">
                         <input class="btn btn-warning"  type = "submit" value="Chassis Licenses" />
-                    </form>
-                    
-                    <form action="/sensorInformation" method = "GET">
-                        <input class="btn btn btn-light"  type = "submit" value="Chassis Sensors" />
                     </form>
                     
                     <form id="uploadAndPopulate" action = "/upload_file_after_first_load" method = "GET">
@@ -104,7 +100,7 @@
                   })
                   .then((response) => {
                       console.log(response)
-                      window.location.replace("/chassisDetails/fromDBPoll");
+                      window.location.replace("/chassisDetails");
                   }); 
             }
 
@@ -116,7 +112,7 @@
                   })
                   .then((response) => {
                       console.log(response)
-                      window.location.replace("/chassisDetails/fromDBPoll");
+                      window.location.replace("/chassisDetails");
                   }); 
             }
 
@@ -128,7 +124,7 @@
                   })
                   .then((response) => {
                       console.log(response)
-                      window.location.replace("/cardDetails/fromDBPoll");
+                      window.location.replace("/cardDetails");
                   }); 
             }
 
@@ -140,7 +136,7 @@
                   })
                   .then((response) => {
                       console.log(response)
-                      window.location.replace("/cardDetails/fromDBPoll");
+                      window.location.replace("/cardDetails");
                   }); 
             }
         </script>

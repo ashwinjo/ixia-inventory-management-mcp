@@ -1,8 +1,7 @@
 import sqlite3
 
-
 def _get_db_connection():
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect('inventory.db')
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -11,10 +10,12 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
     conn = _get_db_connection()
     cur = conn.cursor()
     
-    #Drop previous table and refresh data
+    # Clear of old records from database
     cur.execute(f"DELETE FROM {table_name}")
+    
+    
     for record in records:
-        if table_name == "chassis_summary_records":
+        if table_name == "chassis_summary_details":
             if ip_tags_dict:
                 tags = ip_tags_dict.get(record["chassisIp"]) #This is a list
                 if tags:
@@ -35,8 +36,6 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                         '{record['IxOS']}','{record['IxNetwork Protocols']}','{record['IxOS REST']}','{record['tags']}', 
                         datetime('now'), '{record['mem_bytes']}','{record['mem_bytes_total']}','{record['cpu_pert_usage']}',
                         '{record['os']}')""")
-            
-            cur.execute(f"UPDATE user_ip_tags SET tags = '{tags}' where ip = '{record['chassisIp']}'")
         
         if table_name == "license_details_records":
             for rcd in record:
@@ -47,7 +46,7 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                             '{rcd["activationCode"]}','{str(rcd["quantity"])}','{rcd["description"]}',
                             '{rcd["maintenanceDate"]}','{rcd["expiryDate"]}','{str(rcd["isExpired"])}', datetime('now'))""")
                 
-        if table_name == "cards_details_records":
+        if table_name == "chassis_card_details":
             for rcd in record:
                 
                 if ip_tags_dict:
@@ -63,10 +62,8 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                             lastUpdatedAt_UTC) VALUES 
                             ('{rcd["chassisIp"]}', '{rcd["chassisType"]}', '{rcd["cardNumber"]}','{rcd["serialNumber"]}',
                             '{rcd["cardType"]}','{rcd["numberOfPorts"]}', '{rcd['tags']}', datetime('now'))""")
-                
-                cur.execute(f"UPDATE user_ip_tags SET tags = '{tags}' where ip = '{rcd['serialNumber']}'")
             
-        if table_name == "port_details_records":
+        if table_name == "chassis_port_details":
             for rcd in record:
                 cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,cardNumber,portNumber,phyMode,transceiverModel,
                             transceiverManufacturer,owner,totalPorts,ownedPorts,freePorts, lastUpdatedAt_UTC) VALUES 
@@ -77,9 +74,7 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
     cur.close()
     conn.commit()
     conn.close()
-    return "records written to "+table_name
     
-
 
 def read_data_from_database(table_name=None):
     conn = _get_db_connection()
@@ -119,7 +114,7 @@ def writeTags(ip, tags, type_of_update=None, operation=None):
             updated_tags = ",".join(currenttags)
             
         cur.execute(f"UPDATE {table} SET tags = '{updated_tags}' where {field} = '{ip}'")
-        cur.execute(f"UPDATE chassis_summary_records SET tags = '{updated_tags}' where ip = '{ip}'")
+        cur.execute(f"UPDATE chassis_summary_details SET tags = '{updated_tags}' where ip = '{ip}'")
     else: # New Record
         cur.execute(f"INSERT INTO {table} ({field}, tags) VALUES ('{ip}', '{tags}')")
         
@@ -149,3 +144,13 @@ def getTagsFromCurrentDatabase(type_of_update=None):
     for post in posts:
         ip_tags_dict.update({post[field]: post["tags"].split(",")})
     return ip_tags_dict
+
+
+def getChassistypeFromIp(chassisIp):
+    conn = _get_db_connection()
+    cur = conn.cursor()
+    
+    query = f"SELECT type_of_chassis FROM chassis_summary_details where ip = '{chassisIp}';"
+    posts = cur.execute(query).fetchone()
+    return  posts['type_of_chassis']
+    
