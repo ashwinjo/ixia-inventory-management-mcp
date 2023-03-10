@@ -21,7 +21,6 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
     # Clear of old records from database
     cur.execute(f"DELETE FROM {table_name}")
     
-    
     for record in records:
         if table_name == "chassis_summary_details":
             if ip_tags_dict:
@@ -165,28 +164,22 @@ def getChassistypeFromIp(chassisIp):
     return  posts['type_of_chassis']
     
 
-def write_username_password_to_database():
+def write_username_password_to_database(list_of_un_pw):
     conn = _get_db_connection()
     cur = conn.cursor()
+    user_pw_dict = []
     cur.execute("DELETE from user_db")
-    user_pw_dict = [{
-    "ip": "10.36.236.121",
-    "username": "admin",
-    "password": "Kimchi123Kimchi123!",
-},
-{
-    "ip": "10.36.196.46",
-    "username": "admin",
-    "password": "Ixia!123_richardson",
-}]
-    json_str_data = json.dumps(user_pw_dict)
-    item = user_pw_dict[0]:
-    q = f"""INSERT INTO user_db (ip, username, password, api_key) VALUES  
-    ('{item.get("ip")}','{item.get("username")}','{item.get("password")}','{item.get("api_key", json_str_data)}')"""
-    cur.execute(q)
-    cur.close()
-    conn.commit()
-    conn.close()
+    user_pw_dict = creat_config_dict(list_of_un_pw)
+    print(user_pw_dict)
+    if user_pw_dict:
+        json_str_data = json.dumps(user_pw_dict)
+        for item in user_pw_dict:
+            q = f"""INSERT INTO user_db (ip, username, password, api_key) VALUES  
+            ('{item.get("ip")}','{item.get("username")}','{item.get("password")}','{item.get("api_key", json_str_data)}')"""
+            cur.execute(q)
+        cur.close()
+        conn.commit()
+        conn.close()
 
 def read_username_password_from_database():
     conn = _get_db_connection()
@@ -195,7 +188,18 @@ def read_username_password_from_database():
     posts = cur.execute(query).fetchone()
     cur.close()
     conn.close()
-    return  posts['api_key']
+    if posts:
+        return  posts['api_key']
+    return []
 
 
-write_username_password_to_database()
+def creat_config_dict(list_of_un_pw):
+    user_pw_dict = []
+    print(list_of_un_pw)
+    for entry in list_of_un_pw.split("\n"):
+        user_pw_dict.append({
+        "ip": entry.split(",")[0].strip(),
+        "username": entry.split(",")[1].strip(),
+        "password": entry.split(",")[2].strip(),
+        })
+    return user_pw_dict

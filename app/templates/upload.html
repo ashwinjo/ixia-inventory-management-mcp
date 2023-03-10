@@ -9,13 +9,16 @@
     <body>
     <div>
         <div class="text-center alert alert-danger" role="alert">
-            <h4> You need to upload config.py configuration file to add/update/remove Ixia Servers for monitoring. <h2></h4>
+            <h4> You need enter csv format (chassisIP,username,password) to add/update/remove Ixia Servers for monitoring. <h2></h4>
         </div>
     </div<
     <div class="container form-group mb-3">
-      <form id="uploader" action = "/uploader" method = "POST"  enctype = "multipart/form-data">
-         <input class="form-control form-control-lg" type = "file" name = "file" /><br/>
-         <input  class="btn btn-primary mb-3"  type = "submit" value="Get all data and Proceed"/>
+      <form id="uploader" action = "/uploader", method="post">
+        <label for="text-area">Enter your configuration in format (<i>chassisIp,username,password</i>)</label>
+        <br>
+            <textarea id="text-area" placeholder="10.36.235.164,admin,admin" name="text" rows="10" cols="500" style="max-width:100%;"></textarea>
+        <br>
+         <input class="btn btn-primary mb-3"  type = "submit" value="Get all data and Proceed"/>
       </form>
     </div>  
     <div>

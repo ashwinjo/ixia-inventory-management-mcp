@@ -57,13 +57,13 @@ def create_data_tables():
         
         create_table(conn, db_queries.create_usenname_password_table)
         
-        # create_table(conn, db_queries.create_chassis_summary_sql)
-        # create_table(conn, db_queries.create_card_details_records_sql)
-        # create_table(conn, db_queries.create_port_details_records_sql)
-        # create_table(conn, db_queries.create_license_details_records_sql)
+        create_table(conn, db_queries.create_chassis_summary_sql)
+        create_table(conn, db_queries.create_card_details_records_sql)
+        create_table(conn, db_queries.create_port_details_records_sql)
+        create_table(conn, db_queries.create_license_details_records_sql)
         
-        # create_table(conn, db_queries.create_ip_tags_sql)
-        # create_table(conn, db_queries.create_card_tags_sql)
-        # create_table(conn, db_queries.create_perf_metrics_sql)
+        create_table(conn, db_queries.create_ip_tags_sql)
+        create_table(conn, db_queries.create_card_tags_sql)
+        create_table(conn, db_queries.create_perf_metrics_sql)
 
 create_data_tables()

@@ -1,13 +1,12 @@
 from flask import render_template, request, jsonify, redirect
 from app import create_app
 from  RestApi.IxOSRestInterface import IxRestSession
-from sqlite3_utilities_new import read_data_from_database, getTagsFromCurrentDatabase, writeTags, read_username_password_from_database
+from sqlite3_utilities_new import read_data_from_database, getTagsFromCurrentDatabase, writeTags, read_username_password_from_database, write_username_password_to_database
 from data_poller import controller
 import json
 
 
 app = create_app()
-
 
 @app.post("/getLogs")
 def getlogs():
@@ -23,6 +22,17 @@ def getlogs():
     return jsonify({"resultUrl" : out, "message": "Please login to your chassis and enter this url in browser to download logs"})
 
 
+@app.get('/uploadConfig')
+def uploadConfig():
+    return render_template("upload.html")
+
+@app.post('/uploader')
+def processInput():
+    ip_pw_list = request.form['text']
+    write_username_password_to_database(ip_pw_list)
+    return redirect('/')
+    
+    
 @app.get('/')
 @app.get("/chassisDetails")
 def chassisDetails():
