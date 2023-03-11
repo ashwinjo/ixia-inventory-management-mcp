@@ -5,7 +5,7 @@ Tables:
 chassis_summary_details
 chassis_card_details
 chassis_port_details
-chassis_license_details
+license_details_records
 
 chassis_cpu_utilization
 chassis_memory_utilization
@@ -32,6 +32,21 @@ def create_connection(db_file):
     return conn
 
 
+def delete_table(conn):
+    
+    cmds = ["DROP TABLE IF EXISTS chassis_summary_details",
+            "DROP TABLE IF EXISTS chassis_card_details",
+            "DROP TABLE IF EXISTS chassis_port_details",
+            "DROP TABLE IF EXISTS chassis_sensor_details",
+            "DROP TABLE IF EXISTS license_details_records",
+            "DROP TABLE IF EXISTS user_db"]
+    try:
+        c = conn.cursor()
+        for cmd in cmds:
+            print(c.execute(cmd))
+    except Error as e:
+        print(e)
+
 def create_table(conn, create_table_sql):
     """ create a table from the create_table_sql statement
     :param conn: Connection object
@@ -41,8 +56,6 @@ def create_table(conn, create_table_sql):
     try:
         c = conn.cursor()
         c.execute(create_table_sql)
-        c.close()
-        conn.close()
     except Error as e:
         print(e)
 
@@ -55,12 +68,15 @@ def create_data_tables():
     # create tables
     if conn is not None:
         
+        delete_table(conn)
         create_table(conn, db_queries.create_usenname_password_table)
         
         create_table(conn, db_queries.create_chassis_summary_sql)
         create_table(conn, db_queries.create_card_details_records_sql)
         create_table(conn, db_queries.create_port_details_records_sql)
         create_table(conn, db_queries.create_license_details_records_sql)
+        create_table(conn, db_queries.create_sensor_details_sql)
+        
         
         create_table(conn, db_queries.create_ip_tags_sql)
         create_table(conn, db_queries.create_card_tags_sql)

@@ -11,11 +11,13 @@ COPY . .
 EXPOSE 3000
 
 # Create Barebones Databases
-CMD ["python3", "init_db.py"]
+CMD ["python3", "init_db_new.py"]
+
+# Start pollers
+CMD ["sh", "start_pollers.sh"]
 
 # Start web app
 CMD ["flask", "--app","/python-docker/myapp.py", "--debug", "run", "--host=0.0.0.0", "-p", "3000"]
 
-# Start pollers
-CMD ["sh", "start_pollers.sh"]
+
 

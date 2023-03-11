@@ -177,11 +177,10 @@ def get_license_activation(session, ip, type_chassis):
 
 
 def get_sensor_information(session, chassis, type_chassis):
-    td = session.get_sensors().json()
+    sensor_list = session.get_sensors().json()
     keys_to_remove = ["criticalValue", "maxValue", 'parentId', 'id','adapterName','minValue','sensorSetName', 'cpuName']
-    for record in td:
+    for record in sensor_list:
         for item in keys_to_remove:
             record.pop(item)
-        record.update({"chassisIp":chassis, "chassisType": type_chassis})
-        
-    return td
+        record.update({"chassisIp":chassis, "typeOfChassis": type_chassis, "lastUpdatedAt_UTC": datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")})
+    return sensor_list

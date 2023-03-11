@@ -77,11 +77,19 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                                 ('{rcd["chassisIp"]}', '{rcd["typeOfChassis"]}', '{rcd["cardNumber"]}','{rcd["portNumber"]}',
                                 '{rcd.get("phyMode","NA")}','{rcd["transceiverModel"]}', '{rcd["transceiverManufacturer"]}','{rcd["owner"]}',
                                 '{rcd["totalPorts"]}','{rcd["ownedPorts"]}', '{rcd["freePorts"]}',datetime('now'))""")
+                
+        if table_name == "chassis_sensor_details":
+            for rcd in record:
+                unit = rcd["unit"]
+                if {rcd["unit"]} ==  "CELSIUS": unit = f'{rcd["value"]} {chr(176)}C'
+                if {rcd["unit"]} ==  "AMPERSEND": unit = "AMP"
+                cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,sensorType,sensorName,sensorValue,unit,lastUpdatedAt_UTC) VALUES 
+                                ('{rcd["chassisIp"]}', '{rcd["typeOfChassis"]}', '{rcd["type"]}','{rcd["name"]}',
+                                 '{rcd["value"]}','{unit}', datetime('now'))""")
             
     cur.close()
     conn.commit()
     conn.close()
-    
 
 def read_data_from_database(table_name=None):
     conn = _get_db_connection()
@@ -161,7 +169,9 @@ def getChassistypeFromIp(chassisIp):
     posts = cur.execute(query).fetchone()
     cur.close()
     conn.close()
-    return  posts['type_of_chassis']
+    if posts:
+        return  posts['type_of_chassis']
+    return "NA"
     
 
 def write_username_password_to_database(list_of_un_pw):

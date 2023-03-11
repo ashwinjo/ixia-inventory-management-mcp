@@ -16,8 +16,12 @@
     <div>
     <br/>
     <div>
-      <h5> Last Updated at (UTC): {{rows[0][0]["lastUpdatedAt_UTC"]}}
-    </div>
+      {% if rows[0]|length > 0 %}
+      <h5> Last Updated at (UTC): {{rows[0][0]["lastUpdatedAt_UTC"]}} </h5>
+      {% else %}
+      <h5> Last Updated at (UTC): NA </h5>
+      {% endif%}
+  </div>
     <table class="table table-striped table-bordered table-responsive table-condensed">
       <thead class="table-primary">
         <tr>

@@ -127,16 +127,18 @@ def get_chassis_ports_information():
 
 @app.get("/sensorInformation")
 def sensorInformation():
-    headers = ["chassisIP", "chassisType", "sensorType", "sensorName", "sensorValue"]
+    headers = ["chassisIP", "chassisType", "sensorType", "sensorName", "sensorValue", "unit"]
     sensor_list_details = []
-    try:
-        from config import CHASSIS_LIST
-    except Exception:
-        CHASSIS_LIST = []
-    
-    for chassis in CHASSIS_LIST:
-            out = scrdf(chassis["ip"], chassis["username"], chassis["password"], operation="sensorDetails")
-            sensor_list_details.append(out)
+    records = read_data_from_database(table_name="chassis_sensor_details")
+    print(records)
+    for record in records:
+        print(records)
+        sensor_list_details.append([{"chassisIp": record["chassisIp"], 
+                "typeOfChassis": record["typeOfChassis"],
+                "sensorType": record["sensorType"],
+                "sensorName": record["sensorName"],
+                "sensorValue": record["sensorValue"],
+                "unit": record["unit"]}])
     return render_template("chassisSensorsDetails.html", headers=headers, rows = sensor_list_details)
 
 

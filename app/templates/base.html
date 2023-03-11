@@ -2,6 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
+        <meta http-equiv="refresh" content="10">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
@@ -46,11 +47,15 @@
                         <input class="btn btn-primary"  type = "submit" value="Chassis Ports" />
                     </form>
 
+                    <form action="/sensorInformation" method = "GET">
+                        <input class="btn btn btn-light"  type = "submit" value="Chassis Sensors" />
+                    </form>
+                    
                     <form action="/licenseDetails" method = "GET">
                         <input class="btn btn-warning"  type = "submit" value="Chassis Licenses" />
                     </form>
                     
-                    <form id="uploadAndPopulate" action = "/upload_file_after_first_load" method = "GET">
+                    <form id="uploadAndPopulate" action = "/uploadConfig" method = "GET">
                     <input class="btn btn-info"  type = "submit" value="Add / Update Ixia Servers" />
                     </form>
             </div> 

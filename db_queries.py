@@ -5,6 +5,7 @@ chassis_card_details
 chassis_port_details
 chassis_license_details
 
+
 chassi_utilization_details
 """
 
@@ -68,6 +69,16 @@ create_license_details_records_sql = """CREATE TABLE IF NOT EXISTS license_detai
                                             'lastUpdatedAt_UTC' TEXT
                                             );"""
                                             
+
+create_sensor_details_sql = """CREATE TABLE IF NOT EXISTS chassis_sensor_details (
+                                chassisIp VARCHAR(255) NOT NULL,
+                                typeOfChassis TEXT ,
+                                sensorType TEXT ,
+                                sensorName TEXT,
+                                sensorValue TEXT,
+                                unit TEXT,
+                                lastUpdatedAt_UTC TEXT
+                                );"""
                                             
 create_usage_metrics = """CREATE TABLE IF NOT EXISTS chassi_utilization_details (
                                             'chassisIp'VARCHAR(255) NOT NULL,
@@ -101,3 +112,4 @@ create_usenname_password_table = """CREATE TABLE IF NOT EXISTS user_db (
                                 password TEXT ,
                                 api_key TEXT
                                 );"""
+
