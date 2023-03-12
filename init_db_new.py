@@ -44,7 +44,7 @@ def delete_table(conn):
     try:
         c = conn.cursor()
         for cmd in cmds:
-            print(c.execute(cmd))
+            c.execute(cmd)
     except Error as e:
         print(e)
 
