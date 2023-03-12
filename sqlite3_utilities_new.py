@@ -19,7 +19,8 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
     cur = conn.cursor()
     
     # Clear of old records from database
-    cur.execute(f"DELETE FROM {table_name}")
+    if table_name != "chassis_utilization_details":
+        cur.execute(f"DELETE FROM {table_name}")
     
     for record in records:
         if table_name == "chassis_summary_details":
@@ -86,6 +87,11 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                 cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,sensorType,sensorName,sensorValue,unit,lastUpdatedAt_UTC) VALUES 
                                 ('{rcd["chassisIp"]}', '{rcd["typeOfChassis"]}', '{rcd["type"]}','{rcd["name"]}',
                                  '{rcd["value"]}','{unit}', datetime('now'))""")
+          
+        if table_name == "chassis_utilization_details":
+            print({record["lastUpdatedAt_UTC"]})
+            cur.execute(f"""INSERT INTO {table_name} (chassisIp,mem_utilization,cpu_utilization,lastUpdatedAt_UTC) VALUES 
+                            ('{record["chassisIp"]}', '{record["mem_utilization"]}', '{record["cpu_utilization"]}', '{record["lastUpdatedAt_UTC"]}')""")
             
     cur.close()
     conn.commit()
@@ -199,7 +205,7 @@ def read_username_password_from_database():
     cur.close()
     conn.close()
     if posts:
-        return  posts['api_key']
+        return posts['api_key']
     return []
 
 
@@ -213,3 +219,13 @@ def creat_config_dict(list_of_un_pw):
         "password": entry.split(",")[2].strip(),
         })
     return user_pw_dict
+
+def get_perf_metrics_from_db(ip):
+    conn = _get_db_connection()
+    cur = conn.cursor()
+    query = f"SELECT * FROM chassis_utilization_details where chassisIp='{ip}';"
+    posts = cur.execute(query).fetchall()
+    cur.close()
+    conn.close()
+    return  posts
+    

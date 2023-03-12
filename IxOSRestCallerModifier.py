@@ -34,6 +34,19 @@ def convert_size(size_bytes):
    s = round(size_bytes / p, 2)
    return "%s %s" % (s, size_name[i])
 
+def get_perf_metrics(session, chassisIp):
+    chassis_perf_dict = {}
+    # Exception Handling for Windows Chassis
+    perf = session.get_perfcounters().data[0]
+    mem_bytes = int(perf["memoryInUseBytes"])
+    mem_bytes_total = int(perf["memoryTotalBytes"])
+    cpu_pert_usage = perf["cpuUsagePercent"]
+    last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
+    chassis_perf_dict.update({"chassisIp": chassisIp,
+                              "mem_utilization": (mem_bytes/mem_bytes_total)*100, 
+                              "cpu_utilization": cpu_pert_usage,
+                              "lastUpdatedAt_UTC": last_update_at})
+    return chassis_perf_dict
     
 def get_chassis_information(session):
     """ Fetch chassis information from RestPy
@@ -48,7 +61,7 @@ def get_chassis_information(session):
     os = "Linux"
     
     chassisInfo = session.get_chassis()
-    
+    chassis_perf_dict = {}
     try:
         # Exception Handling for Windows Chassis
         perf = session.get_perfcounters().data[0]

@@ -80,12 +80,11 @@ create_sensor_details_sql = """CREATE TABLE IF NOT EXISTS chassis_sensor_details
                                 lastUpdatedAt_UTC TEXT
                                 );"""
                                             
-create_usage_metrics = """CREATE TABLE IF NOT EXISTS chassi_utilization_details (
-                                            'chassisIp'VARCHAR(255) NOT NULL,
-                                            'lastUpdatedAt_UTC' TEXT
-                                            'mem'_bytes TEXT, 
-                                            'mem_bytes'_total TEXT, 
-                                            'cpu_pert_usage' TEXT,
+create_usage_metrics = """CREATE TABLE IF NOT EXISTS chassis_utilization_details (
+                                            chassisIp VARCHAR(255) NOT NULL,
+                                            mem_utilization TEXT, 
+                                            cpu_utilization TEXT,
+                                            lastUpdatedAt_UTC TEXT
                                             );"""
                                             
 

@@ -1,7 +1,7 @@
 from flask import render_template, request, jsonify, redirect
 from app import create_app
 from  RestApi.IxOSRestInterface import IxRestSession
-from sqlite3_utilities_new import read_data_from_database, getTagsFromCurrentDatabase, writeTags, read_username_password_from_database, write_username_password_to_database
+from sqlite3_utilities_new import read_data_from_database, getTagsFromCurrentDatabase, writeTags, read_username_password_from_database, write_username_password_to_database, get_perf_metrics_from_db
 from data_poller import controller
 import json
 
@@ -173,6 +173,40 @@ def removeTags():
     
     return resp
     
+    
+
+@app.get('/lineChartPerfMetrics')  
+@app.get('/lineChartPerfMetrics/<ip>')
+def lineChartPerfMetrics(ip):
+    
+    serv_list = read_username_password_from_database()
+    if serv_list:
+        CHASSIS_LIST = json.loads(serv_list)
+        
+    if ip=="fresh":
+        return render_template('line_chart.html', title='Performance Metrics', 
+                            max=100, mem_values=[], 
+                            cpu_values=[], 
+                            date_timeline_value=[],
+                            chassis_list = CHASSIS_LIST)
+
+    elif ip:
+        records = get_perf_metrics_from_db(str(ip))
+        mem_values = []
+        cpu_values = []
+        date_timeline_value = []
+        chassis_list = []
+        for record in records:
+            date_timeline_value.append(record['lastUpdatedAt_UTC'])
+            mem_values.append(float(record['mem_utilization']))
+            cpu_values.append(float(record['cpu_utilization']))
+        print(date_timeline_value)
+        return render_template('line_chart.html', title='Performance Metrics', 
+                                max=100, mem_values=mem_values[:10], 
+                                cpu_values=cpu_values[:10], 
+                                date_timeline_value=date_timeline_value[:10],
+                                ip = ip,
+                                chassis_list = CHASSIS_LIST)
 
 @app.get("/pollLatestData/<category>")
 def pollLatestChassisData(category):

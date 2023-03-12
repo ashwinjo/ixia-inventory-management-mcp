@@ -39,7 +39,8 @@ def delete_table(conn):
             "DROP TABLE IF EXISTS chassis_port_details",
             "DROP TABLE IF EXISTS chassis_sensor_details",
             "DROP TABLE IF EXISTS license_details_records",
-            "DROP TABLE IF EXISTS user_db"]
+            "DROP TABLE IF EXISTS user_db",
+            "DROP TABLE IF EXISTS chassis_utilization_details"]
     try:
         c = conn.cursor()
         for cmd in cmds:
@@ -80,6 +81,6 @@ def create_data_tables():
         
         create_table(conn, db_queries.create_ip_tags_sql)
         create_table(conn, db_queries.create_card_tags_sql)
-        create_table(conn, db_queries.create_perf_metrics_sql)
+        create_table(conn, db_queries.create_usage_metrics)
 
 create_data_tables()

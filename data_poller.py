@@ -100,6 +100,21 @@ def get_sensor_information():
         write_data_to_database(
             table_name="chassis_sensor_details", records=sensor_list_details)
 
+def get_perf_metrics():
+    serv_list = read_username_password_from_database()
+    perf_list_details = []
+    if serv_list:
+        CHASSIS_LIST = json.loads(serv_list)
+        print(CHASSIS_LIST)
+        for chassis in CHASSIS_LIST:
+            session = IxRestSession(chassis["ip"], chassis["username"], chassis["password"], verbose=False)
+            out = ixOSRestCaller.get_perf_metrics(session, chassis["ip"])
+            perf_list_details.append(out)
+        print(perf_list_details)
+        write_data_to_database(
+            table_name="chassis_utilization_details", records=perf_list_details)
+
+
 
 def controller(category_of_poll=None):
     categoryToFuntionMap[category_of_poll]()
@@ -109,7 +124,8 @@ categoryToFuntionMap = {"chassis": get_chassis_summary_data,
                         "cards": get_chassis_card_data,
                         "ports": get_chassis_port_data,
                         "licensing": get_chassis_licensing_data,
-                        "sensors": get_sensor_information}
+                        "sensors": get_sensor_information,
+                        "perf": get_perf_metrics}
 
 
 @click.command()

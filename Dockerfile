@@ -14,7 +14,7 @@ EXPOSE 3000
 CMD ["python3", "init_db_new.py"]
 
 # Start pollers
-CMD ["sh", "start_pollers.sh"]
+CMD ["/bin/sh", "-c", "start_pollers.sh"]
 
 # Start web app
 CMD ["flask", "--app","/python-docker/myapp.py", "--debug", "run", "--host=0.0.0.0", "-p", "3000"]
