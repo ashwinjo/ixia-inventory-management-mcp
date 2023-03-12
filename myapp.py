@@ -138,7 +138,8 @@ def sensorInformation():
                 "sensorType": record["sensorType"],
                 "sensorName": record["sensorName"],
                 "sensorValue": record["sensorValue"],
-                "unit": record["unit"]}])
+                "unit": record["unit"],
+                "lastUpdatedAt_UTC":record["lastUpdatedAt_UTC"]}])
     return render_template("chassisSensorsDetails.html", headers=headers, rows = sensor_list_details)
 
 
