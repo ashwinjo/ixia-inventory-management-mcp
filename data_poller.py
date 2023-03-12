@@ -59,16 +59,15 @@ def get_chassis_port_data():
     serv_list = read_username_password_from_database()
     if serv_list:
         CHASSIS_LIST = json.loads(serv_list)
-        print(CHASSIS_LIST)
-    if CHASSIS_LIST:
-        for chassis in CHASSIS_LIST:
-            session = IxRestSession(
-                chassis["ip"], chassis["username"], chassis["password"], verbose=False)
-            out = ixOSRestCaller.get_chassis_ports_information(
-                session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
-            port_list_details.append(out)
-        write_data_to_database(
-            table_name="chassis_port_details", records=port_list_details)
+        if CHASSIS_LIST:
+            for chassis in CHASSIS_LIST:
+                session = IxRestSession(
+                    chassis["ip"], chassis["username"], chassis["password"], verbose=False)
+                out = ixOSRestCaller.get_chassis_ports_information(
+                    session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
+                port_list_details.append(out)
+            write_data_to_database(
+                table_name="chassis_port_details", records=port_list_details)
 
 
 def get_chassis_licensing_data():
