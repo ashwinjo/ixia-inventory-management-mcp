@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<section class="page-section">
+    <center>
+<div>
+    <h5> Chooose Chassis to view utilization metrics </h5>
+    {% for chassis in chassis_list%}
+        <button type="button" onclick="getMetricsDetails('{{chassis["ip"]}}')" class="btn btn-primary">{{chassis["ip"]}} </button> &nbsp;&nbsp;
+    {% endfor %}
+</div>
+<br/><br/>
+<div>
+    <h5>{{ title }}</h5>
+</div>
+    <div>
+        <canvas id="memUtil" width="600" height="400"></canvas>
+    </div>
+  <br/><br/>
+  <div>
+      <h5> Now Showing: {{ip}} </h5>
+  </div>
+  <center>
+</section>
+{% endblock %}

@@ -10,12 +10,8 @@ RUN pip3 install -r requirements.txt
 COPY . .
 EXPOSE 3000
 
-# Create Barebones Databases
-CMD ["python3", "init_db_new.py"]
-
 # Start pollers
-CMD ["/bin/sh", "-c", "start_pollers.sh"]
-
+ENTRYPOINT ["/start_pollers.sh"]
 # Start web app
 CMD ["flask", "--app","/python-docker/myapp.py", "--debug", "run", "--host=0.0.0.0", "-p", "3000"]
 

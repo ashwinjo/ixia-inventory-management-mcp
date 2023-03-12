@@ -184,7 +184,7 @@ def lineChartPerfMetrics(ip):
         CHASSIS_LIST = json.loads(serv_list)
         
     if ip=="fresh":
-        return render_template('line_chart.html', title='Performance Metrics', 
+        return render_template('chassisPerformanceMetrics.html', title='Performance Metrics', 
                             max=100, mem_values=[], 
                             cpu_values=[], 
                             date_timeline_value=[],
@@ -200,8 +200,7 @@ def lineChartPerfMetrics(ip):
             date_timeline_value.append(record['lastUpdatedAt_UTC'])
             mem_values.append(float(record['mem_utilization']))
             cpu_values.append(float(record['cpu_utilization']))
-        print(date_timeline_value)
-        return render_template('line_chart.html', title='Performance Metrics', 
+        return render_template('chassisPerformanceMetrics.html', title='Performance Metrics', 
                                 max=100, mem_values=mem_values[:10], 
                                 cpu_values=cpu_values[:10], 
                                 date_timeline_value=date_timeline_value[:10],

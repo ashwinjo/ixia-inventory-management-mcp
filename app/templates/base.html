@@ -50,6 +50,10 @@
                     <form action="/licenseDetails" method = "GET">
                         <input class="btn btn-warning"  type = "submit" value="Chassis Licenses" />
                     </form>
+
+                    <form action="/lineChartPerfMetrics/fresh" method = "GET">
+                        <input class="btn btn-light"  type = "submit" value="Chassis Performace Charts" />
+                    </form>
                     
                     <form id="uploadAndPopulate" action = "/uploadConfig" method = "GET">
                     <input class="btn btn-info"  type = "submit" value="Add / Update Ixia Servers" />
@@ -153,6 +157,7 @@
         <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
+        <script type="text/javascript" charset="utf8" src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
         <script>
             $(document).ready(function () {
               $('.table').DataTable({initComplete: function () {
@@ -317,120 +322,105 @@
                 return true;
             });
         </script>
-        <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
         <script>
-            // bar chart data
-            var barData = {
-              labels : [
-                {% for item in date_timeline_value %}
-                  "{{ item }}",
-                {% endfor %}
-              ],
-      
-              datasets : [{
-                label: 'CPU Utilization',
-                fillColor: "rgba(151,187,205,0.2)",
-                strokeColor: "rgba(0, 11, 136, 1)",
-                pointColor: "rgba(151,187,205,1)",
-                pointStrokeColor: "#fff",
-                pointHighlightFill: "#fff",
-                pointHighlightStroke: "rgba(0, 255, 0, 1)",
-                bezierCurve : false,
-                data : [
-              {% for item in cpu_values %}
-                    {{ item }},
-                  {% endfor %}]
-                },
-                {
-                    fillColor: "rgba(151,187,205,0.2)",
-                    strokeColor: "rgba(58, 166, 67, 0.8)",
-                    pointColor: "rgba(151,187,205,1)",
-                    pointStrokeColor: "#fff",
-                    pointHighlightFill: "#fff",
-                    pointHighlightStroke: "rgba(151,187,205,1)",
-                    label: '% Memory Utilization',
-                    bezierCurve : false,
-                    data : [
-                  {% for item in mem_values %}
-                        {{ item }},
-                      {% endfor %}]
-                    }
-          ]
-            }
-      
-            Chart.defaults.global.animationSteps = 50;
-            Chart.defaults.global.tooltipYPadding = 16;
-            Chart.defaults.global.tooltipCornerRadius = 0;
-            Chart.defaults.global.tooltipTitleFontStyle = "normal";
-            Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
-            Chart.defaults.global.animationEasing = "easeOutBounce";
-            Chart.defaults.global.responsive = false;
-            Chart.defaults.global.scaleLineColor = "black";
-            Chart.defaults.global.scaleFontSize = 16;
-      
-            // get bar chart canvas
-            var mychart = document.getElementById("memUtil").getContext("2d");
-      
-            steps = 10
-            max = {{ max }}
-            // draw bar chart
-            var LineChartDemo = new Chart(mychart).Line(barData, {
-              scaleOverride: true,
-              scaleSteps: steps,
-              scaleStepWidth: Math.ceil(max / steps),
-              scaleStartValue: 0,
-              scaleShowVerticalLines: true,
-              scaleShowGridLines : true,
-              barShowStroke : true,
-              scaleShowLabels: true,
-              bezierCurve: false,
-            });
-
-            new Chart(document.getElementById("line-chart"), {
-                type: 'line',
-                data: {
-                  labels: [1500,1600,1700,1750,1800,1850,1900,1950,1999,2050],
-                  datasets: [{ 
-                      data: [86,114,106,106,107,111,133,221,783,2478],
-                      label: "Africa",
-                      borderColor: "#3e95cd",
-                      fill: false
-                    }, { 
-                      data: [282,350,411,502,635,809,947,1402,3700,5267],
-                      label: "Asia",
-                      borderColor: "#8e5ea2",
-                      fill: false
-                    }, { 
-                      data: [168,170,178,190,203,276,408,547,675,734],
-                      label: "Europe",
-                      borderColor: "#3cba9f",
-                      fill: false
-                    }, { 
-                      data: [40,20,10,16,24,38,74,167,508,784],
-                      label: "Latin America",
-                      borderColor: "#e8c3b9",
-                      fill: false
-                    }, { 
-                      data: [6,3,2,2,7,26,82,172,312,433],
-                      label: "North America",
-                      borderColor: "#c45850",
-                      fill: false
-                    }
-                  ]
-                },
-                options: {
-                  title: {
-                    display: true,
-                    text: 'World population per region (in millions)'
-                  }
-                }
-              });
-          </script>
-          <script>
             function getMetricsDetails(ip) {
                 window.location.assign("/lineChartPerfMetrics/"+ip);
             }
         </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
+        <script>
+            // Global parameters:
+            // do not resize the chart canvas when its container does (keep at 600x400px)
+            Chart.defaults.global.responsive = false;
+            // define the chart data
+            var chartData = {
+              labels : [{% for item in date_timeline_value %}
+                         '{{item}}',
+                        {% endfor %}],
+              datasets : [{
+                  label: '% CPU Utilization',
+                  fill: false,
+                  lineTension: 0.1,
+                  backgroundColor: "rgba(75,192,192,0.4)",
+                  borderColor: "rgba(75,192,192,1)",
+                  borderCapStyle: 'butt',
+                  borderDash: [],
+                  borderDashOffset: 0.0,
+                  borderJoinStyle: 'miter',
+                  pointBorderColor: "rgba(75,192,192,1)",
+                  pointBackgroundColor: "#fff",
+                  pointBorderWidth: 1,
+                  pointHoverRadius: 5,
+                  pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                  pointHoverBorderColor: "rgba(220,220,220,1)",
+                  pointHoverBorderWidth: 2,
+                  pointRadius: 1,
+                  pointHitRadius: 10,
+                  data : [{% for item in cpu_values %}
+                            {{item}},
+                          {% endfor %}],
+                  spanGaps: false
+              },{
+                label: '% Memory Utilization',
+                fill: false,
+                lineTension: 0.1,
+                backgroundColor: "rgba(0, 11, 136, 1)",
+                borderColor: "rgba(0, 11, 136, 1)",
+                borderCapStyle: 'butt',
+                borderDash: [],
+                borderDashOffset: 0.0,
+                borderJoinStyle: 'miter',
+                pointBorderColor: "rgba(0, 11, 136, 1)",
+                pointBackgroundColor: "#fff",
+                pointBorderWidth: 1,
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                pointHoverBorderColor: "rgba(220,220,220,1)",
+                pointHoverBorderWidth: 2,
+                pointRadius: 1,
+                pointHitRadius: 10,
+                data : [{% for item in mem_values %}
+                          {{item}},
+                        {% endfor %}],
+                spanGaps: false
+            }]
+            }
+
+            var ctx = document.getElementById("memUtil").getContext("2d");
+
+
+            // create the chart using the chart canvas
+            var myChart = new Chart(ctx, {
+              type: 'line',
+              data: chartData,
+              options: {
+                scales: {
+                    yAxes: [{
+                      scaleLabel: {
+                        display: true,
+                        labelString: '% Percentage'
+                      }
+                    }],
+                    xAxes: [{
+                        scaleLabel: {
+                          display: true,
+                          labelString: 'Datetime'
+                        }
+                      }]
+                  },
+                tooltips: {
+                  enabled: true,
+                  mode: 'single',
+                  callbacks: {
+                    label: function(tooltipItems, data) {
+                             return tooltipItems.yLabel + '% Percentage';
+                         }
+                  }
+                },
+              }
+            });
+            console.log(chartData)
+          </script>
         {% endblock %}
     </body>
 </html>
