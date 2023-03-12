@@ -112,3 +112,12 @@ create_usenname_password_table = """CREATE TABLE IF NOT EXISTS user_db (
                                 api_key TEXT
                                 );"""
 
+create_poll_settings_table = """CREATE TABLE IF NOT EXISTS poll_setting (
+                                chassis INTEGER,
+                                cards INTEGER ,
+                                ports INTEGER,
+                                sensors INTEGER ,
+                                perf INTEGER,
+                                licensing INTEGER,
+                                alertMonitor INTEGER
+                                );"""

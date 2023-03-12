@@ -4,9 +4,6 @@
 {% block content %}
 <!-- Portfolio Section-->
 <section class="container page-section portfolio">
-
-<html>
-    <body>
     <div>
         <div class="text-center alert alert-danger" role="alert">
             <h4> You need enter csv format (chassisIP,username,password) to add/update/remove Ixia Servers for monitoring. <h2></h4>
@@ -22,11 +19,43 @@
       </form>
     </div>  
     <div>
-        <form action="/chassisDetails/fromDBPoll" method = "GET">
+        <form action="/chassisDetails" method = "GET">
             <input  class="btn btn-info mb-3"  type = "submit" value="Retrun to Chassis Summary Page"/>
         </form>
     </div>
-</html>
+</div>
+</section>
+<section>
+    <div class="container">
+        <h2>Edit  polling intervals</h2>
+        <form action="/setPollingIntervals", method="post">
+            <div class="form-group">
+            <label for="chassis">Chassis Summary: </label>
+            <input type="input" class="form-control" id="chassis" placeholder="Enter chassis summary polling interval" name="chassis" placeholder="60"></input>
+            </div>
+            <div class="form-group">
+            <label for="chassis">Chassis Cards: </label>
+            <input type="input" class="form-control" id="cards" placeholder="Enter cards summary polling interval" name="cards" placeholder="60"></input>
+            </div>
+            <div class="form-group">
+            <label for="chassis">Chassis Ports:</label>
+            <input type="input" class="form-control" id="ports" placeholder="Enter chassis ports polling interval" name="ports" placeholder="60"></input>
+            </div>
+            <div class="form-group">
+            <label for="chassis">Chassis Sensors:</label>
+            <input type="input" class="form-control" id="sensors" placeholder="Enter chassis sensors polling interval" name="sensors" placeholder="60"></input>
+            </div>
+            <div class="form-group">
+            <label for="chassis">Chassis Licensing:</label>
+            <input type="input" class="form-control" id="licensing" placeholder="Enter chassis licensin polling interval" name="licensing" placeholder="60"></input>
+            </div>
+            <div class="form-group">
+            <label for="chassis">Chassis Performance Metrics:</label>
+            <input type="input" class="form-control" id="perf" placeholder="Enter chassis perf metrics polling interval" name="perf" placeholder="60"></input>
+            </div>
+            <button type="submit" class="btn btn-dark">Update Polling Intervals</button>
+        </form>
+        </div>
 </section>
 {% endblock %}
 

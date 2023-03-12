@@ -1,4 +1,4 @@
-from sqlite3_utilities_new import write_data_to_database, getChassistypeFromIp, read_username_password_from_database
+from sqlite3_utilities_new import write_data_to_database, getChassistypeFromIp, read_username_password_from_database, read_poll_setting_from_database
 import IxOSRestCallerModifier as ixOSRestCaller
 from RestApi.IxOSRestInterface import IxRestSession
 import click
@@ -127,6 +127,7 @@ categoryToFuntionMap = {"chassis": get_chassis_summary_data,
                         "perf": get_perf_metrics}
 
 
+
 @click.command()
 @click.option('--category', default= "", help='What chassis aspect to poll. chassis, cards, ports, licensing')
 @click.option('--interval', default= "", help='Interval between Polls')
@@ -137,8 +138,11 @@ def start_poller(category, interval):
         frequencyInSeconds (_type_): _description_
     """
     while True:
+        poll_interval = read_poll_setting_from_database()
+        if poll_interval:
+            interval = poll_interval[category]
         categoryToFuntionMap[category]()
-        print(datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S"))
+        print(interval)
         time.sleep(int(interval))
 
 if __name__ == '__main__':

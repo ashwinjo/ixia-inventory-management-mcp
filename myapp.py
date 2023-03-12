@@ -1,7 +1,7 @@
 from flask import render_template, request, jsonify, redirect
 from app import create_app
 from  RestApi.IxOSRestInterface import IxRestSession
-from sqlite3_utilities_new import read_data_from_database, getTagsFromCurrentDatabase, writeTags, read_username_password_from_database, write_username_password_to_database, get_perf_metrics_from_db
+from sqlite3_utilities_new import write_polling_intervals_into_database, read_data_from_database, getTagsFromCurrentDatabase, writeTags, read_username_password_from_database, write_username_password_to_database, get_perf_metrics_from_db
 from data_poller import controller
 import json
 
@@ -32,6 +32,16 @@ def processInput():
     write_username_password_to_database(ip_pw_list)
     return redirect('/')
     
+@app.post('/setPollingIntervals')
+def setPollingIntervals():
+    chassis = request.form['chassis']
+    cards = request.form['cards']
+    ports = request.form['ports']
+    sensors = request.form['sensors']
+    licensing = request.form['licensing']
+    perf = request.form['perf']
+    write_polling_intervals_into_database(chassis, cards, ports, sensors, licensing, perf)
+    return redirect('/')
     
 @app.get('/')
 @app.get("/chassisDetails")
@@ -202,9 +212,9 @@ def lineChartPerfMetrics(ip):
             mem_values.append(float(record['mem_utilization']))
             cpu_values.append(float(record['cpu_utilization']))
         return render_template('chassisPerformanceMetrics.html', title='Performance Metrics', 
-                                max=100, mem_values=mem_values[:10], 
-                                cpu_values=cpu_values[:10], 
-                                date_timeline_value=date_timeline_value[:10],
+                                max=100, mem_values=mem_values[-10:], 
+                                cpu_values=cpu_values[-10:], 
+                                date_timeline_value=date_timeline_value[-10:],
                                 ip = ip,
                                 chassis_list = CHASSIS_LIST)
 

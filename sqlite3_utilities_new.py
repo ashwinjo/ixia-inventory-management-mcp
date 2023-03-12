@@ -229,3 +229,22 @@ def get_perf_metrics_from_db(ip):
     conn.close()
     return  posts
     
+def write_polling_intervals_into_database(chassis, cards, ports, sensors, licensing, perf):
+    conn = _get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE from poll_setting")
+    cur.execute(f"""INSERT INTO poll_setting (chassis, cards, ports, sensors, perf, licensing) VALUES 
+                ({int(chassis)},{int(cards)},{int(ports)},{int(sensors)},{int(perf)},{int(licensing)})""")
+    cur.close()
+    conn.commit()
+    conn.close()
+    
+def read_poll_setting_from_database():
+    conn = _get_db_connection()
+    cur = conn.cursor()
+    query = f"SELECT * FROM poll_setting;"
+    posts = cur.execute(query).fetchone()
+    cur.close()
+    conn.close()
+    if posts:
+        return posts
