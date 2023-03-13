@@ -75,7 +75,6 @@
         <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
         <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <!-- Core theme JS-->
         <script src="{{url_for('static', filename='js/scripts.js')}}"></script>
         <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
@@ -84,7 +83,7 @@
         <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
         <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
         <script>
             function myFunction(ip) {
                 document.getElementsByClassName("loader")[0].style.display = "block";
@@ -169,11 +168,10 @@
                     .columns()
                     .every(function () {
                         var column = this;
-                        var select = $('<select><option value=""> Select All</option></select>')
+                        var select = $('<select><option value=""> Select All </option></select>')
                             .appendTo($(column.footer()).empty())
                             .on('change', function () {
                                 var val = $.fn.dataTable.util.escapeRegex($(this).val());
-     
                                 column.search(val ? '^' + val + '$' : '', true, false).draw();
                             });
      
@@ -260,8 +258,7 @@
         </style>
         <script>
             $(document).ready(function() {
-                $(".page-section").prepend("<div id='PleaseWait' style='justify-content: center; display: none;'><img src='https://media.tenor.com/YPOStjIfQ2IAAAAM/loading-waiting.gif'/></div>");
-                $(".page-section").prepend("<div id='LongWait' style='justify-content: center; display: none;'><img src='http://media.tenor.com/XasjKGMk_wAAAAAM/load-loading.gif'/></div>");
+                $(".page-section").prepend("<div id='PleaseWait' style='justify-content: center; display: none;'><img src='{{url_for('static', filename='assets/img/loading-waiting.gif')}}'></img></div>");                
             });
 
             
@@ -296,7 +293,7 @@
                 if(pass == false){
                     return false;
                 }
-                $("#LongWait").show();
+                $("#overlay, #PleaseWait").show();
             
                 return true;
             });

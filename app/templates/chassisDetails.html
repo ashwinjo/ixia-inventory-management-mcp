@@ -43,13 +43,13 @@
                       {% set className = "table-warning"%}
                   {% endif %}
                   
-                  
+                  <td class={{className}}>{{entry["chassisIp"]}}</td>
                   {% if entry["os"] == "Linux" %}
-                      <td class={{className}}>{{entry["chassisIp"]}}&nbsp;&nbsp;<img class="img-fluid rounded" src="{{url_for('static', filename='assets/img/Linux-icon.png')}}" alt="..." /></td>
+                  <td><img class="img-fluid rounded" src="{{url_for('static', filename='assets/img/Linux-icon.png')}}" alt="..." /></td>
                   {% elif entry["os"] == "Windows" %}
-                      <td class={{className}}>{{entry["chassisIp"]}}&nbsp;&nbsp;<img class="img-fluid rounded" src="{{url_for('static', filename='assets/img/social-windows-button-icon.png')}}" alt="..." /></td>
+                   <td>><img class="img-fluid rounded" src="{{url_for('static', filename='assets/img/social-windows-button-icon.png')}}" alt="..." /></td>
                   {% else %}
-                      <td class={{className}}>{{entry["chassisIp"]}}&nbsp;&nbsp;{{entry["os"]}}</td>                  
+                    <td class={{className}}>{{entry["os"]}}</td>                  
                   {% endif %}
 
                   <td>{{entry["chassisType"]}}</td>

@@ -47,7 +47,7 @@ def setPollingIntervals():
 @app.get("/chassisDetails")
 def chassisDetails():
     list_of_chassis = []
-    headers = ["IP","type","chassisSN","controllerSN", "# PhysicalCards", 
+    headers = ["IP","OS","type","chassisSN","controllerSN", "# PhysicalCards", 
                "IxOS", "IxNetwork Protocols", "IxOS REST",
                "MemoryUsed", "TotalMemory", "%CPU Utilization", "Tags"]
 
