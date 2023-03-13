@@ -34,7 +34,7 @@ class IxRestSession(object):
         poll_interval:  Polling inteval in seconds.
     """
 
-    def __init__(self, chassis_address, username=None, password=None, api_key=None,timeout=500, poll_interval=2, verbose=False, insecure_request_warning=False):
+    def __init__(self, chassis_address, username=None, password=None, api_key=None,timeout=30, poll_interval=2, verbose=False, insecure_request_warning=False):
 
         self.chassis_ip = chassis_address
         self.api_key = api_key

@@ -35,6 +35,7 @@ create_card_details_records_sql = """CREATE TABLE IF NOT EXISTS chassis_card_det
                                         'cardNumber' TEXT,
                                         'serialNumber' TEXT,
                                         'cardType' TEXT,
+                                        'cardState' TEXT,
                                         'numberOfPorts' TEXT, 
                                         'tags' TEXT, 
                                         'lastUpdatedAt_UTC' TEXT
@@ -106,10 +107,7 @@ create_perf_metrics_sql = """CREATE TABLE IF NOT EXISTS perf_metrics (
                                 );"""
                                 
 create_usenname_password_table = """CREATE TABLE IF NOT EXISTS user_db (
-                                ip VARCHAR(255) NOT NULL,
-                                username TEXT ,
-                                password TEXT ,
-                                api_key TEXT
+                                ixia_servers_json TEXT
                                 );"""
 
 create_poll_settings_table = """CREATE TABLE IF NOT EXISTS poll_setting (

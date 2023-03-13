@@ -29,7 +29,7 @@
         <div>
         <nav class="navbar bg-secondary text-uppercase fixed-top" id="mainNav">
             <div class="container">
-                <a class="navbar-brand d-flex justify-content-center flex-nowrap" href="https://www.keysight.com/us/en/products/network-test/network-test-hardware.html">
+                <a class="navbar-brand d-flex justify-content-center flex-nowrap" href="/chassisDetails">
                     <img class="img-fluid rounded mb-5" width="100" height="30" src="{{url_for('static', filename='assets/img/KEYS.png')}}" alt="..." /> 
                     Ixia Inventory Explorer
                 </a>
@@ -340,7 +340,7 @@
             var chartData = {
               labels : [{% for item in date_timeline_value %}
                          '{{item}}',
-                        {% endfor %}],
+                            {% endfor %}],
               datasets : [{
                   label: '% CPU Utilization',
                   fill: false,

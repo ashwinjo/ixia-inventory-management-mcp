@@ -115,7 +115,8 @@ def get_chassis_cards_information(session, ip, type_of_chassis):
                                         "chassisType": type_of_chassis,
                                         "cardNumber":sc.get("cardNumber"), 
                                         "serialNumber": sc.get("serialNumber"),
-                                        "cardType": sc.get("type"), 
+                                        "cardType": sc.get("type"),
+                                        "cardState": sc.get("state"), 
                                         "numberOfPorts":sc.get("numberOfPorts", "No data"),
                                         "lastUpdatedAt_UTC": last_update_at
                                         })

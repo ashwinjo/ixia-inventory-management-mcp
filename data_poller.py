@@ -19,10 +19,27 @@ def get_chassis_summary_data():
         CHASSIS_LIST = json.loads(serv_list)
         print(CHASSIS_LIST)
         for chassis in CHASSIS_LIST:
-            session = IxRestSession(
-                chassis["ip"], chassis["username"], chassis["password"], verbose=False)
-            out = ixOSRestCaller.get_chassis_information(session)
-            list_of_chassis.append(out)
+            try:
+                session = IxRestSession(
+                    chassis["ip"], chassis["username"], chassis["password"], verbose=False)
+                out = ixOSRestCaller.get_chassis_information(session)
+                list_of_chassis.append(out)
+            except Exception:
+                list_of_chassis.append({ "chassisIp": chassis["ip"],
+                    "chassisSerial#": "NA",
+                    "controllerSerial#": "NA",
+                    "chassisType": "NA",
+                    "physicalCards#": "NA",
+                    "chassisStatus": "Not Reachable",
+                    "lastUpdatedAt_UTC": "NA",
+                    "mem_bytes": "NA", 
+                    "mem_bytes_total": "NA", 
+                    "cpu_pert_usage": "NA",
+                    "os": "NA",
+                    "IxOS": "NA",
+                    "IxNetwork Protocols": "NA",
+                    "IxOS REST": "NA"})
+                    
 
         write_data_to_database(table_name="chassis_summary_details",
                             records=list_of_chassis, ip_tags_dict={})

@@ -84,6 +84,7 @@ def cardDetails():
                 "cardNumber": record["cardNumber"],
                 "serialNumber": record["serialNumber"],
                 "cardType": record["cardType"],
+                "cardState": record["cardState"],
                 "numberOfPorts": record["numberOfPorts"],
                 "lastUpdatedAt_UTC": record["lastUpdatedAt_UTC"]}])
   

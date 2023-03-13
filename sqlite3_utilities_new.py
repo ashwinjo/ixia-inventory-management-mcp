@@ -66,10 +66,10 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                 else:
                     tags = ""    
                 rcd.update({"tags": tags })
-                cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,cardNumber,serialNumber,cardType,numberOfPorts,tags,
+                cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,cardNumber,serialNumber,cardType,cardState,numberOfPorts,tags,
                             lastUpdatedAt_UTC) VALUES 
                             ('{rcd["chassisIp"]}', '{rcd["chassisType"]}', '{rcd["cardNumber"]}','{rcd["serialNumber"]}',
-                            '{rcd["cardType"]}','{rcd["numberOfPorts"]}', '{rcd['tags']}', datetime('now'))""")
+                            '{rcd["cardType"]}','{rcd["cardState"]}','{rcd["numberOfPorts"]}', '{rcd['tags']}', datetime('now'))""")
             
         if table_name == "chassis_port_details":
             for rcd in record:
@@ -187,37 +187,37 @@ def write_username_password_to_database(list_of_un_pw):
     cur.execute("DELETE from user_db")
     user_pw_dict = creat_config_dict(list_of_un_pw)
     print(user_pw_dict)
-    if user_pw_dict:
-        json_str_data = json.dumps(user_pw_dict)
-        for item in user_pw_dict:
-            q = f"""INSERT INTO user_db (ip, username, password, api_key) VALUES  
-            ('{item.get("ip")}','{item.get("username")}','{item.get("password")}','{item.get("api_key", json_str_data)}')"""
-            cur.execute(q)
-        cur.close()
-        conn.commit()
-        conn.close()
+    json_str_data = json.dumps(user_pw_dict)
+    q = f"""INSERT INTO user_db (ixia_servers_json) VALUES ('{json_str_data}')"""
+    cur.execute(q)
+    cur.close()
+    conn.commit()
+    conn.close()
 
 def read_username_password_from_database():
     conn = _get_db_connection()
     cur = conn.cursor()
-    query = f"SELECT api_key FROM user_db;"
+    query = f"SELECT * FROM user_db;"
     posts = cur.execute(query).fetchone()
     cur.close()
     conn.close()
     if posts:
-        return posts['api_key']
+        return posts['ixia_servers_json']
     return []
 
+read_username_password_from_database()
 
 def creat_config_dict(list_of_un_pw):
     user_pw_dict = []
     print(list_of_un_pw)
     for entry in list_of_un_pw.split("\n"):
-        user_pw_dict.append({
-        "ip": entry.split(",")[0].strip(),
-        "username": entry.split(",")[1].strip(),
-        "password": entry.split(",")[2].strip(),
-        })
+        operation = entry.split(",")[0].strip()
+        if operation.lower() != "delete":
+            user_pw_dict.append({
+            "ip": entry.split(",")[1].strip(),
+            "username": entry.split(",")[2].strip(),
+            "password": entry.split(",")[3].strip(),
+            })
     return user_pw_dict
 
 def get_perf_metrics_from_db(ip):
@@ -227,7 +227,7 @@ def get_perf_metrics_from_db(ip):
     posts = cur.execute(query).fetchall()
     cur.close()
     conn.close()
-    return  posts
+    return posts
     
 def write_polling_intervals_into_database(chassis, cards, ports, sensors, licensing, perf):
     conn = _get_db_connection()

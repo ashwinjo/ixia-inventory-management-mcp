@@ -22,7 +22,7 @@
     <h5> Last Updated at (UTC): NA </h5>
     {% endif%}
 </div>
-    <table class="table table-striped table-bordered table-responsive table-condensed">
+    <table class="table table-bordered table-responsive table-condensed">
       <thead class="table-primary">
         <tr>
         {% for h in headers %}
@@ -36,11 +36,18 @@
         {% for row in rows %}
             {% for entry in row %}
               <tr>
-                  <td>{{entry["chassisIp"]}} </td>
-                  <td>{{entry["chassisType"]}} </td>
-                  <td>{{entry["cardNumber"]}}</td>
-                  <td>{{entry["serialNumber"]}}</td>
-                  <td>{{entry["cardType"]}}</td>
+                {% if entry["cardState"] == "UP" %}
+                  {% set className = "table-success"%}
+                {% elif entry["cardState"] == "DOWN" %}
+                    {% set className = "table-danger"%}
+                {% else %}
+                    {% set className = "table-warning"%}
+                {% endif %}
+                  <td class={{className}}>{{entry["chassisIp"]}} </td>
+                  <td class={{className}}>{{entry["chassisType"]}} </td>
+                  <td class={{className}}>{{entry["cardNumber"]}}</td>
+                  <td class={{className}}>{{entry["serialNumber"]}}</td>
+                  <td class={{className}}>{{entry["cardType"]}}</td>
                   <td>{{entry["numberOfPorts"]}}</td>
                   <td>
                     {% for tag in ip_tags_dict[entry["serialNumber"]] %}
