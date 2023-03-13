@@ -1,4 +1,4 @@
-from sqlite3_utilities_new import write_data_to_database, getChassistypeFromIp, read_username_password_from_database, read_poll_setting_from_database
+from sqlite3_utilities_new import *
 import IxOSRestCallerModifier as ixOSRestCaller
 from RestApi.IxOSRestInterface import IxRestSession
 import click

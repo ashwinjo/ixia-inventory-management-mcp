@@ -195,6 +195,6 @@ def get_sensor_information(session, chassis, type_chassis):
     keys_to_remove = ["criticalValue", "maxValue", 'parentId', 'id','adapterName','minValue','sensorSetName', 'cpuName']
     for record in sensor_list:
         for item in keys_to_remove:
-            record.pop(item)
+            record.pop(item, "NA")
         record.update({"chassisIp":chassis, "typeOfChassis": type_chassis, "lastUpdatedAt_UTC": datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")})
     return sensor_list

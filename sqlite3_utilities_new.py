@@ -7,12 +7,6 @@ def _get_db_connection():
     return conn
 
 
-def write_performace_metrics():
-    conn = _get_db_connection()
-    cur = conn.cursor()
-
-
-
 def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
     tags = ""
     conn = _get_db_connection()
@@ -205,7 +199,6 @@ def read_username_password_from_database():
         return posts['ixia_servers_json']
     return []
 
-read_username_password_from_database()
 
 def creat_config_dict(list_of_un_pw):
     user_pw_dict = []

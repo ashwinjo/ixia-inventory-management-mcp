@@ -1,7 +1,7 @@
 from flask import render_template, request, jsonify, redirect
 from app import create_app
 from  RestApi.IxOSRestInterface import IxRestSession
-from sqlite3_utilities_new import write_polling_intervals_into_database, read_data_from_database, getTagsFromCurrentDatabase, writeTags, read_username_password_from_database, write_username_password_to_database, get_perf_metrics_from_db
+from sqlite3_utilities_new import *
 from data_poller import controller
 import json
 
@@ -227,4 +227,5 @@ def pollLatestChassisData(category):
 categoryToFuntionMap = {"chassis": "/chassisDetails",
                         "cards": "/cardDetails",
                         "ports": "/portDetails",
-                        "licensing": "/licenseDetails"}
+                        "licensing": "/licenseDetails",
+                        "sensors": "/sensorInformation"}
