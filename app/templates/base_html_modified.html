@@ -56,8 +56,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> 
         <script>
             $(document).ready(function() {
-                $(".page-section").prepend("<div id='PleaseWait' style='justify-content: center; display: none;'><img src='https://media.tenor.com/YPOStjIfQ2IAAAAM/loading-waiting.gif'/></div>");
-                $(".page-section").prepend("<div id='LongWait' style='justify-content: center; display: none;'><img src='https://media.licdn.com/dms/image/C4D22AQFpBYLRhIbyng/feedshare-shrink_2048_1536/0/1639551628123?e=2147483647&v=beta&t=uajdlniHdsuZ9X55z9RlQ7HBbrM7BWolEOP1VAspWOU'/></div>");
+                $(".page-section").prepend("<div id='PleaseWait' style='justify-content: center; display: none;'><img src='{{url_for('static', filename='assets/img/loading-waiting.gif')}}'></img></div>"); 
             });
 
             $('#uploader').submit(function() {

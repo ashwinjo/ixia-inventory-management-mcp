@@ -141,9 +141,7 @@ def sensorInformation():
     headers = ["chassisIP", "chassisType", "sensorType", "sensorName", "sensorValue", "unit"]
     sensor_list_details = []
     records = read_data_from_database(table_name="chassis_sensor_details")
-    print(records)
     for record in records:
-        print(records)
         sensor_list_details.append([{"chassisIp": record["chassisIp"], 
                 "typeOfChassis": record["typeOfChassis"],
                 "sensorType": record["sensorType"],

@@ -35,8 +35,8 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                         ('{record["chassisIp"]}', '{record['chassisSerial#']}',
                         '{record['controllerSerial#']}','{record['chassisType']}','{record['physicalCards#']}',
                         '{record['chassisStatus']}',
-                        '{record['IxOS']}','{record['IxNetwork Protocols']}','{record['IxOS REST']}','{record['tags']}', 
-                        datetime('now'), '{record['mem_bytes']}','{record['mem_bytes_total']}','{record['cpu_pert_usage']}',
+                        '{record.get('IxOS', "NA")}','{record.get('IxNetwork Protocols',"NA")}','{record.get('IxOS REST',"NA")}','{record['tags']}', 
+                        datetime('now'), '{record.get('mem_bytes', '0')}','{record.get('mem_bytes_total', '0')}','{record.get('cpu_pert_usage', '0')}',
                         '{record['os']}')""")
         
         if table_name == "license_details_records":
@@ -70,7 +70,7 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                 cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,cardNumber,portNumber,phyMode,transceiverModel,
                             transceiverManufacturer,owner,totalPorts,ownedPorts,freePorts, lastUpdatedAt_UTC) VALUES 
                                 ('{rcd["chassisIp"]}', '{rcd["typeOfChassis"]}', '{rcd["cardNumber"]}','{rcd["portNumber"]}',
-                                '{rcd.get("phyMode","NA")}','{rcd["transceiverModel"]}', '{rcd["transceiverManufacturer"]}','{rcd["owner"]}',
+                                '{rcd.get("phyMode","NA")}','{rcd.get("transceiverModel", "NA")}', '{rcd.get("transceiverManufacturer", "NA")}','{rcd["owner"]}',
                                 '{rcd["totalPorts"]}','{rcd["ownedPorts"]}', '{rcd["freePorts"]}',datetime('now'))""")
                 
         if table_name == "chassis_sensor_details":
@@ -178,10 +178,9 @@ def write_username_password_to_database(list_of_un_pw):
     conn = _get_db_connection()
     cur = conn.cursor()
     user_pw_dict = []
+    cur.execute("DELETE from user_db")
     user_pw_dict = creat_config_dict(list_of_un_pw)
     print(user_pw_dict)
-
-    
     json_str_data = json.dumps(user_pw_dict)
     q = f"""INSERT INTO user_db (ixia_servers_json) VALUES ('{json_str_data}')"""
     cur.execute(q)
@@ -204,20 +203,8 @@ def read_username_password_from_database():
 def creat_config_dict(list_of_un_pw):
     user_pw_dict = []
     print(list_of_un_pw)
-    existing_list_of_servers = read_username_password_from_database()
     for entry in list_of_un_pw.split("\n"):
         operation = entry.split(",")[0].strip()
-        ip = entry.split(",")[1].strip(),
-        username = entry.split(",")[2].strip(),
-        password = entry.split(",")[3].strip(),
-        
-        if operation.lower() != "delete":
-            user_pw_dict.append({
-            "ip": entry.split(",")[1].strip(),
-            "username": entry.split(",")[2].strip(),
-            "password": entry.split(",")[3].strip(),
-            })
-    
         if operation.lower() != "delete":
             user_pw_dict.append({
             "ip": entry.split(",")[1].strip(),

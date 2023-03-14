@@ -23,7 +23,7 @@
       <h5> Last Updated at (UTC): NA </h5>
       {% endif%}
   </div>
-    <table class="table table-bordered table-responsive table-condensed ">
+    <table class="table table-bordered table-responsive table-condensed">
     <thead class="table-primary">
         <tr>
         {% for h in headers %}
@@ -45,9 +45,9 @@
                   
                   <td class={{className}}>{{entry["chassisIp"]}}</td>
                   {% if entry["os"] == "Linux" %}
-                  <td><img class="img-fluid rounded" src="{{url_for('static', filename='assets/img/Linux-icon.png')}}" alt="..." /></td>
+                  <td><img class="img-fluid rounded" src="{{url_for('static', filename='assets/img/Linux-icon.png')}}"></td>
                   {% elif entry["os"] == "Windows" %}
-                   <td>><img class="img-fluid rounded" src="{{url_for('static', filename='assets/img/social-windows-button-icon.png')}}" alt="..." /></td>
+                   <td><img class="img-fluid rounded" src="{{url_for('static', filename='assets/img/social-windows-button-icon.png')}}"/></td>
                   {% else %}
                     <td class={{className}}>{{entry["os"]}}</td>                  
                   {% endif %}

@@ -148,7 +148,6 @@ class IxRestSession(object):
             while operation_status == 'IN_PROGRESS':
                 response = self.http_request('GET', response_body['url'])
                 response_body = response.data
-                print(response_body)
                 operation_status = response_body['state']
                 if int(time.time() - start_time) > self.timeout:
                     raise IxRestException(
@@ -231,7 +230,6 @@ class IxRestSession(object):
             if "http" in resultUrl:
                 host_id_info = self.http_request('GET', resultUrl, params=" ").json().get("hostId", "NA")
                 hids.append(host_id_info)
-        print(hids)
         return "::".join(hids)
                 
     def get_license_host_id(session):

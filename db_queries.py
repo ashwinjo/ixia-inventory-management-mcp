@@ -1,15 +1,3 @@
-"""
-
-chassis_summary_details
-chassis_card_details
-chassis_port_details
-chassis_license_details
-
-
-chassi_utilization_details
-"""
-
-
 create_chassis_summary_sql = """CREATE TABLE IF NOT EXISTS chassis_summary_details (
                                 ip VARCHAR(255) NOT NULL,
                                 chassisSN TEXT,

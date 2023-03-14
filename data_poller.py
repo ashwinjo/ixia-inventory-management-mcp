@@ -16,13 +16,13 @@ def get_chassis_summary_data():
     list_of_chassis = []
     serv_list = read_username_password_from_database()
     if serv_list:
-        CHASSIS_LIST = json.loads(serv_list)
-        print(CHASSIS_LIST)
-        for chassis in CHASSIS_LIST:
+        chassis_list = json.loads(serv_list)
+        for chassis in chassis_list:
             try:
                 session = IxRestSession(
                     chassis["ip"], chassis["username"], chassis["password"], verbose=False)
                 out = ixOSRestCaller.get_chassis_information(session)
+                out["chassisIp"] = chassis["ip"]
                 list_of_chassis.append(out)
             except Exception:
                 list_of_chassis.append({ "chassisIp": chassis["ip"],
@@ -56,9 +56,8 @@ def get_chassis_card_data():
     list_of_cards = []
     serv_list = read_username_password_from_database()
     if serv_list:
-        CHASSIS_LIST = json.loads(serv_list)
-        print(CHASSIS_LIST)
-        for chassis in CHASSIS_LIST:
+        chassis_list = json.loads(serv_list)
+        for chassis in chassis_list:
             session = IxRestSession(
                 chassis["ip"], chassis["username"], chassis["password"], verbose=False)
             out = ixOSRestCaller.get_chassis_cards_information(
@@ -75,9 +74,9 @@ def get_chassis_port_data():
     port_list_details = []
     serv_list = read_username_password_from_database()
     if serv_list:
-        CHASSIS_LIST = json.loads(serv_list)
-        if CHASSIS_LIST:
-            for chassis in CHASSIS_LIST:
+        chassis_list = json.loads(serv_list)
+        if chassis_list:
+            for chassis in chassis_list:
                 session = IxRestSession(
                     chassis["ip"], chassis["username"], chassis["password"], verbose=False)
                 out = ixOSRestCaller.get_chassis_ports_information(
@@ -91,9 +90,8 @@ def get_chassis_licensing_data():
     list_of_licenses = []
     serv_list = read_username_password_from_database()
     if serv_list:
-        CHASSIS_LIST = json.loads(serv_list)
-        print(CHASSIS_LIST)
-        for chassis in CHASSIS_LIST:
+        chassis_list = json.loads(serv_list)
+        for chassis in chassis_list:
             session = IxRestSession(
                 chassis["ip"], chassis["username"], chassis["password"], verbose=False)
             out = ixOSRestCaller.get_license_activation(
@@ -107,9 +105,8 @@ def get_sensor_information():
     sensor_list_details = []
     serv_list = read_username_password_from_database()
     if serv_list:
-        CHASSIS_LIST = json.loads(serv_list)
-        print(CHASSIS_LIST)
-        for chassis in CHASSIS_LIST:
+        chassis_list = json.loads(serv_list)
+        for chassis in chassis_list:
             session = IxRestSession(chassis["ip"], chassis["username"], chassis["password"], verbose=False)
             out = ixOSRestCaller.get_sensor_information(session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
             sensor_list_details.append(out)
@@ -120,9 +117,8 @@ def get_perf_metrics():
     serv_list = read_username_password_from_database()
     perf_list_details = []
     if serv_list:
-        CHASSIS_LIST = json.loads(serv_list)
-        print(CHASSIS_LIST)
-        for chassis in CHASSIS_LIST:
+        chassis_list = json.loads(serv_list)
+        for chassis in chassis_list:
             session = IxRestSession(chassis["ip"], chassis["username"], chassis["password"], verbose=False)
             out = ixOSRestCaller.get_perf_metrics(session, chassis["ip"])
             perf_list_details.append(out)
@@ -159,7 +155,6 @@ def start_poller(category, interval):
         if poll_interval:
             interval = poll_interval[category]
         categoryToFuntionMap[category]()
-        print(interval)
         time.sleep(int(interval))
 
 if __name__ == '__main__':

@@ -37,15 +37,25 @@ def convert_size(size_bytes):
 def get_perf_metrics(session, chassisIp):
     chassis_perf_dict = {}
     # Exception Handling for Windows Chassis
-    perf = session.get_perfcounters().data[0]
-    mem_bytes = int(perf["memoryInUseBytes"])
-    mem_bytes_total = int(perf["memoryTotalBytes"])
-    cpu_pert_usage = perf["cpuUsagePercent"]
+    perf = {}
+    try:
+        perf = session.get_perfcounters().data[0]
+    except:
+        pass
+    
+    mem_bytes = int(perf.get("memoryInUseBytes", "0"))
+    mem_bytes_total = int(perf.get("memoryTotalBytes", "0"))
+    cpu_pert_usage = perf.get("cpuUsagePercent", "0")
+    if not mem_bytes_total:
+        mem_util = 0
+    else:
+        mem_util = (mem_bytes/mem_bytes_total)*100
     last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
     chassis_perf_dict.update({"chassisIp": chassisIp,
-                              "mem_utilization": (mem_bytes/mem_bytes_total)*100, 
+                              "mem_utilization": mem_util, 
                               "cpu_utilization": cpu_pert_usage,
                               "lastUpdatedAt_UTC": last_update_at})
+    
     return chassis_perf_dict
     
 def get_chassis_information(session):
