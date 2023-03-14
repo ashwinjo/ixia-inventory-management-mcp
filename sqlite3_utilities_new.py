@@ -178,9 +178,10 @@ def write_username_password_to_database(list_of_un_pw):
     conn = _get_db_connection()
     cur = conn.cursor()
     user_pw_dict = []
-    cur.execute("DELETE from user_db")
     user_pw_dict = creat_config_dict(list_of_un_pw)
     print(user_pw_dict)
+
+    
     json_str_data = json.dumps(user_pw_dict)
     q = f"""INSERT INTO user_db (ixia_servers_json) VALUES ('{json_str_data}')"""
     cur.execute(q)
@@ -203,8 +204,20 @@ def read_username_password_from_database():
 def creat_config_dict(list_of_un_pw):
     user_pw_dict = []
     print(list_of_un_pw)
+    existing_list_of_servers = read_username_password_from_database()
     for entry in list_of_un_pw.split("\n"):
         operation = entry.split(",")[0].strip()
+        ip = entry.split(",")[1].strip(),
+        username = entry.split(",")[2].strip(),
+        password = entry.split(",")[3].strip(),
+        
+        if operation.lower() != "delete":
+            user_pw_dict.append({
+            "ip": entry.split(",")[1].strip(),
+            "username": entry.split(",")[2].strip(),
+            "password": entry.split(",")[3].strip(),
+            })
+    
         if operation.lower() != "delete":
             user_pw_dict.append({
             "ip": entry.split(",")[1].strip(),

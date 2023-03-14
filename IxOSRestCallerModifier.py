@@ -144,6 +144,9 @@ def get_chassis_ports_information(session, chassisIp, chassisType):
     
     # Removing the extra keys from port details json response
     for port_data in port_list:
+        if not port_data.get("owner"):
+            port_data["owner"] = "Free"
+            
         for k in keys_to_remove:
             port_data.pop(k)
     
