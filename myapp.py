@@ -115,7 +115,7 @@ def licenseDetails():
 @app.get("/portDetails")
 def get_chassis_ports_information():
     headers = ["chassisIp", "typeOfChassis",
-               "cardNumber", "portNumber", "phyMode", "transceiverModel", 
+               "cardNumber", "portNumber", "linkState","phyMode", "transceiverModel", 
                "transceiverManufacturer", "owner"]
     port_list_details = []
 
@@ -125,6 +125,7 @@ def get_chassis_ports_information():
                 "typeOfChassis": record["typeOfChassis"],
                 "cardNumber": record["cardNumber"],
                 "portNumber": record["portNumber"],
+                "linkState": record["linkState"],
                 "phyMode": record["phyMode"],
                 "transceiverModel": record["transceiverModel"],
                 "transceiverManufacturer": record["transceiverManufacturer"],
