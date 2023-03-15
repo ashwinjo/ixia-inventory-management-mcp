@@ -34,10 +34,15 @@
       <tbody>
         {% for row in rows %}
             {% for entry in row %}
+            
               {% if entry["linkState"] == "UP" %}
                   {% set className = "table-success"%}
               {% elif entry["linkState"] == "LOOPBACK" %}
                   {% set className = "table-warning"%}
+              {% elif entry["linkState"] == "FORCELINKUP"%}
+                {% set className = "table-light"%}
+              {% elif entry["linkState"] == "NA"%}
+                {% set className = "table-warning"%}
               {% else %}
                   {% set className = "table-danger"%}
               {% endif %}

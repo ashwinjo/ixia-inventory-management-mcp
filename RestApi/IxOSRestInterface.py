@@ -104,7 +104,7 @@ class IxRestSession(object):
             headers = self.get_headers()
             response = requests.request(
                 method, uri, data=payload, params=params,
-                headers=headers, verify=False
+                headers=headers, verify=False, timeout=10
             )
 
             # debug_string = 'Response => Status %d\n' % response.status_code

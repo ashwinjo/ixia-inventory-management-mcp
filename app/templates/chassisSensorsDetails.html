@@ -33,12 +33,17 @@
       <tbody>
         {% for row in rows %}
             {% for entry in row %}
-                    <td>{{entry["chassisIp"]}}</td>
-                    <td>{{entry["typeOfChassis"]}}</td>
-                    <td>{{entry["sensorType"]}}</td>
-                    <td>{{entry["sensorName"]}}</td>
-                    <td>{{entry["sensorValue"]}} </td>
-                    <td>{{entry["unit"]}}</td>
+                    {% if entry["sensorName"] == "NA" %}
+                      {% set className = "table-warning" %}
+                    {% else %}
+                      {% set className = "table-light" %}
+                    {% endif %}
+                    <td class={{className}}>{{entry["chassisIp"]}}</td>
+                    <td class={{className}}>{{entry["typeOfChassis"]}}</td>
+                    <td class={{className}}>{{entry["sensorType"]}}</td>
+                    <td class={{className}}>{{entry["sensorName"]}}</td>
+                    <td class={{className}}> {{entry["sensorValue"]}} </td>
+                    <td class={{className}}>{{entry["unit"]}}</td>
             </tr>
           {% endfor %}
         {% endfor %}

@@ -54,16 +54,28 @@ def get_chassis_card_data():
         _type_: _description_
     """
     list_of_cards = []
+    print("In method")
     serv_list = read_username_password_from_database()
     if serv_list:
         chassis_list = json.loads(serv_list)
         for chassis in chassis_list:
-            session = IxRestSession(
-                chassis["ip"], chassis["username"], chassis["password"], verbose=False)
-            out = ixOSRestCaller.get_chassis_cards_information(
-                session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
-            list_of_cards.append(out)
-
+            try:
+                session = IxRestSession(
+                    chassis["ip"], chassis["username"], chassis["password"], verbose=False)
+                out = ixOSRestCaller.get_chassis_cards_information(
+                    session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
+                list_of_cards.append(out)
+            except Exception:
+                out = [{'chassisIp': chassis["ip"], 
+                       'chassisType': 'NA', 
+                       'cardNumber': 'NA', 
+                       'serialNumber': 'NA', 
+                       'cardType': 'NA', 
+                       'cardState': 'NA', 
+                       'numberOfPorts': 'NA', 
+                       'lastUpdatedAt_UTC': 'NA'}]
+                list_of_cards.append(out)
+        
         write_data_to_database(table_name="chassis_card_details",
                             records=list_of_cards, ip_tags_dict={})
 
@@ -77,11 +89,28 @@ def get_chassis_port_data():
         chassis_list = json.loads(serv_list)
         if chassis_list:
             for chassis in chassis_list:
-                session = IxRestSession(
-                    chassis["ip"], chassis["username"], chassis["password"], verbose=False)
-                out = ixOSRestCaller.get_chassis_ports_information(
-                    session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
-                port_list_details.append(out)
+                try:
+                    session = IxRestSession(
+                        chassis["ip"], chassis["username"], chassis["password"], verbose=False)
+                    out = ixOSRestCaller.get_chassis_ports_information(
+                        session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
+                    port_list_details.append(out)
+                except Exception:
+                    a = [{
+                        'owner': 'NA',
+                        'transceiverModel': 'NA',
+                        'transceiverManufacturer': 'NA',
+                        'portNumber': 'NA',
+                        'linkState': 'NA',
+                        'cardNumber': 'NA',
+                        'lastUpdatedAt_UTC': 'NA',
+                        'totalPorts': 'NA',
+                        'ownedPorts': 'NA',
+                        'freePorts': 'NA',
+                        'chassisIp': chassis["ip"],
+                        'typeOfChassis': 'NA'
+                    }]
+                    port_list_details.append(a)
             write_data_to_database(
                 table_name="chassis_port_details", records=port_list_details)
 
@@ -92,11 +121,28 @@ def get_chassis_licensing_data():
     if serv_list:
         chassis_list = json.loads(serv_list)
         for chassis in chassis_list:
-            session = IxRestSession(
-                chassis["ip"], chassis["username"], chassis["password"], verbose=False)
-            out = ixOSRestCaller.get_license_activation(
-                session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
-            list_of_licenses.append(out)
+            try:
+                session = IxRestSession(
+                    chassis["ip"], chassis["username"], chassis["password"], verbose=False)
+                out = ixOSRestCaller.get_license_activation(
+                    session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
+                print(out)
+                list_of_licenses.append(out)
+            except Exception:
+                a = [{
+                'chassisIp': chassis["ip"],
+                'typeOfChassis': 'NA',
+                'hostId': 'NA',
+                'partNumber': 'NA',
+                'activationCode': 'NA',
+                'quantity': 'NA',
+                'description': 'NA',
+                'maintenanceDate': 'NA',
+                'expiryDate': 'NA',
+                'isExpired': 'NA',
+                'lastUpdatedAt_UTC': 'NA'
+                }]
+                list_of_licenses.append(a)
         write_data_to_database(
             table_name="license_details_records", records=list_of_licenses)
 
@@ -107,9 +153,22 @@ def get_sensor_information():
     if serv_list:
         chassis_list = json.loads(serv_list)
         for chassis in chassis_list:
-            session = IxRestSession(chassis["ip"], chassis["username"], chassis["password"], verbose=False)
-            out = ixOSRestCaller.get_sensor_information(session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
-            sensor_list_details.append(out)
+            try:
+                session = IxRestSession(chassis["ip"], chassis["username"], chassis["password"], verbose=False)
+                out = ixOSRestCaller.get_sensor_information(session, chassis["ip"], getChassistypeFromIp(chassis["ip"]))
+                sensor_list_details.append(out)
+                print(out)
+            except Exception:
+                a =   [{
+                        'type': 'NA',
+                        'unit': 'NA',
+                        'name': 'NA',
+                        'value': 'NA',
+                        'chassisIp': chassis["ip"],
+                        'typeOfChassis': 'NA',
+                        'lastUpdatedAt_UTC': 'NA'
+                    }]
+                sensor_list_details.append(a)
         write_data_to_database(
             table_name="chassis_sensor_details", records=sensor_list_details)
 
@@ -119,10 +178,17 @@ def get_perf_metrics():
     if serv_list:
         chassis_list = json.loads(serv_list)
         for chassis in chassis_list:
-            session = IxRestSession(chassis["ip"], chassis["username"], chassis["password"], verbose=False)
-            out = ixOSRestCaller.get_perf_metrics(session, chassis["ip"])
-            perf_list_details.append(out)
-        print(perf_list_details)
+            try:
+                session = IxRestSession(chassis["ip"], chassis["username"], chassis["password"], verbose=False)
+                out = ixOSRestCaller.get_perf_metrics(session, chassis["ip"])
+                perf_list_details.append(out)
+                print(out)
+            except Exception:
+                a = {'chassisIp': chassis["ip"], 
+                     'mem_utilization': 0, 
+                     'cpu_utilization': 0, 
+                     'lastUpdatedAt_UTC': '03/15/2023, 03:31:47'}
+                perf_list_detailsa.append(a)
         write_data_to_database(
             table_name="chassis_utilization_details", records=perf_list_details)
 

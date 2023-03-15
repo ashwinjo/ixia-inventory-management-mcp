@@ -50,7 +50,7 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                 
         if table_name == "chassis_card_details":
             for rcd in record:
-                
+                print(rcd)
                 if ip_tags_dict:
                     tags = ip_tags_dict.get(record["chassisIp"]) #This is a list
                     if tags:
