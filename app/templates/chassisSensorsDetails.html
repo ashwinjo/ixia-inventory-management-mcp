@@ -1,60 +1,60 @@
 {% extends "base.html" %}
-
 {% block content %}
 <!-- Portfolio Section-->
 <section class="page-section">
-  <div class="text-center alert alert-success" role="alert">
-    <h4> Chassis Sensor Details  </h4>
-  </div>
-    <div>
-      <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('chassisSensorDetails', '0')">
-        Download CSV
-      </button>
-      <form id="tabForms3" action = "/pollLatestData/sensors" method = "GET">
-        <input class="btn btn-success"  type = "submit" value="Get Latest Data" />
-      </form>
-    <div>
-    <div>
-        {% if rows[0]|length > 0 %}
-        <h5> Last Updated at (UTC): {{rows[0][0]["lastUpdatedAt_UTC"]}} </h5>
-        {% else %}
-        <h5> Last Updated at (UTC): NA </h5>
-        {% endif%}
-    </div>
-    <br/>
-    <table class="table table-bordered table-responsive table-condensed">
+   <div class="text-center alert alert-success" role="alert">
+      <h4> Chassis Sensor Details  </h4>
+   </div>
+   <div>
+   <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('chassisSensorDetails', '0')">
+   Download CSV
+   </button>
+   <form id="tabForms3" action = "/pollLatestData/sensors" method = "GET">
+      <input class="btn btn-success"  type = "submit" value="Get Latest Data" />
+   </form>
+   <div>
+   <div>
+      {% if rows[0]|length > 0 %}
+      <h5> Last Updated at (UTC): {{rows[0][0]["lastUpdatedAt_UTC"]}} </h5>
+      {% else %}
+      <h5> Last Updated at (UTC): NA </h5>
+      {% endif%}
+   </div>
+   <br/>
+   <table class="table table-bordered table-responsive table-condensed">
       <thead class="table-primary">
-        <tr>
-        {% for h in headers %}
-          <th>{{ h }} </th>
-        {% endfor %}
-        </tr>
+         <tr>
+            {% for h in headers %}
+            <th>{{ h }} </th>
+            {% endfor %}
+         </tr>
       </thead>
       <tbody>
-        {% for row in rows %}
-            {% for entry in row %}
-                    {% if entry["sensorName"] == "NA" %}
-                      {% set className = "table-warning" %}
-                    {% else %}
-                      {% set className = "table-light" %}
-                    {% endif %}
-                    <td class={{className}}>{{entry["chassisIp"]}}</td>
-                    <td class={{className}}>{{entry["typeOfChassis"]}}</td>
-                    <td class={{className}}>{{entry["sensorType"]}}</td>
-                    <td class={{className}}>{{entry["sensorName"]}}</td>
-                    <td class={{className}}> {{entry["sensorValue"]}} </td>
-                    <td class={{className}}>{{entry["unit"]}}</td>
-            </tr>
-          {% endfor %}
-        {% endfor %}
+         {% for row in rows %}
+         {% for entry in row %}
+         {% if entry["sensorValue"] != "NA" %}
+         {% set className = "table-light" %}
+         {% endif %}
+         {% if entry["sensorValue"] != "NA" %}
+         <tr>
+            <td class={{className}}>{{entry["chassisIp"]}}</td>
+            <td class={{className}}>{{entry["typeOfChassis"]}}</td>
+            <td class={{className}}>{{entry["sensorType"]}}</td>
+            <td class={{className}}>{{entry["sensorName"]}}</td>
+            <td class={{className}}> {{entry["sensorValue"]}} </td>
+            <td class={{className}}>{{entry["unit"]}}</td>
+         </tr>
+         {% endif %}
+         {% endfor %}
+         {% endfor %}
       </tbody>
       <tfoot>
-        <tr>
-          {% for h in headers %}
-          <th>{{ h }} </th>
-          {% endfor %}
-        </tr>
-    </tfoot>
-    </table>
+         <tr>
+            {% for h in headers %}
+            <th>{{ h }} </th>
+            {% endfor %}
+         </tr>
+      </tfoot>
+   </table>
 </section>
 {% endblock %}

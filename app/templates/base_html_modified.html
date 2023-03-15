@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
+        <meta http-equiv="refresh" content="900">
         <title>Ixia Inventory Explorer</title>
         <!-- Favicon-->
         <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='assets/favicon.ico')}}" />
@@ -56,7 +57,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> 
         <script>
             $(document).ready(function() {
-                $(".page-section").prepend("<div id='PleaseWait' style='justify-content: center; display: none;'><img src='{{url_for('static', filename='assets/img/loading-waiting.gif')}}'></img></div>"); 
+                $(".page-section").prepend("<div id='PleaseWait' style='justify-content: center; display: none;'><img src='{{url_for('static', filename='loading-waiting.gif')}}'></img></div>"); 
             });
 
             $('#uploader').submit(function() {
@@ -71,7 +72,17 @@
                 return true;
             });
         </script>
-        
+        <script>
+            
+            function confirmSubmit()
+            { var agree=confirm("Pollers are working hard to get data for you. Please be patient with them. It can take upto 5 minutes to load your data (first time). Default Page Refresh is 15 mins.");
+                if (agree)
+                    return true ;
+                else
+                    return false ;
+            }
+            </script>
+
         {% endblock %}
 
     </body>

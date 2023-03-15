@@ -1,92 +1,91 @@
 {% extends "base.html" %}
-
 {% block content %}
 <!-- Portfolio Section-->
 <section class="page-section">
-    <div class="waiter"></div>
-    <div class="text-center alert alert-success" role="alert">
+   <div class="waiter"></div>
+   <div class="text-center alert alert-success" role="alert">
       <h4> Chassis Summary </h4>
-    </div>
-    <div>
-      <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('chassisDetails', '2')">
-        Download CSV
-      </button>
-      <form id="tabForms1" action = "/pollLatestData/chassis" method = "GET">
-        <input class="btn btn-success"  type = "submit" value="Get Latest Data" />
-      </form>
-    <div>
-    <br/>
-    <div>
+   </div>
+   <div>
+   <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('chassisDetails', '2')">
+   Download CSV
+   </button>
+   <form id="tabForms1" action = "/pollLatestData/chassis" method = "GET">
+      <input class="btn btn-success"  type = "submit" value="Get Latest Data" />
+   </form>
+   <div>
+   <br/>
+   <div>
       {% if rows[0]|length > 0 %}
       <h5> Last Updated at (UTC): {{rows[0]["lastUpdatedAt_UTC"]}} </h5>
       {% else %}
       <h5> Last Updated at (UTC): NA </h5>
       {% endif%}
-  </div>
-    <table class="table table-bordered table-responsive table-condensed">
-    <thead class="table-primary">
-        <tr>
-        {% for h in headers %}
-          <th bgcolor="green">{{ h }} </th>
-        {% endfor %}
-        <th></th>
-        </tr>
+   </div>
+   <table class="table table-bordered table-responsive table-condensed">
+      <thead class="table-primary">
+         <tr>
+            {% for h in headers %}
+            <th bgcolor="green">{{ h }} </th>
+            {% endfor %}
+            <th></th>
+         </tr>
       </thead>
       <tbody>
-        {% for entry in rows %}
-          <tr> 
-                  {% if entry["chassisStatus"] == "UP" %}
-                      {% set className = "table-success"%}
-                  {% elif entry["chassisStatus"] == "DOWN" %}
-                      {% set className = "table-danger"%}
-                  {% else %}
-                      {% set className = "table-warning"%}
-                  {% endif %}
-                  
-                  <td class={{className}}>{{entry["chassisIp"]}}</td>
-                  {% if entry["os"] == "Linux" %}
-                  <td><img class="img-fluid rounded" src="{{url_for('static', filename='assets/img/Linux-icon.png')}}"></td>
-                  {% elif entry["os"] == "Windows" %}
-                   <td><img class="img-fluid rounded" src="{{url_for('static', filename='assets/img/social-windows-button-icon.png')}}"/></td>
-                  {% else %}
-                    <td class={{className}}>{{entry["os"]}}</td>                  
-                  {% endif %}
+         {% for entry in rows %}
+         <tr>
+            {% if entry["chassisStatus"] == "UP" %}
+            {% set className = "table-success"%}
+            {% elif entry["chassisStatus"] == "DOWN" %}
+            {% set className = "table-danger"%}
+            {% else %}
+            {% set className = "table-warning"%}
+            {% endif %}
 
-                  <td>{{entry["chassisType"]}}</td>
-                  <td>{{entry["chassisSerial#"]}}</td>
-                  <td>{{entry["controllerSerial#"]}}</td>
-                  <td>{{entry["physicalCards#"]}}</td>
-                  <td>{{entry["IxOS"]}}</td>
-                  <td>{{entry["IxNetwork Protocols"]}}</td>
-                  <td>{{entry["IxOS REST"]}}</td>
-                  <td>{{entry["mem_bytes"]}}</td>
-                  <td>{{entry["mem_bytes_total"]}}</td>
-                  <td>{{entry["cpu_pert_usage"]}}</td>
+            <td class={{className}}>{{entry["chassisIp"]}}</td>
+            {% if entry["os"] == "Linux" %}
+            <td><img class="img-fluid rounded" src="{{url_for('static', filename='assets/img/Linux-icon.png')}}"></td>
+            {% elif entry["os"] == "Windows" %}
+            <td><img class="img-fluid rounded" src="{{url_for('static', filename='assets/img/social-windows-button-icon.png')}}"/></td>
+            {% else %}
+            <td class={{className}}>{{entry["os"]}}</td>
+            {% endif %}
+            
+            <td>{{entry["chassisType"]}}</td>
+            <td>{{entry["chassisSerial#"]}}</td>
+            <td>{{entry["controllerSerial#"]}}</td>
+            <td>{{entry["physicalCards#"]}}</td>
+            <td>{{entry["IxOS"]}}</td>
+            <td>{{entry["IxNetwork Protocols"]}}</td>
+            <td>{{entry["IxOS REST"]}}</td>
+            <td>{{entry["mem_bytes"]}}</td>
+            <td>{{entry["mem_bytes_total"]}}</td>
+            <td>{{entry["cpu_pert_usage"]}}</td>
             <td>
-                {% for tag in ip_tags_dict[entry["chassisIp"]] %}
-                    {% if tag|length > 0 %}
-                      <button type="button" class="btn btn-warning btn-sm">{{tag}}</button>
-                    {% endif %}
-                 {% endfor %}
-                 <button onclick='addTag("{{entry["chassisIp"]}}")' type="button" class="btn btn-primary btn-sm">+</button>
-                 <button onclick='removeTag("{{entry["chassisIp"]}}")' type="button" class="btn btn-primary btn-sm">X</button>
+               {% for tag in ip_tags_dict[entry["chassisIp"]] %}
+               {% if tag|length > 0 %}
+               <button type="button" class="btn btn-warning btn-sm">{{tag}}</button>
+               {% endif %}
+               {% endfor %}
+               <button onclick='addTag("{{entry["chassisIp"]}}")' type="button" class="btn btn-primary btn-sm">+</button>
+               <button onclick='removeTag("{{entry["chassisIp"]}}")' type="button" class="btn btn-primary btn-sm">X</button>
             </td>
-              <td><button type="button" class="btn btn-danger" onclick='myFunction("{{entry["chassisIp"]}}")'> Get IxOS Logs</button></td>
-          </tr>
-        {% endfor %}
+            <td><button type="button" class="btn btn-danger" onclick='myFunction("{{entry["chassisIp"]}}")'> Get IxOS Logs</button></td>
+         </tr>
+         {% endfor %}
       </tbody>
       <tfoot>
-        <tr>
-          {% for h in headers %}
-          <th>{{ h }} </th>
-          {% endfor %}
-        </tr>
-    </tfoot>
-    </table>
-    <div class="loader">
-        <div class="loading">
-    </div>
-    <div id="loading"></div>
-    </div>
+         <tr>
+            {% for h in headers %}
+            <th>{{ h }} </th>
+            {% endfor %}
+         </tr>
+      </tfoot>
+   </table>
+   <div class="loader">
+      <div class="loading">
+      </div>
+      <div id="loading"></div>
+   </div>
 </section>
 {% endblock %}

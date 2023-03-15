@@ -69,7 +69,7 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
             for rcd in record:
                 cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,cardNumber,portNumber,linkState,phyMode,transceiverModel,
                             transceiverManufacturer,owner,totalPorts,ownedPorts,freePorts, lastUpdatedAt_UTC) VALUES 
-                                ('{rcd["chassisIp"]}', '{rcd["typeOfChassis"]}', '{rcd["cardNumber"]}','{rcd["portNumber"]}','{rcd["linkState"]}',
+                                ('{rcd["chassisIp"]}', '{rcd["typeOfChassis"]}', '{rcd["cardNumber"]}','{rcd["portNumber"]}','{rcd.get("linkState", "NA")}',
                                 '{rcd.get("phyMode","NA")}','{rcd.get("transceiverModel", "NA")}', '{rcd.get("transceiverManufacturer", "NA")}','{rcd["owner"]}',
                                 '{rcd["totalPorts"]}','{rcd["ownedPorts"]}', '{rcd["freePorts"]}',datetime('now'))""")
                 
@@ -79,7 +79,7 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                 if {rcd["unit"]} ==  "CELSIUS": unit = f'{rcd["value"]} {chr(176)}C'
                 if {rcd["unit"]} ==  "AMPERSEND": unit = "AMP"
                 cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,sensorType,sensorName,sensorValue,unit,lastUpdatedAt_UTC) VALUES 
-                                ('{rcd["chassisIp"]}', '{rcd["typeOfChassis"]}', '{rcd["type"]}','{rcd["name"]}',
+                                ('{rcd["chassisIp"]}', '{rcd["typeOfChassis"]}', '{rcd.get("type", "NA")}','{rcd["name"]}',
                                  '{rcd["value"]}','{unit}', datetime('now'))""")
           
         if table_name == "chassis_utilization_details":

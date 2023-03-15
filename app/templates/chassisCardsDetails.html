@@ -1,74 +1,73 @@
 {% extends "base.html" %}
-
 {% block content %}
 <!-- Portfolio Section-->
 <section class="page-section">
-  <div class="text-center alert alert-success" role="alert">
-    <h4> Chassis Cards Details  </h4>
-  </div>
-  <div>
-    <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('chassisCardDetails', '1')">
-      Download CSV
-    </button>
-    <form id="tabForms2" action = "/pollLatestData/cards" method = "GET">
+   <div class="text-center alert alert-success" role="alert">
+      <h4> Chassis Cards Details  </h4>
+   </div>
+   <div>
+   <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('chassisCardDetails', '1')">
+   Download CSV
+   </button>
+   <form id="tabForms2" action = "/pollLatestData/cards" method = "GET">
       <input class="btn btn-success"  type = "submit" value="Get Latest Data" />
-    </form>
-  <div>
-  <br/>
-  <div>
-    {% if rows[0]|length > 0 %}
-    <h5> Last Updated at (UTC): {{rows[0][0]["lastUpdatedAt_UTC"]}} </h5>
-    {% else %}
-    <h5> Last Updated at (UTC): NA </h5>
-    {% endif%}
-</div>
-    <table class="table table-bordered table-responsive table-condensed">
+   </form>
+   <div>
+   <br/>
+   <div>
+      {% if rows[0]|length > 0 %}
+      <h5> Last Updated at (UTC): {{rows[0][0]["lastUpdatedAt_UTC"]}} </h5>
+      {% else %}
+      <h5> Last Updated at (UTC): NA </h5>
+      {% endif%}
+   </div>
+   <table class="table table-bordered table-responsive table-condensed">
       <thead class="table-primary">
-        <tr>
-        {% for h in headers %}
-          <th>{{ h }} </th>
-        {% endfor %}
-        <th> Tags </th>
-        </tr>
-        
+         <tr>
+            {% for h in headers %}
+            <th>{{ h }} </th>
+            {% endfor %}
+            <th> Tags </th>
+         </tr>
       </thead>
       <tbody>
-        {% for row in rows %}
-            {% for entry in row %}
-              <tr>
-                {% if entry["cardState"] == "UP" %}
-                  {% set className = "table-success"%}
-                {% elif entry["cardState"] == "DOWN" %}
-                    {% set className = "table-danger"%}
-                {% else %}
-                    {% set className = "table-warning"%}
-                {% endif %}
-                  <td class={{className}}>{{entry["chassisIp"]}} </td>
-                  <td class={{className}}>{{entry["chassisType"]}} </td>
-                  <td class={{className}}>{{entry["cardNumber"]}}</td>
-                  <td class={{className}}>{{entry["serialNumber"]}}</td>
-                  <td class={{className}}>{{entry["cardType"]}}</td>
-                  <td>{{entry["numberOfPorts"]}}</td>
-                  <td>
-                    {% for tag in ip_tags_dict[entry["serialNumber"]] %}
-                        {% if tag|length > 0 %}
-                          <button type="button" class="btn btn-warning btn-sm">{{tag}}</button>
-                        {% endif %}
-                     {% endfor %}
-                     <button onclick='addTagCard("{{entry["serialNumber"]}}")' type="button" class="btn btn-primary btn-sm">+</button>
-                     <button onclick='removeTagCard("{{entry["serialNumber"]}}")' type="button" class="btn btn-primary btn-sm">X</button>
-                </td>
-            </tr>
-          {% endfor %}
-        {% endfor %}
+         {% for row in rows %}
+         {% for entry in row %}
+         {% if entry["cardState"] != "NA" %}
+         <tr>
+            {% if entry["cardState"] == "DOWN" %}
+            {% set className = "table-danger"%}
+            {% else %}
+            {% set className = "table-success"%}
+            {% endif %}
+
+            <td>{{entry["chassisIp"]}} </td>
+            <td>{{entry["chassisType"]}} </td>
+            <td class={{className}}>{{entry["cardNumber"]}}</td>
+            <td>{{entry["serialNumber"]}}</td>
+            <td>{{entry["cardType"]}}</td>
+            <td>{{entry["numberOfPorts"]}}</td>
+            <td>
+               {% for tag in ip_tags_dict[entry["serialNumber"]] %}
+               {% if tag|length > 0 %}
+               <button type="button" class="btn btn-warning btn-sm">{{tag}}</button>
+               {% endif %}
+               {% endfor %}
+               <button onclick='addTagCard("{{entry["serialNumber"]}}")' type="button" class="btn btn-primary btn-sm">+</button>
+               <button onclick='removeTagCard("{{entry["serialNumber"]}}")' type="button" class="btn btn-primary btn-sm">X</button>
+            </td>
+         </tr>
+         {% endif %}
+         {% endfor %}
+         {% endfor %}
       </tbody>
       <tfoot>
-        <tr>
-          {% for h in headers %}
-          <th>{{ h }} </th>
-          {% endfor %}
-        </tr>
-    </tfoot>
-    </table>
+         <tr>
+            {% for h in headers %}
+            <th>{{ h }} </th>
+            {% endfor %}
+         </tr>
+      </tfoot>
+   </table>
 </section>
 {% endblock %}

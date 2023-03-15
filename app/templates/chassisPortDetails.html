@@ -1,72 +1,69 @@
 {% extends "base.html" %}
-
 {% block content %}
 <!-- Portfolio Section-->
 <section class="page-section">
-  <div class="text-center alert alert-success" role="alert">
-    <h4> Chassis Port Details  </h4>
-  </div>
-  <div>
-    <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('chassisPortDetails', '0')">
-      Download CSV
-    </button>
-    <form id="tabForms4" action = "/pollLatestData/ports" method = "GET">
-        <input class="btn btn-success"  type = "submit" value="Get Latest Data" />
-      </form>
-  <div>
-  <br/>
-  <div>
-    {% if rows[0]|length > 0 %}
-    <h5> Last Updated at (UTC): {{rows[0][0]["lastUpdatedAt_UTC"]}} </h5>
-    {% else %}
-    <h5> Last Updated at (UTC): NA </h5>
-    {% endif%}
-</div>
-    <table class="table table-bordered table-responsive table-condensed">
+   <div class="text-center alert alert-success" role="alert">
+      <h4> Chassis Port Details  </h4>
+   </div>
+   <div>
+   <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('chassisPortDetails', '0')">
+   Download CSV
+   </button>
+   <form id="tabForms4" action = "/pollLatestData/ports" method = "GET">
+      <input class="btn btn-success"  type = "submit" value="Get Latest Data" />
+   </form>
+   <div>
+   <br/>
+   <div>
+      {% if rows[0]|length > 0 %}
+      <h5> Last Updated at (UTC): {{rows[0][0]["lastUpdatedAt_UTC"]}} </h5>
+      {% else %}
+      <h5> Last Updated at (UTC): NA </h5>
+      {% endif%}
+   </div>
+   <table class="table table-bordered table-responsive table-condensed">
       <thead class="table-primary">
-        <tr>
-        {% for h in headers %}
-          <th>{{ h }} </th>
-        {% endfor %}
-        </tr>
-        
+         <tr>
+            {% for h in headers %}
+            <th>{{ h }} </th>
+            {% endfor %}
+         </tr>
       </thead>
       <tbody>
-        {% for row in rows %}
-            {% for entry in row %}
-            
-              {% if entry["linkState"] == "UP" %}
-                  {% set className = "table-success"%}
-              {% elif entry["linkState"] == "LOOPBACK" %}
-                  {% set className = "table-warning"%}
-              {% elif entry["linkState"] == "FORCELINKUP"%}
-                {% set className = "table-light"%}
-              {% elif entry["linkState"] == "NA"%}
-                {% set className = "table-warning"%}
-              {% else %}
-                  {% set className = "table-danger"%}
-              {% endif %}
-              <tr>
-                  <td  class={{className}}>{{entry["chassisIp"]}} </td>
-                  <td  class={{className}}>{{entry["typeOfChassis"]}} </td>
-                  <td  class={{className}}>{{entry["cardNumber"]}}</td>
-                  <td  class={{className}}>{{entry["portNumber"]}}</td>
-                  <td  class={{className}}>{{entry["linkState"]}}</td>
-                  <td  class={{className}}>{{entry["phyMode"]}}</td>
-                  <td  class={{className}}>{{entry["transceiverModel"]}}</td>
-                  <td  class={{className}}>{{entry["transceiverManufacturer"]}}</td>
-                  <td  class={{className}}>{{entry["owner"]}}</td>
-            </tr>
-          {% endfor %}
-        {% endfor %}
+         {% for row in rows %}
+         {% for entry in row %}
+         {% if entry["linkState"] == "UP" %}
+         {% set className = "table-success"%}
+         {% elif entry["linkState"] == "LOOPBACK" %}
+         {% set className = "table-info"%}
+         {% elif entry["linkState"] == "FORCELINKUP"%}
+         {% set className = "table-light"%}
+         {% else %}
+         {% set className = "table-danger"%}
+         {% endif %}
+         {% if entry["cardNumber"] != "NA"%}
+         <tr>
+            <td>{{entry["chassisIp"]}} </td>
+            <td>{{entry["typeOfChassis"]}} </td>
+            <td>{{entry["cardNumber"]}}</td>
+            <td>{{entry["portNumber"]}}</td>
+            <td  class={{className}}>{{entry["linkState"]}}</td>
+            <td>{{entry["phyMode"]}}</td>
+            <td>{{entry["transceiverModel"]}}</td>
+            <td>{{entry["transceiverManufacturer"]}}</td>
+            <td>{{entry["owner"]}}</td>
+         </tr>
+         {% endif %}
+         {% endfor %}
+         {% endfor %}
       </tbody>
       <tfoot>
-        <tr>
-          {% for h in headers %}
-          <th>{{ h }} </th>
-          {% endfor %}
-        </tr>
-    </tfoot>
-    </table>
+         <tr>
+            {% for h in headers %}
+            <th>{{ h }} </th>
+            {% endfor %}
+         </tr>
+      </tfoot>
+   </table>
 </section>
 {% endblock %}

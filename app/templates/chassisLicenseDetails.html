@@ -1,65 +1,65 @@
 {% extends "base.html" %}
-
 {% block content %}
 <!-- Portfolio Section-->
 <section class="page-section">
-  <div class="text-center alert alert-success" role="alert">
-    <h4> Chassis Licenses Details  </h4>
-  </div>
-    <div>
-      <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('chassisLicenseDetails', '0')">
-        Download CSV
-      </button>
-      <form id="tabForms3" action = "/pollLatestData/licensing" method = "GET">
-        <input class="btn btn-success"  type = "submit" value="Get Latest Data" />
-      </form>
-    <div>
-    <br/>
-    <div>
+   <div class="text-center alert alert-success" role="alert">
+      <h4> Chassis Licenses Details  </h4>
+   </div>
+   <div>
+   <button type="button" class="btn btn-outline-primary" onclick="tableToCSV('chassisLicenseDetails', '0')">
+   Download CSV
+   </button>
+   <form id="tabForms3" action = "/pollLatestData/licensing" method = "GET">
+      <input class="btn btn-success"  type = "submit" value="Get Latest Data" />
+   </form>
+   <div>
+   <br/>
+   <div>
       {% if rows[0]|length > 0 %}
       <h5> Last Updated at (UTC): {{rows[0][0]["lastUpdatedAt_UTC"]}} </h5>
       {% else %}
       <h5> Last Updated at (UTC): NA </h5>
       {% endif%}
-  </div>
-    <table class="table table-bordered table-responsive table-condensed">
+   </div>
+   <table class="table table-bordered table-responsive table-condensed">
       <thead class="table-primary">
-        <tr>
-        {% for h in headers %}
-          <th>{{ h }} </th>
-        {% endfor %}
-        </tr>
+         <tr>
+            {% for h in headers %}
+            <th>{{ h }} </th>
+            {% endfor %}
+         </tr>
       </thead>
       <tbody>
-        {% for row in rows %}
-            {% for entry in row %}
-                  
-                  {% if entry["isExpired"] == True or entry["isExpired"] == 'True' %}
-                      {% set className = "table-danger"%}
-                  {% else %}
-                      {% set className = "table-success"%}
-                  {% endif %}
-
-                    <td style="width:auto" class={{className}}>{{entry["chassisIp"]}}</td>
-                    <td style="width:auto" class={{className}}>{{entry["typeOfChassis"]}}</td>
-                    <td style="width:auto" class={{className}}>{{entry["hostId"]}}</td>
-                    <td style="width:auto" class={{className}}>{{entry["partNumber"]}}</td>
-                    <td style="width:auto" class={{className}}>{{entry["activationCode"]}}</td>
-                    <td style="width:auto" class={{className}}>{{entry["quantity"]}}</td>
-                    <td style="width:auto" class={{className}}>{{entry["description"]}}</td>
-                    <td style="width:auto" class={{className}}>{{entry["maintenanceDate"]}}</td>
-                    <td style="width:auto" class={{className}}>{{entry["expiryDate"]}}
-            </tr>
-          {% endfor %}
-        {% endfor %}
+         {% for row in rows %}
+         {% for entry in row %}
+         {% if entry["isExpired"] == True or entry["isExpired"] == 'True' %}
+         {% set className = "table-danger"%}
+         {% else %}
+         {% set className = "table-success"%}
+         {% endif %}
+         {% if entry["activationCode"] != "NA" %}
+         <tr>
+            <td class={{className}}>{{entry["chassisIp"]}}</td>
+            <td class={{className}}>{{entry["typeOfChassis"]}}</td>
+            <td class={{className}}>{{entry["hostId"]}}</td>
+            <td class={{className}}>{{entry["partNumber"]}}</td>
+            <td class={{className}}>{{entry["activationCode"]}}</td>
+            <td class={{className}}>{{entry["quantity"]}}</td>
+            <td class={{className}}>{{entry["description"]}}</td>
+            <td class={{className}}>{{entry["maintenanceDate"]}}</td>
+            <td class={{className}}>{{entry["expiryDate"]}}
+         </tr>
+         {% endif %}
+         {% endfor %}
+         {% endfor %}
       </tbody>
       <tfoot>
-        <tr>
-          {% for h in headers %}
-          <th>{{ h }} </th>
-          {% endfor %}
-        </tr>
-    </tfoot>
-    </table>
+         <tr>
+            {% for h in headers %}
+            <th>{{ h }} </th>
+            {% endfor %}
+         </tr>
+      </tfoot>
+   </table>
 </section>
 {% endblock %}
