@@ -34,15 +34,23 @@
       <tbody>
         {% for row in rows %}
             {% for entry in row %}
+              {% if entry["linkState"] == "UP" %}
+                  {% set className = "table-success"%}
+              {% elif entry["linkState"] == "LOOPBACK" %}
+                  {% set className = "table-warning"%}
+              {% else %}
+                  {% set className = "table-danger"%}
+              {% endif %}
               <tr>
-                  <td>{{entry["chassisIp"]}} </td>
-                  <td>{{entry["typeOfChassis"]}} </td>
-                  <td>{{entry["cardNumber"]}}</td>
-                  <td>{{entry["portNumber"]}}</td>
-                  <td>{{entry["phyMode"]}}</td>
-                  <td>{{entry["transceiverModel"]}}</td>
-                  <td>{{entry["transceiverManufacturer"]}}</td>
-                  <td>{{entry["owner"]}}</td>
+                  <td  class={{className}}>{{entry["chassisIp"]}} </td>
+                  <td  class={{className}}>{{entry["typeOfChassis"]}} </td>
+                  <td  class={{className}}>{{entry["cardNumber"]}}</td>
+                  <td  class={{className}}>{{entry["portNumber"]}}</td>
+                  <td  class={{className}}>{{entry["linkState"]}}</td>
+                  <td  class={{className}}>{{entry["phyMode"]}}</td>
+                  <td  class={{className}}>{{entry["transceiverModel"]}}</td>
+                  <td  class={{className}}>{{entry["transceiverManufacturer"]}}</td>
+                  <td  class={{className}}>{{entry["owner"]}}</td>
             </tr>
           {% endfor %}
         {% endfor %}

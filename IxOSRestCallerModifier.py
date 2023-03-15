@@ -143,7 +143,7 @@ def get_chassis_ports_information(session, chassisIp, chassisType):
     
     last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
     port_list = session.get_ports().data
-    
+    print(port_list)
     keys_to_keep = ['owner', 'transceiverModel', 'transceiverManufacturer', 'cardNumber', 'portNumber', 'phyMode', 'linkState']
 
     if port_list:
@@ -151,7 +151,7 @@ def get_chassis_ports_information(session, chassisIp, chassisType):
     else:
         a = []
     keys_to_remove = [x for x in a if x not in keys_to_keep]
-    
+    print(keys_to_remove)
     # Removing the extra keys from port details json response
     for port_data in port_list:
         if not port_data.get("owner"):
@@ -179,6 +179,7 @@ def get_chassis_ports_information(session, chassisIp, chassisType):
                                 "freePorts": (total_ports-used_ports),
                                 "chassisIp": chassisIp,
                                 "typeOfChassis": chassisType })
+    #print(port_data_list)
     return port_data_list
 
         
