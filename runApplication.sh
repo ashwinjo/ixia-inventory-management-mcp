@@ -1,4 +1,4 @@
-python3 init_db_new.py
+python3 init_db.py
 python3 data_poller.py --category=chassis --interval=60 &
 sleep 15
 python3 data_poller.py --category=cards --interval=60 &

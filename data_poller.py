@@ -1,17 +1,14 @@
-from sqlite3_utilities_new import *
+from sqlite3_utilities import *
 import IxOSRestCallerModifier as ixOSRestCaller
 from RestApi.IxOSRestInterface import IxRestSession
 import click
 import time
 import json
-from datetime import datetime, timezone
+
 
 
 def get_chassis_summary_data():
     """This is a call to RestAPI to get chassis summary data
-
-    Returns:
-        _type_: _description_
     """
     list_of_chassis = []
     serv_list = read_username_password_from_database()
@@ -48,10 +45,7 @@ def get_chassis_summary_data():
 
 
 def get_chassis_card_data():
-    """This is a call to RestAPI to get chassis summary data
-
-    Returns:
-        _type_: _description_
+    """This is a call to RestAPI to get chassis card summary data
     """
     list_of_cards = []
     serv_list = read_username_password_from_database()
@@ -80,7 +74,7 @@ def get_chassis_card_data():
 
 
 def get_chassis_port_data():
-    """_summary_
+    """This is a call to RestAPI to get chassis card port summary data
     """
     port_list_details = []
     serv_list = read_username_password_from_database()
@@ -115,6 +109,8 @@ def get_chassis_port_data():
 
 
 def get_chassis_licensing_data():
+    """This is a call to RestAPI to get chassis licensing data
+    """
     list_of_licenses = []
     serv_list = read_username_password_from_database()
     if serv_list:
@@ -145,7 +141,8 @@ def get_chassis_licensing_data():
             table_name="license_details_records", records=list_of_licenses)
 
 def get_sensor_information():
-    headers = ["chassisIP", "chassisType", "sensorType", "sensorName", "sensorValue"]
+    """This is a call to RestAPI to get chassis sensors summary data
+    """
     sensor_list_details = []
     serv_list = read_username_password_from_database()
     if serv_list:
@@ -170,6 +167,8 @@ def get_sensor_information():
             table_name="chassis_sensor_details", records=sensor_list_details)
 
 def get_perf_metrics():
+    """This is a call to RestAPI to get chassis performance metrics data
+    """
     serv_list = read_username_password_from_database()
     perf_list_details = []
     if serv_list:
@@ -189,8 +188,9 @@ def get_perf_metrics():
             table_name="chassis_utilization_details", records=perf_list_details)
         
 def delete_half_metric_records_weekly():
+    """This method will do periodic cleanup of inventord DB performance metrics data
+    """
     pass
-
 
 
 def controller(category_of_poll=None):

@@ -1,7 +1,7 @@
 from flask import render_template, request, jsonify, redirect
 from app import create_app
 from  RestApi.IxOSRestInterface import IxRestSession
-from sqlite3_utilities_new import *
+from sqlite3_utilities import *
 from data_poller import controller
 import json
 

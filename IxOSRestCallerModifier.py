@@ -17,7 +17,6 @@ It collects the below info from the chassis:
 
 import json
 import math
-from  RestApi.IxOSRestInterface import IxRestSession
 from datetime import datetime, timezone
 
 

@@ -3,3 +3,4 @@ pandas
 requests
 pysqlite3==0.4.2
 click
+ixnetwork_restpy
