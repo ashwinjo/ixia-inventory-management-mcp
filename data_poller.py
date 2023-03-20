@@ -187,6 +187,9 @@ def get_perf_metrics():
                 perf_list_details.append(a)
         write_data_to_database(
             table_name="chassis_utilization_details", records=perf_list_details)
+        
+def delete_half_metric_records_weekly():
+    pass
 
 
 

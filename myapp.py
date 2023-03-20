@@ -116,7 +116,7 @@ def licenseDetails():
 def get_chassis_ports_information():
     headers = ["chassisIp", "typeOfChassis",
                "cardNumber", "portNumber", "linkState","phyMode", "transceiverModel", 
-               "transceiverManufacturer", "owner"]
+               "transceiverManufacturer","type", "speed", "owner"]
     port_list_details = []
 
     records = read_data_from_database(table_name="chassis_port_details")
@@ -130,6 +130,8 @@ def get_chassis_ports_information():
                 "transceiverModel": record["transceiverModel"],
                 "transceiverManufacturer": record["transceiverManufacturer"],
                 "owner": record["owner"],
+                "speed": record["speed"],
+                "type": record["type"],
                 "totalPorts":record["totalPorts"],
                 "ownedPorts": record["ownedPorts"],
                 "freePorts": record["freePorts"],

@@ -39,6 +39,8 @@ create_port_details_records_sql = """CREATE TABLE IF NOT EXISTS chassis_port_det
                                         'transceiverModel' TEXT,
                                         'transceiverManufacturer' TEXT,
                                         'owner' TEXT,
+                                        'speed' TEXT, 
+                                        'type' TEXT,
                                         'totalPorts' TEXT,  
                                         'ownedPorts' TEXT,
                                         'freePorts' TEXT,

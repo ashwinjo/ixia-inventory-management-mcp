@@ -144,7 +144,7 @@ def get_chassis_ports_information(session, chassisIp, chassisType):
     last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
     port_list = session.get_ports().data
     
-    keys_to_keep = ['owner', 'transceiverModel', 'transceiverManufacturer', 'cardNumber', 'portNumber', 'phyMode', 'linkState']
+    keys_to_keep = ['owner', 'transceiverModel', 'transceiverManufacturer', 'cardNumber', 'portNumber', 'phyMode', 'linkState', 'speed', 'type']
 
     if port_list:
         a = list(port_list[0].keys())

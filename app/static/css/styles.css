@@ -11555,3 +11555,7 @@ html {
   display: grid;
   grid-template-columns: 200px 200px 200px;
 }
+
+.bg-keysight{
+    background-image: url('../assets/img/bg.png')
+}

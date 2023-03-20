@@ -68,10 +68,10 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
         if table_name == "chassis_port_details":
             for rcd in record:
                 cur.execute(f"""INSERT INTO {table_name} (chassisIp,typeOfChassis,cardNumber,portNumber,linkState,phyMode,transceiverModel,
-                            transceiverManufacturer,owner,totalPorts,ownedPorts,freePorts, lastUpdatedAt_UTC) VALUES 
+                            transceiverManufacturer,owner, speed, type, totalPorts,ownedPorts,freePorts, lastUpdatedAt_UTC) VALUES 
                                 ('{rcd["chassisIp"]}', '{rcd["typeOfChassis"]}', '{rcd["cardNumber"]}','{rcd["portNumber"]}','{rcd.get("linkState", "NA")}',
                                 '{rcd.get("phyMode","NA")}','{rcd.get("transceiverModel", "NA")}', '{rcd.get("transceiverManufacturer", "NA")}','{rcd["owner"]}',
-                                '{rcd["totalPorts"]}','{rcd["ownedPorts"]}', '{rcd["freePorts"]}',datetime('now'))""")
+                                '{rcd["speed"]}','{rcd["type"]}','{rcd["totalPorts"]}','{rcd["ownedPorts"]}', '{rcd["freePorts"]}',datetime('now'))""")
                 
         if table_name == "chassis_sensor_details":
             for rcd in record:
@@ -180,7 +180,7 @@ def write_username_password_to_database(list_of_un_pw):
     user_pw_dict = []
     cur.execute("DELETE from user_db")
     user_pw_dict = creat_config_dict(list_of_un_pw)
-    print(user_pw_dict)
+    user_pw_dict = list({v['ip']:v for v in user_pw_dict}.values())
     json_str_data = json.dumps(user_pw_dict)
     q = f"""INSERT INTO user_db (ixia_servers_json) VALUES ('{json_str_data}')"""
     cur.execute(q)
@@ -201,17 +201,39 @@ def read_username_password_from_database():
 
 
 def creat_config_dict(list_of_un_pw):
-    user_pw_dict = []
-    print(list_of_un_pw)
-    for entry in list_of_un_pw.split("\n"):
-        operation = entry.split(",")[0].strip()
-        if operation.lower() != "delete":
-            user_pw_dict.append({
-            "ip": entry.split(",")[1].strip(),
-            "username": entry.split(",")[2].strip(),
-            "password": entry.split(",")[3].strip(),
+    config_now = read_username_password_from_database()
+    print(config_now)
+    # Converting String to List
+    config = list_of_un_pw.split("\n")
+    if config_now:
+        config_now = json.loads(config_now)
+        for item in config:
+            operation, ip, un, pw = item.split(",")
+            if operation == "DELETE":
+                for idx, chassis_config in enumerate(config_now):
+                    if ip == chassis_config["ip"]:
+                        del config_now[idx]
+                        print(f"defeted idx {idx}")
+                        break
+            elif operation == "ADD":
+                if ip not in [c["ip"] for c in config_now]:
+                    config_now.append({
+                                "ip": ip.strip(),
+                                "username": un.strip(),
+                                "password": pw.strip(),
+                            })
+            elif operation == "UPDATE":
+                pass
+    else:
+        for item in config:
+            operation, ip, un, pw = item.split(",")
+            config_now.append({
+                "ip": ip.strip(),
+                "username": un.strip(),
+                "password": pw.strip(),
             })
-    return user_pw_dict
+    print(config_now)
+    return config_now
 
 def get_perf_metrics_from_db(ip):
     conn = _get_db_connection()
@@ -225,6 +247,7 @@ def get_perf_metrics_from_db(ip):
 def write_polling_intervals_into_database(chassis, cards, ports, sensors, licensing, perf):
     conn = _get_db_connection()
     cur = conn.cursor()
+    
     cur.execute("DELETE from poll_setting")
     cur.execute(f"""INSERT INTO poll_setting (chassis, cards, ports, sensors, perf, licensing) VALUES 
                 ({int(chassis)},{int(cards)},{int(ports)},{int(sensors)},{int(perf)},{int(licensing)})""")
