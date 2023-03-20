@@ -71,7 +71,7 @@ def write_data_to_database(table_name=None, records=None, ip_tags_dict=None):
                             transceiverManufacturer,owner, speed, type, totalPorts,ownedPorts,freePorts, lastUpdatedAt_UTC) VALUES 
                                 ('{rcd["chassisIp"]}', '{rcd["typeOfChassis"]}', '{rcd["cardNumber"]}','{rcd["portNumber"]}','{rcd.get("linkState", "NA")}',
                                 '{rcd.get("phyMode","NA")}','{rcd.get("transceiverModel", "NA")}', '{rcd.get("transceiverManufacturer", "NA")}','{rcd["owner"]}',
-                                '{rcd["speed"]}','{rcd["type"]}','{rcd["totalPorts"]}','{rcd["ownedPorts"]}', '{rcd["freePorts"]}',datetime('now'))""")
+                                '{rcd.get("speed", "NA")}','{rcd.get("type", "NA")}','{rcd["totalPorts"]}','{rcd["ownedPorts"]}', '{rcd["freePorts"]}',datetime('now'))""")
                 
         if table_name == "chassis_sensor_details":
             for rcd in record:
