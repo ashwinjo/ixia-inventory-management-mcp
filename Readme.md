@@ -3,8 +3,8 @@ Project is UI written over open IxOS API's that we can find at https://github.co
 
 REST API references at
 
-https://(chassisIp)/chassis/swagger/index.html?v=1.3.0.822#/
-https://(chassisIp)/platform/swagger/index.html?v=1.3.0.822#/
+https://(chassisIp)/chassis/swagger/index.html?v=1.3.0.822# <br/>
+https://(chassisIp)/platform/swagger/index.html?v=1.3.0.822#
 
 
 
@@ -35,19 +35,18 @@ Prerequisites
 ==
 * Linux Server with docker installed
 * Linux server with internet access to Dockerhub CR
-* 
+* Linux Server with access to chassis to monitor
 
 
 Installation:
 ==
 
-**Pull Docker Image.** 
-docker pull ashjo317/ixia:ixinventorymanager.0.0.11
-**Run Docker Image.** 
-docker run -d –p 80:3000 ashjo317/ixia:ixinventorymanager. 0.0.11
+**Pull Docker Image.** <br/>
+docker pull ashjo317/ixia:ixinventorymanager.0.0.11<br/>
+**Run Docker Image.** <br/>
+docker run -d –p 80:3000 ashjo317/ixia:ixinventorymanager. 0.0.11<br/>
 
   
-
 Disclaimer:
 ==
 Please note that the Python-based tool provided here is offered as-is, without any warranty or guarantee of fitness for any particular purpose. The author of this tool will not be able to provide support for feature requests, bug fixes, or any other modifications to the code. However, customers are welcome to use the code provided and modify it as they see fit for their own use.
