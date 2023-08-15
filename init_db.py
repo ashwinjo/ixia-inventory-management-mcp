@@ -71,7 +71,7 @@ def create_data_tables():
     # create tables
     if conn is not None:
         
-        delete_table(conn)
+        # delete_table(conn)
         create_table(conn, db_queries.create_usenname_password_table)
         
         create_table(conn, db_queries.create_chassis_summary_sql)
