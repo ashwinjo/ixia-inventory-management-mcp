@@ -1,211 +1,387 @@
 """
-Description
------------
-This tool belongs to Keysight Technologies
+IxNetwork Chassis Information Collector
 
-This file implements code for collecting information from Ixia Chassis usinf Rest API's
-Reference: https://<chassis_ip>/chassis/swagger/index.html#/
-User has to pass a list or a string IP addresses. 
-It collects the below info from the chassis:
-    - chassis-model
-    - ixos-version
-    - license details (if any)
-    - ports
-    - cpu_utilization
-    - card-models
+This module provides functions to collect information from Ixia Chassis using REST APIs.
+It interfaces with the IxNetwork REST API to gather chassis details, card information,
+port statistics, licensing information, and performance metrics.
+
+Reference: 
+    https://<chassis_ip>/chassis/swagger/index.html#/
+
+Functions:
+    - get_chassis_information: Get chassis hardware and system details
+    - get_chassis_cards_information: Get information about cards installed
+    - get_chassis_ports_information: Get port status and configuration
+    - get_license_activation: Get licensing information
+    - get_sensor_information: Get chassis sensor readings
+    - get_perf_metrics: Get performance metrics
+
+Author: Keysight Technologies
 """
 
 import json
 import math
 from datetime import datetime, timezone
+import logging
+import time
 
-
-
-def get_sensors_information(session):
-    out = session.get_sensors()
+logger = logging.getLogger(__name__)
 
 def convert_size(size_bytes):
-   if size_bytes == 0:
-       return "0B"
-   size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-   i = int(math.floor(math.log(size_bytes, 1024)))
-   p = math.pow(1024, i)
-   s = round(size_bytes / p, 2)
-   return "%s %s" % (s, size_name[i])
+    """
+    Convert bytes to human readable format.
+    
+    Args:
+        size_bytes (int): Size in bytes
+        
+    Returns:
+        str: Human readable size string (e.g., "1.5 GB")
+    """
+    if size_bytes == 0:
+        return "0B"
+    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+    i = int(math.floor(math.log(size_bytes, 1024)))
+    p = math.pow(1024, i)
+    s = round(size_bytes / p, 2)
+    return "%s %s" % (s, size_name[i])
 
 def get_perf_metrics(session, chassisIp):
+    """
+    Get chassis performance metrics including CPU and memory utilization.
+    
+    Args:
+        session (IxRestSession): Active REST session to the chassis
+        chassisIp (str): IP address of the chassis
+        
+    Returns:
+        dict: Performance metrics including:
+            - chassisIp: IP address of chassis
+            - mem_utilization: Memory utilization percentage
+            - cpu_utilization: CPU utilization percentage
+            - lastUpdatedAt_UTC: Timestamp of the data
+    """
+    logger.info(f"Getting performance metrics for chassis {chassisIp}")
     chassis_perf_dict = {}
-    # Exception Handling for Windows Chassis
-    perf = {}
     try:
         perf = session.get_perfcounters().data[0]
-    except:
-        pass
-    
-    mem_bytes = int(perf.get("memoryInUseBytes", "0"))
-    mem_bytes_total = int(perf.get("memoryTotalBytes", "0"))
-    cpu_pert_usage = perf.get("cpuUsagePercent", "0")
-    if not mem_bytes_total:
+        mem_bytes = int(perf.get("memoryInUseBytes", "0"))
+        mem_bytes_total = int(perf.get("memoryTotalBytes", "0"))
+        cpu_pert_usage = perf.get("cpuUsagePercent", "0")
+        mem_util = (mem_bytes/mem_bytes_total)*100 if mem_bytes_total else 0
+    except Exception as e:
+        logger.error(f"Error getting performance metrics: {str(e)}")
         mem_util = 0
-    else:
-        mem_util = (mem_bytes/mem_bytes_total)*100
-    last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
-    chassis_perf_dict.update({"chassisIp": chassisIp,
-                              "mem_utilization": mem_util, 
-                              "cpu_utilization": cpu_pert_usage,
-                              "lastUpdatedAt_UTC": last_update_at})
+        cpu_pert_usage = 0
     
-    return chassis_perf_dict
+    last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
+    return {
+        "chassisIp": chassisIp,
+        "mem_utilization": mem_util, 
+        "cpu_utilization": cpu_pert_usage,
+        "lastUpdatedAt_UTC": last_update_at
+    }
     
 def get_chassis_information(session):
-    """ Fetch chassis information from RestPy
-    We also get the perf counters in the same call
     """
-    temp_dict = {}
+    Get comprehensive chassis information including hardware details and system metrics.
+    
+    Args:
+        session (IxRestSession): Active REST session to the chassis
+        
+    Returns:
+        dict: Chassis information including:
+            - chassisIp: Management IP address
+            - chassisSerial#: Chassis serial number
+            - controllerSerial#: Controller serial number
+            - chassisType: Type of chassis
+            - physicalCards#: Number of physical cards
+            - chassisStatus: Current operational status
+            - mem_bytes: Current memory usage
+            - mem_bytes_total: Total system memory
+            - cpu_pert_usage: CPU utilization percentage
+            - os: Operating system type
+            - Various IxOS application versions
+    """
+    logger.info("Getting chassis information")
     chassis_filter_dict = {}
     no_serial_string = ""
     mem_bytes = "NA"
     mem_bytes_total = "NA"
-    cpu_pert_usage =  "NA"
+    cpu_pert_usage = "NA"
     os = "Linux"
     
-    chassisInfo = session.get_chassis()
-    chassis_perf_dict = {}
     try:
-        # Exception Handling for Windows Chassis
-        perf = session.get_perfcounters().data[0]
-        mem_bytes = convert_size(perf["memoryInUseBytes"])
-        mem_bytes_total = convert_size(perf["memoryTotalBytes"])
-        cpu_pert_usage = perf["cpuUsagePercent"]
-    except Exception:
-        os = "Windows"
+        chassisInfo = session.get_chassis()
+        chassis_data = json.loads(json.dumps(chassisInfo.data[0]))
         
-    
-    chassis_data = json.loads(json.dumps(chassisInfo.data[0]))
-    last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
-    
-    if chassis_data["type"] == "Ixia_Virtual_Test_Appliance":
-        no_serial_string = "IxiaVM"
-    
-    chassis_filter_dict.update({ "chassisIp": chassis_data.get("managementIp"),
-                                 "chassisSerial#": chassis_data.get("serialNumber", no_serial_string),
-                                 "controllerSerial#": chassis_data.get("controllerSerialNumber", "NA"),
-                                 "chassisType": chassis_data["type"].replace(" ", "_"),
-                                 "physicalCards#": str(chassis_data.get("numberOfPhysicalCards", "NA")),
-                                 "chassisStatus": chassis_data.get('state'),
-                                 "lastUpdatedAt_UTC": last_update_at,
-                                 "mem_bytes": mem_bytes, 
-                                 "mem_bytes_total": mem_bytes_total, 
-                                 "cpu_pert_usage": cpu_pert_usage,
-                                 "os": os
-                                })
-    
-    # List of Application on Ix CHhssis
-    list_of_ixos_protocols = chassis_data["ixosApplications"]    
-    for item in list_of_ixos_protocols:
-        if item["name"] != "IxOS REST" or item["name"] != "LicenseServerPlus":
-           temp_dict.update({item["name"]: item["version"]})
+        try:
+            perf = session.get_perfcounters().data[0]
+            mem_bytes = convert_size(perf["memoryInUseBytes"])
+            mem_bytes_total = convert_size(perf["memoryTotalBytes"])
+            cpu_pert_usage = perf["cpuUsagePercent"]
+        except Exception:
+            logger.warning("Performance metrics not available, chassis may be Windows-based")
+            os = "Windows"
+            
+        if chassis_data["type"] == "Ixia_Virtual_Test_Appliance":
+            no_serial_string = "IxiaVM"
         
-    chassis_filter_dict.update(temp_dict)
+        chassis_filter_dict = {
+            "chassisIp": chassis_data.get("managementIp"),
+            "chassisSerial#": chassis_data.get("serialNumber", no_serial_string),
+            "controllerSerial#": chassis_data.get("controllerSerialNumber", "NA"),
+            "chassisType": chassis_data["type"].replace(" ", "_"),
+            "physicalCards#": str(chassis_data.get("numberOfPhysicalCards", "NA")),
+            "chassisStatus": chassis_data.get('state'),
+            "lastUpdatedAt_UTC": datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S"),
+            "mem_bytes": mem_bytes, 
+            "mem_bytes_total": mem_bytes_total, 
+            "cpu_pert_usage": cpu_pert_usage,
+            "os": os
+        }
+        
+        # Add IxOS application versions
+        for item in chassis_data["ixosApplications"]:
+            if item["name"] not in ["IxOS REST", "LicenseServerPlus"]:
+                chassis_filter_dict[item["name"]] = item["version"]
+                
+    except Exception as e:
+        logger.error(f"Error getting chassis information: {str(e)}")
+        raise
+        
     return chassis_filter_dict
     
 def get_chassis_cards_information(session, ip, type_of_chassis):
-    """_summary_
     """
-    card_list= session.get_cards().data
-    final_card_details_list= []
-    last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
-    # Cards on Chassis
-    sorted_cards = sorted(card_list, key=lambda d: d['cardNumber'])
+    Get detailed information about all cards installed in the chassis.
     
-    
-    for sc  in sorted_cards:
-        final_card_details_list.append({"chassisIp": ip, 
-                                        "chassisType": type_of_chassis,
-                                        "cardNumber":sc.get("cardNumber"), 
-                                        "serialNumber": sc.get("serialNumber"),
-                                        "cardType": sc.get("type"),
-                                        "cardState": sc.get("state"), 
-                                        "numberOfPorts":sc.get("numberOfPorts", "No data"),
-                                        "lastUpdatedAt_UTC": last_update_at
-                                        })
-    return final_card_details_list
+    Args:
+        session (IxRestSession): Active REST session to the chassis
+        ip (str): IP address of the chassis
+        type_of_chassis (str): Type of the chassis
+        
+    Returns:
+        list: List of dictionaries containing card information:
+            - chassisIp: IP address of chassis
+            - chassisType: Type of chassis
+            - cardNumber: Card slot number
+            - serialNumber: Card serial number
+            - cardType: Type of card
+            - cardState: Current state of the card
+            - numberOfPorts: Number of ports on the card
+            - lastUpdatedAt_UTC: Timestamp of the data
+    """
+    logger.info(f"Getting card information for chassis {ip}")
+    try:
+        card_list = session.get_cards().data
+        final_card_details_list = []
+        last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
+        
+        # Sort cards by card number
+        sorted_cards = sorted(card_list, key=lambda d: d['cardNumber'])
+        
+        for sc in sorted_cards:
+            final_card_details_list.append({
+                "chassisIp": ip, 
+                "chassisType": type_of_chassis,
+                "cardNumber": sc.get("cardNumber"), 
+                "serialNumber": sc.get("serialNumber"),
+                "cardType": sc.get("type"),
+                "cardState": sc.get("state"), 
+                "numberOfPorts": sc.get("numberOfPorts", "No data"),
+                "lastUpdatedAt_UTC": last_update_at
+            })
+        return final_card_details_list
+    except Exception as e:
+        logger.error(f"Error getting card information: {str(e)}")
+        raise
     
 def get_chassis_ports_information(session, chassisIp, chassisType):
-    """_summary_
     """
+    Get detailed information about all ports in the chassis.
     
-    port_data_list = []
-    used_port_details = []
-    total_ports = 0
-    used_ports = 0
-    
-    last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
-    port_list = session.get_ports().data
-    
-    keys_to_keep = ['owner', 'transceiverModel', 'transceiverManufacturer', 'cardNumber', 'portNumber', 'phyMode', 'linkState', 'speed', 'type']
-
-    if port_list:
-        a = list(port_list[0].keys())
-    else:
-        a = []
-    keys_to_remove = [x for x in a if x not in keys_to_keep]
-    # Removing the extra keys from port details json response
-    for port_data in port_list:
-        if not port_data.get("owner"):
-            port_data["owner"] = "Free"
+    Args:
+        session (IxRestSession): Active REST session to the chassis
+        chassisIp (str): IP address of the chassis
+        chassisType (str): Type of the chassis
+        
+    Returns:
+        list: List of dictionaries containing port information:
+            - owner: Current owner of the port
+            - transceiverModel: Model of the transceiver
+            - transceiverManufacturer: Manufacturer of the transceiver
+            - cardNumber: Card number
+            - portNumber: Port number
+            - phyMode: Physical mode
+            - linkState: Current link state
+            - speed: Port speed
+            - type: Port type
+            - totalPorts: Total number of ports
+            - ownedPorts: Number of owned ports
+            - freePorts: Number of free ports
+    """
+    logger.info(f"Getting port information for chassis {chassisIp}")
+    try:
+        port_list = session.get_ports().data
+        last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
+        
+        # Define relevant keys to keep
+        keys_to_keep = ['owner', 'transceiverModel', 'transceiverManufacturer', 
+                       'cardNumber', 'portNumber', 'phyMode', 'linkState', 'speed', 'type']
+        
+        # Process port information
+        if port_list:
+            keys_to_remove = [x for x in port_list[0].keys() if x not in keys_to_keep]
+            total_ports = len(port_list)
             
-        for k in keys_to_remove:
-            port_data.pop(k)
-    
-    for port in port_list:
-        port_data_list.append(port)
-    
-    # Lets get used ports, free ports and total ports
-    if port_data_list:
-        used_port_details = [item for item in port_data_list if item.get("owner")]
-        total_ports = len(port_list)
-        used_ports = len(used_port_details)
-        
-    
-    
-    for port_data_list_item in port_data_list:
-        port_data_list_item.update({
-                                "lastUpdatedAt_UTC": last_update_at,
-                                "totalPorts": total_ports,
-                                "ownedPorts": used_ports, 
-                                "freePorts": (total_ports-used_ports),
-                                "chassisIp": chassisIp,
-                                "typeOfChassis": chassisType })
-    return port_data_list
+            # Clean up port data
+            for port in port_list:
+                if not port.get("owner"):
+                    port["owner"] = "Free"
+                for k in keys_to_remove:
+                    port.pop(k)
+                    
+            # Calculate port statistics
+            used_ports = len([p for p in port_list if p.get("owner") != "Free"])
+            free_ports = total_ports - used_ports
+            
+            # Add additional information to each port
+            for port in port_list:
+                port.update({
+                    "lastUpdatedAt_UTC": last_update_at,
+                    "totalPorts": total_ports,
+                    "ownedPorts": used_ports,
+                    "freePorts": free_ports,
+                    "chassisIp": chassisIp,
+                    "typeOfChassis": chassisType
+                })
+                
+            return port_list
+        return []
+    except Exception as e:
+        logger.error(f"Error getting port information: {str(e)}")
+        raise
 
+def get_license_activation(session, chassis_ip, chassis_type):
+    """Get license activation details from chassis
+    Args:
+        session: IxRestSession object
+        chassis_ip: IP address of chassis
+        chassis_type: Type of chassis
+    Returns:
+        List of dictionaries containing license information
+    """
+    try:
+        # Initial license activation request
+        license_info = session.get_license_activation().json()
         
-def get_license_activation(session, ip, type_chassis):
-    host_id = session.get_license_server_host_id()
-    license_info = session.get_license_activation().json()
-    last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
-    license_info_list= []
-    for item in license_info:
-        license_info_list.append({
-                "chassisIp": ip,
-                "typeOfChassis": type_chassis,
-                "hostId": host_id,
-                "partNumber": item["partNumber"],
-                "activationCode": item["activationCode"], 
-                "quantity": item["quantity"], 
-                "description": item["description"].replace(",","_"),
-                "maintenanceDate": item["maintenanceDate"], 
-                "expiryDate": item["expiryDate"],
-                "isExpired": str(item.get("isExpired", "NA")),
-                "lastUpdatedAt_UTC": last_update_at})
-    return license_info_list
+        # Poll until we get complete license information
+        max_retries = 10
+        retry_count = 0
+        retry_delay = 2  # seconds
+        
+        while retry_count < max_retries:
+            # Check if we have complete license information
+            if license_info and isinstance(license_info, list) and all(isinstance(item, dict) and 'activationCode' in item for item in license_info):
+                break
+                
+            # Wait before retrying
+            time.sleep(retry_delay)
+            
+            # Retry getting license information
+            license_info = session.get_license_activation().json()
+            retry_count += 1
+            
+            logger.debug(f"License info polling attempt {retry_count}: {license_info}")
+        
+        if not license_info or retry_count >= max_retries:
+            logger.warning(f"Could not get complete license information after {max_retries} attempts")
+            return [{
+                'chassisIp': chassis_ip,
+                'typeOfChassis': chassis_type,
+                'hostId': 'NA',
+                'partNumber': 'NA',
+                'activationCode': 'NA',
+                'quantity': 'NA',
+                'description': 'NA',
+                'maintenanceDate': 'NA',
+                'expiryDate': 'NA',
+                'isExpired': 'NA',
+                'lastUpdatedAt_UTC': datetime.utcnow().strftime("%m/%d/%Y, %H:%M:%S")
+            }]
 
+        # Process the license information
+        processed_licenses = []
+        for license in license_info:
+            processed_license = {
+                'chassisIp': chassis_ip,
+                'typeOfChassis': chassis_type,
+                'hostId': license.get('hostId', 'NA'),
+                'partNumber': license.get('partNumber', 'NA'),
+                'activationCode': license.get('activationCode', 'NA'),
+                'quantity': license.get('quantity', 'NA'),
+                'description': license.get('description', 'NA'),
+                'maintenanceDate': license.get('maintenanceDate', 'NA'),
+                'expiryDate': license.get('expiryDate', 'NA'),
+                'isExpired': license.get('isExpired', 'NA'),
+                'lastUpdatedAt_UTC': datetime.utcnow().strftime("%m/%d/%Y, %H:%M:%S")
+            }
+            processed_licenses.append(processed_license)
+            
+        return processed_licenses
+        
+    except Exception as e:
+        logger.error(f"Error getting license activation for chassis {chassis_ip}: {str(e)}")
+        return [{
+            'chassisIp': chassis_ip,
+            'typeOfChassis': chassis_type,
+            'hostId': 'NA',
+            'partNumber': 'NA',
+            'activationCode': 'NA',
+            'quantity': 'NA',
+            'description': 'NA',
+            'maintenanceDate': 'NA',
+            'expiryDate': 'NA',
+            'isExpired': 'NA',
+            'lastUpdatedAt_UTC': datetime.utcnow().strftime("%m/%d/%Y, %H:%M:%S")
+        }]
 
 def get_sensor_information(session, chassis, type_chassis):
-    sensor_list = session.get_sensors().json()
-    keys_to_remove = ["criticalValue", "maxValue", 'parentId', 'id','adapterName','minValue','sensorSetName', 'cpuName']
-    for record in sensor_list:
-        for item in keys_to_remove:
-            record.pop(item, "NA")
-        record.update({"chassisIp":chassis, "typeOfChassis": type_chassis, "lastUpdatedAt_UTC": datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")})
-    return sensor_list
+    """
+    Get sensor readings from the chassis.
+    
+    Args:
+        session (IxRestSession): Active REST session to the chassis
+        chassis (str): IP address of the chassis
+        type_chassis (str): Type of the chassis
+        
+    Returns:
+        list: List of dictionaries containing sensor information:
+            - type: Sensor type
+            - unit: Measurement unit
+            - name: Sensor name
+            - value: Current sensor value
+            - chassisIp: IP address of chassis
+            - typeOfChassis: Type of chassis
+    """
+    logger.info(f"Getting sensor information for chassis {chassis}")
+    try:
+        sensor_list = session.get_sensors().json()
+        keys_to_remove = ["criticalValue", "maxValue", 'parentId', 'id',
+                         'adapterName', 'minValue', 'sensorSetName', 'cpuName']
+        
+        last_update_at = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
+        
+        for record in sensor_list:
+            for item in keys_to_remove:
+                record.pop(item, "NA")
+            record.update({
+                "chassisIp": chassis,
+                "typeOfChassis": type_chassis,
+                "lastUpdatedAt_UTC": last_update_at
+            })
+            
+        return sensor_list
+    except Exception as e:
+        logger.error(f"Error getting sensor information: {str(e)}")
+        raise

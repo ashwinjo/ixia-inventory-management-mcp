@@ -1,54 +1,75 @@
-Ixia Inventory Explorer is Flask based tool for managing all Ixia Inventory that user might have from a single UI.
-Project is UI written over open IxOS API's that we can find at https://github.com/OpenIxia/IxOS/tree/master/Utilities/Python
+# IxNetwork Inventory API with MCP Integration
 
-REST API references at
+This is a modernized FastAPI application that provides IxNetwork chassis inventory and metrics through a REST API with Model Context Protocol (MCP) integration.
 
-https://(chassisIp)/chassis/swagger/index.html?v=1.3.0.822# <br/>
-https://(chassisIp)/platform/swagger/index.html?v=1.3.0.822#
+## Features
 
+- FastAPI-based REST API
+- MCP integration for AI assistant compatibility
+- Real-time chassis information retrieval
+- Comprehensive API documentation
+- Error handling and fallbacks
 
+## Setup
 
-Why use this ?
-==
+1. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
- - Lab Ixia Inventory Explorer tool for Administrators/ NE’s/ SE’s.
- - Chassis, Cards, Ports, Licensing, Sensor, Chassis Utilization Metrics all under one tool. 
- - Ability to be deployed on-prem since it is docker  containerized.
+2. Run the application:
+```bash
+python app.py
+```
 
-Functionality
-==
+The server will start at http://localhost:8000
 
-Ixia Inventor Explorer offers a range of features that make it an ideal tool for lab network engineers, lab administrators, and Keysight SE’s.
+## API Documentation
 
-Some of the key features include:
+Once running, you can access:
+- REST API docs: http://localhost:8000/docs
+- MCP endpoint: http://localhost:8000/mcp
 
-• Unified preview of available Ixia Chassis with custom tagging feature
-• License statistics for every Ixia Chassis 
-• Card Statistics with custom tagging feature
-• Port Statistics for owner, type of optic
-• One-click IxOS chassis log collection
-• Download Statistics as csv for Ixia Support Team 
-• On-demand data refresh 
-•Column based filtering.
+## Connecting with Claude Desktop
 
-Prerequisites
-==
-* Linux Server with docker installed
-* Linux server with internet access to Dockerhub CR
-* Linux Server with access to chassis to monitor
+Add the following to your Claude Desktop configuration file (`claude_desktop_config.json`):
 
+```json
+{
+  "mcpServers": {
+    "ixnetwork-inventory": {
+      "command": "/path/to/mcp-proxy",
+      "args": ["http://localhost:8000/mcp"]
+    }
+  }
+}
+```
 
-Installation:
-==
+Replace `/path/to/mcp-proxy` with the actual path to your mcp-proxy executable (find it using `which mcp-proxy`).
 
-**Pull Docker Image.** <br/>
-docker pull ashjo317/ixia:ixinventorymanager.0.0.11<br/>
-**Run Docker Image.** <br/>
-docker run -d –p 80:3000 ashjo317/ixia:ixinventorymanager. 0.0.11<br/>
+## Available Endpoints
 
-  
-Disclaimer:
-==
-Please note that the Python-based tool provided here is offered as-is, without any warranty or guarantee of fitness for any particular purpose. The author of this tool will not be able to provide support for feature requests, bug fixes, or any other modifications to the code. However, customers are welcome to use the code provided and modify it as they see fit for their own use.
+1. GET `/chassis/summary`
+   - Get chassis summary information
+   - Operation ID: mcp_get_chassis_summary
 
-For feedback please reach out to ashwin.joshi@keysight.com
+2. GET `/chassis/cards`
+   - Get chassis cards information
+   - Operation ID: mcp_get_chassis_cards
+
+3. GET `/chassis/ports`
+   - Get chassis ports information
+   - Operation ID: mcp_get_chassis_ports
+
+## Error Handling
+
+The API includes graceful error handling:
+- Connection failures return "NA" values instead of errors
+- All endpoints include proper error responses
+- Timestamps are included in responses
+
+## Security Notes
+
+- Credentials are passed per-request for security
+- No credentials are stored in the application
+- HTTPS is recommended for production deployment

@@ -1,6 +1,8 @@
-flask
-pandas
-requests
-pysqlite3==0.4.2
-click
+fastapi==0.109.0
+uvicorn==0.27.0
+fastapi-mcp
+pydantic
+python-dotenv==1.0.0
 ixnetwork_restpy
+requests
+mcp-proxy
