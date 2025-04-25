@@ -7,6 +7,8 @@ import IxOSRestCallerModifier as ixOSRestCaller
 
 from datetime import datetime
 import logging
+import json
+import os
 
 #Configure logging 
 logging.basicConfig(level=logging.DEBUG)
@@ -18,13 +20,40 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Load chassis credentials from config file
+def load_credentials():
+    config_path = "config.json"
+    try:
+        # Check if file exists
+        if not os.path.exists(config_path):
+            logger.warning(f"Config file {config_path} not found. Using empty credentials dictionary.")
+            return {}
+            
+        with open(config_path, "r") as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"Error loading credentials: {str(e)}")
+        return {}
+
+CHASSIS_CREDENTIALS = load_credentials()
+
 class ChassisCredentials(BaseModel):
     """
     Pydantic model for chassis credentials
     """
     ip: str
-    username: str
-    password: str
+
+def get_chassis_auth(ip):
+    """
+    Get authentication details for a chassis from config file
+    """
+    if ip not in CHASSIS_CREDENTIALS:
+        raise HTTPException(status_code=404, detail=f"Credentials for chassis {ip} not found in config")
+    
+    return {
+        "username": CHASSIS_CREDENTIALS[ip]["username"],
+        "password": CHASSIS_CREDENTIALS[ip]["password"]
+    }
 
 @app.post("/chassis/summary", operation_id="get_chassis_summary")
 def get_chassis_summary(credentials: ChassisCredentials) -> Dict[str, Any]:
@@ -34,19 +63,20 @@ def get_chassis_summary(credentials: ChassisCredentials) -> Dict[str, Any]:
     Args:
         credentials (ChassisCredentials): Chassis connection credentials in request body
             - ip: IP address of the chassis
-            - username: Username for authentication
-            - password: Password for authentication
     """
     try:
+        auth = get_chassis_auth(credentials.ip)
         session = IxRestSession(
             credentials.ip, 
-            credentials.username, 
-            credentials.password, 
+            auth["username"], 
+            auth["password"], 
             verbose=False
         )
         chassis_info = ixOSRestCaller.get_chassis_information(session)
         chassis_info["chassisIp"] = credentials.ip
         return chassis_info
+    except HTTPException as e:
+        raise e
     except Exception as e:
         return {
             "chassisIp": credentials.ip,
@@ -73,14 +103,13 @@ def get_chassis_cards(credentials: ChassisCredentials) -> List[Dict[str, Any]]:
     Args:
         credentials (ChassisCredentials): Chassis connection credentials in request body
             - ip: IP address of the chassis
-            - username: Username for authentication
-            - password: Password for authentication
     """
     try:
+        auth = get_chassis_auth(credentials.ip)
         session = IxRestSession(
             credentials.ip,
-            credentials.username,
-            credentials.password,
+            auth["username"],
+            auth["password"],
             verbose=False
         )
         return ixOSRestCaller.get_chassis_cards_information(
@@ -88,6 +117,8 @@ def get_chassis_cards(credentials: ChassisCredentials) -> List[Dict[str, Any]]:
             credentials.ip,
             ""
         )
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error getting card information: {str(e)}")
         return [{
@@ -109,14 +140,13 @@ def get_chassis_ports(credentials: ChassisCredentials) -> List[Dict[str, Any]]:
     Args:
         credentials (ChassisCredentials): Chassis connection credentials in request body
             - ip: IP address of the chassis
-            - username: Username for authentication
-            - password: Password for authentication
     """
     try:
+        auth = get_chassis_auth(credentials.ip)
         session = IxRestSession(
             credentials.ip,
-            credentials.username,
-            credentials.password,
+            auth["username"],
+            auth["password"],
             verbose=False
         )
         logger.info(f"Getting chassis ports for {credentials}")
@@ -125,6 +155,8 @@ def get_chassis_ports(credentials: ChassisCredentials) -> List[Dict[str, Any]]:
             credentials.ip,
             ""
         )
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error getting chassis ports: {str(e)}")
         return [{
@@ -150,14 +182,13 @@ def get_chassis_licensing(credentials: ChassisCredentials) -> List[Dict[str, Any
     Args:
         credentials (ChassisCredentials): Chassis connection credentials in request body
             - ip: IP address of the chassis
-            - username: Username for authentication
-            - password: Password for authentication
     """
     try:
+        auth = get_chassis_auth(credentials.ip)
         session = IxRestSession(
             credentials.ip,
-            credentials.username,
-            credentials.password,
+            auth["username"],
+            auth["password"],
             verbose=False
         )
         return ixOSRestCaller.get_license_activation(
@@ -165,6 +196,8 @@ def get_chassis_licensing(credentials: ChassisCredentials) -> List[Dict[str, Any
             credentials.ip,
             ""  # Chassis type will be determined by the caller
         )
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error getting licensing information: {str(e)}")
         return [{
@@ -189,14 +222,13 @@ def get_chassis_sensors(credentials: ChassisCredentials) -> List[Dict[str, Any]]
     Args:
         credentials (ChassisCredentials): Chassis connection credentials in request body
             - ip: IP address of the chassis
-            - username: Username for authentication
-            - password: Password for authentication
     """
     try:
+        auth = get_chassis_auth(credentials.ip)
         session = IxRestSession(
             credentials.ip,
-            credentials.username,
-            credentials.password,
+            auth["username"],
+            auth["password"],
             verbose=False
         )
         return ixOSRestCaller.get_sensor_information(
@@ -204,6 +236,8 @@ def get_chassis_sensors(credentials: ChassisCredentials) -> List[Dict[str, Any]]
             credentials.ip,
             ""  # Chassis type will be determined by the caller
         )
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error getting sensor information: {str(e)}")
         return [{
@@ -224,17 +258,18 @@ def get_chassis_performance(credentials: ChassisCredentials) -> Dict[str, Any]:
     Args:
         credentials (ChassisCredentials): Chassis connection credentials in request body
             - ip: IP address of the chassis
-            - username: Username for authentication
-            - password: Password for authentication
     """
     try:
+        auth = get_chassis_auth(credentials.ip)
         session = IxRestSession(
             credentials.ip,
-            credentials.username,
-            credentials.password,
+            auth["username"],
+            auth["password"],
             verbose=False
         )
         return ixOSRestCaller.get_perf_metrics(session, credentials.ip)
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error getting performance metrics: {str(e)}")
         return {
@@ -243,6 +278,20 @@ def get_chassis_performance(credentials: ChassisCredentials) -> Dict[str, Any]:
             'cpu_utilization': 0,
             'lastUpdatedAt_UTC': datetime.utcnow().strftime("%m/%d/%Y, %H:%M:%S")
         }
+
+@app.get("/chassis/list", operation_id="get_chassis_list")
+def get_chassis_list() -> List[str]:
+    """
+    Get list of all chassis IPs available in the configuration.
+    
+    Returns:
+        List[str]: List of IP addresses for all configured chassis
+    """
+    try:
+        return list(CHASSIS_CREDENTIALS.keys())
+    except Exception as e:
+        logger.error(f"Error getting chassis list: {str(e)}")
+        return []
 
 # Initialize MCP after all routes are defined
 mcp = FastApiMCP(
