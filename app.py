@@ -47,12 +47,13 @@ def get_chassis_auth(ip):
     """
     Get authentication details for a chassis from config file
     """
-    if ip not in CHASSIS_CREDENTIALS:
+    chassis_creds = load_credentials()
+    if ip not in chassis_creds:
         raise HTTPException(status_code=404, detail=f"Credentials for chassis {ip} not found in config")
     
     return {
-        "username": CHASSIS_CREDENTIALS[ip]["username"],
-        "password": CHASSIS_CREDENTIALS[ip]["password"]
+        "username": chassis_creds[ip]["username"],
+        "password": chassis_creds[ip]["password"]
     }
 
 @app.post("/chassis/summary", operation_id="get_chassis_summary")
@@ -283,12 +284,12 @@ def get_chassis_performance(credentials: ChassisCredentials) -> Dict[str, Any]:
 def get_chassis_list() -> List[str]:
     """
     Get list of all chassis IPs available in the configuration.
-    
     Returns:
         List[str]: List of IP addresses for all configured chassis
     """
     try:
-        return list(CHASSIS_CREDENTIALS.keys())
+        chassis_creds = load_credentials()
+        return list(chassis_creds.keys())
     except Exception as e:
         logger.error(f"Error getting chassis list: {str(e)}")
         return []
@@ -300,10 +301,14 @@ mcp = FastApiMCP(
     description="MCP tools for managing IxNetwork chassis inventory and metrics"
 )
 
-# Mount MCP server
+# Mount MCP server with streaming support
 mcp.mount()
 
 if __name__ == "__main__":
     import uvicorn
-    print("Starting FastAPI server at http://localhost:8888/mcp")
+    print("🚀 Starting IxNetwork Inventory MCP Server")
+    print("📍 MCP endpoint: http://localhost:8888/mcp")
+    print("📚 API documentation: http://localhost:8888/docs")
+    print("🔄 Streamable HTTP MCP server is ready for Claude Desktop")
+    print("=" * 60)
     uvicorn.run(app, host="0.0.0.0", port=8888, log_level="info")

@@ -1,17 +1,41 @@
-# syntax=docker/dockerfile:1
+# Use Python 3.11 slim image for smaller size
+FROM python:3.11-slim
 
-FROM python:3.8-slim-buster
+# Set working directory
+WORKDIR /app
 
-WORKDIR /python-docker
-RUN apt-get update && apt-get install -y procps && rm -rf /var/lib/apt/lists/*
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
 
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
 COPY . .
-EXPOSE 3000
 
+# Create non-root user for security
+RUN useradd --create-home --shell /bin/bash app && \
+    chown -R app:app /app
+USER app
 
-CMD ["/bin/sh", "runApplication.sh"]
+# Expose port
+EXPOSE 8888
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8888/docs || exit 1
 
-
+# Start the application
+CMD ["python", "app.py"] 
