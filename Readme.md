@@ -74,11 +74,17 @@ Edit `config.json` with your chassis credentials:
 
 ### 3. Run with Docker (Recommended)
 
-> When you want to use docker-compose in the repo
+
+> If you make changes and want to build and run:
+
 ```bash
-docker-compose up -d
+docker-compose up -d --build 
+``
+OR 
+
+``
+docker build -t ixnetwork-mcp-server-image .
 ```
-> When you want to run from your directory of choice
 
 ```bash
 docker run -d \
@@ -93,14 +99,16 @@ docker run -d \
   *** You need to have config.json file in $(pwd)
 ```
 
-If you make changes and want to build and run:
-```
-docker-compose up -d --build 
+If you want to just run the container with no changes as such. ``` bash`docker-compose up -d  ```
 
-OR 
+Difference:
 
-docker build -t ixnetwork-mcp-server-image .
-```
+| Command                        | Rebuild Image? | When to Use                                       |
+| ------------------------------ | -------------- | ------------------------------------------------- |
+| `docker-compose up -d`         | ❌ No           | Just running containers, no Dockerfile changes    |
+| `docker-compose up -d --build` | ✅ Yes          | Any time you modify files used in the image build |
+
+
 
 ### How to add/delete/update chassis information
 ```bash

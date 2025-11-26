@@ -294,6 +294,54 @@ def get_chassis_list() -> List[str]:
         logger.error(f"Error getting chassis list: {str(e)}")
         return []
 
+@app.post("/chassis/lldp", operation_id="get_lldp_peer_data")
+def get_lldp_peer_data(credentials: ChassisCredentials) -> List[Dict[str, Any]]:
+    """
+    Get LLDP peer data for each port on the chassis
+    
+    Args:
+        credentials (ChassisCredentials): Chassis connection credentials in request body
+            - ip: IP address of the chassis
+        
+    Returns:
+        list: List of dictionaries containing LLDP peer data
+    """
+    try:
+        auth = get_chassis_auth(credentials.ip)
+        session = IxRestSession(
+            credentials.ip,
+            auth["username"],
+            auth["password"],
+            verbose=False
+        )
+        logger.info(f"Getting LLDP peer data for {credentials.ip}")
+        chassis_ports = ixOSRestCaller.get_chassis_ports_information(
+            session,
+            credentials.ip,
+            ""
+        )
+        lldp_peer_data = []
+        for port in chassis_ports:
+            port_name = port.get("fullyQualifiedPortName", port.get("portNumber"))
+            if port.get("lldpPeerData"):
+                port["lldpPeerData"].update({"portName": port_name})
+                lldp_peer_data.append(port["lldpPeerData"])
+        return lldp_peer_data
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error getting LLDP peer data: {str(e)}")
+        return [{
+            'portName': 'NA',
+            'portId': 'NA',
+            'portDescription': 'NA',
+            'systemMac': 'NA',
+            'systemIp': 'NA',
+            'systemName': 'NA',
+            'chassisIp': credentials.ip,
+            'lastUpdatedAt_UTC': datetime.utcnow().strftime("%m/%d/%Y, %H:%M:%S")
+        }]
+
 # Initialize MCP after all routes are defined
 mcp = FastApiMCP(
     app,
@@ -301,7 +349,8 @@ mcp = FastApiMCP(
     description="MCP tools for managing IxNetwork chassis inventory and metrics"
 )
 
-# Mount MCP server with streaming support
+# Mount MCP server with streaming support at /mcp endpoint
+# Using default mount path '/mcp' and default router (the main FastAPI app)
 mcp.mount()
 
 if __name__ == "__main__":
@@ -312,3 +361,5 @@ if __name__ == "__main__":
     print("🔄 Streamable HTTP MCP server is ready for Claude Desktop")
     print("=" * 60)
     uvicorn.run(app, host="0.0.0.0", port=8888, log_level="info")
+
+

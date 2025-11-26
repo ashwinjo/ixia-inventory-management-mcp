@@ -227,7 +227,7 @@ def get_chassis_ports_information(session, chassisIp, chassisType):
         
         # Define relevant keys to keep
         keys_to_keep = ['owner', 'transceiverModel', 'transceiverManufacturer', 
-                       'cardNumber', 'portNumber', 'phyMode', 'linkState', 'speed', 'type']
+                       'cardNumber', 'portNumber', 'fullyQualifiedPortName','phyMode', 'linkState', 'speed', 'type', 'lldpPeerData']
         
         # Process port information
         if port_list:
