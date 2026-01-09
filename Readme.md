@@ -25,6 +25,7 @@ A comprehensive FastAPI-based solution for managing IxNetwork chassis inventory,
 
 ### 🛡️ **Enterprise Features**
 - **Secure Configuration Management**: External config file mounting with Docker
+- **Credentials Service Integration**: Fetch credentials from external service with automatic fallback
 - **Health Monitoring**: Built-in health checks and error handling
 - **Graceful Fallbacks**: Robust error handling with "NA" responses for unreachable chassis
 - **Containerized Deployment**: Docker and Docker Compose ready
@@ -36,12 +37,16 @@ A comprehensive FastAPI-based solution for managing IxNetwork chassis inventory,
 │   Web Interface │    │   FastAPI Server │    │  IxNetwork API  │
 │   (Templates)   │◄──►│   (Port 8888)    │◄──►│   (REST Calls)  │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
-                              │
-                              ▼
-                       ┌──────────────────┐
-                       │   MCP Server     │
-                       │ (AI Integration) │
-                       └──────────────────┘
+                              │  │
+                              │  │
+          ┌───────────────────┘  └───────────────────┐
+          ▼                                          ▼
+   ┌──────────────────┐                    ┌──────────────────┐
+   │   MCP Server     │                    │ Credentials      │
+   │ (AI Integration) │                    │ Service (:3001)  │
+   └──────────────────┘                    │    or            │
+                                           │ config.json      │
+                                           └──────────────────┘
 ```
 
 ## 🚀 Quick Start
@@ -58,7 +63,38 @@ cd IxInventoryManagement
 ```
 
 ### 2. Configure Chassis Access
-Edit `config.json` with your chassis credentials:
+
+You have **two options** for configuring chassis credentials:
+
+#### Option A: External Credentials Service (Recommended)
+If you have a credentials service running, the system will automatically fetch credentials from it:
+
+```
+Service URL: http://localhost:3001/api/config/credentials
+```
+
+Expected response format:
+```json
+{
+  "success": true,
+  "count": 2,
+  "credentials": [
+    {
+      "ip": "10.36.237.106",
+      "username": "admin",
+      "password": "admin"
+    },
+    {
+      "ip": "10.36.75.163",
+      "username": "admin",
+      "password": "admin"
+    }
+  ]
+}
+```
+
+#### Option B: Local Config File (Fallback)
+If the credentials service is unavailable, the system falls back to `config.json`:
 ```json
 {
   "10.36.237.131": {
@@ -72,20 +108,32 @@ Edit `config.json` with your chassis credentials:
 }
 ```
 
+> **Note**: The system automatically tries the credentials service first, then falls back to config.json if unavailable.
+
 ### 3. Run with Docker (Recommended)
 
+#### Using Docker Compose (Simplest)
 
-> If you make changes and want to build and run:
-
+**Without credentials service** (uses config.json only):
 ```bash
-docker-compose up -d --build 
-``
-OR 
+docker-compose up -d --build
+```
 
-``
+**With credentials service** (recommended):
+```bash
+# Edit docker-compose.yml and uncomment/set CREDENTIALS_SERVICE_URL
+# OR use environment variable override:
+CREDENTIALS_SERVICE_URL=http://host.docker.internal:3001/api/config/credentials docker-compose up -d --build
+```
+
+#### Using Docker Run
+
+**Build the image:**
+```bash
 docker build -t ixnetwork-mcp-server-image .
 ```
 
+**Run WITHOUT credentials service** (uses config.json):
 ```bash
 docker run -d \
   --name ixnetwork-inventory-mcp \
@@ -95,13 +143,29 @@ docker run -d \
   -e MCP_SERVER_PORT=8888 \
   --restart unless-stopped \
   ixnetwork-mcp-server-image
-
-  *** You need to have config.json file in $(pwd)
 ```
 
-If you want to just run the container with no changes as such. ``` bash`docker-compose up -d  ```
+**Run WITH credentials service** (recommended):
+```bash
+docker run -d \
+  --name ixnetwork-inventory-mcp \
+  -p 8888:8888 \
+  -v $(pwd)/config.json:/app/config.json:ro \
+  -e PYTHONUNBUFFERED=1 \
+  -e MCP_SERVER_PORT=8888 \
+  -e CREDENTIALS_SERVICE_URL=http://host.docker.internal:3001/api/config/credentials \
+  -e CREDENTIALS_SERVICE_TIMEOUT=5 \
+  --add-host=host.docker.internal:host-gateway \
+  --restart unless-stopped \
+  ixnetwork-mcp-server-image
+```
 
-Difference:
+> **⚠️ Important**: 
+> - You need to have `config.json` file in `$(pwd)` as a fallback
+> - Use `host.docker.internal` to access services running on the host machine from within the container
+> - The `--add-host=host.docker.internal:host-gateway` flag enables host access on Linux
+
+#### Quick Reference
 
 | Command                        | Rebuild Image? | When to Use                                       |
 | ------------------------------ | -------------- | ------------------------------------------------- |
@@ -137,6 +201,14 @@ Difference:
 | `/chassis/licensing` | POST | Get license information | `get_chassis_licensing` |
 | `/chassis/performance` | POST | Get performance metrics | `get_chassis_performance` |
 | `/chassis/list` | GET | List all configured chassis | `get_chassis_list` |
+| `/chassis/lldp` | POST | Get LLDP peer data | `get_lldp_peer_data` |
+
+### Credentials Management Endpoints
+
+| Endpoint | Method | Description | MCP Operation ID |
+|----------|--------|-------------|------------------|
+| `/credentials/refresh` | POST | Force refresh credentials from service | `refresh_credentials` |
+| `/credentials/status` | GET | Get credentials source status | `get_credentials_status` |
 
 ### Request Format
 ```json
@@ -208,9 +280,11 @@ docker-compose down
 ```
 
 ### Configuration Management
-- **External Config**: `./config.json` is mounted into container
-- **Hot Reload**: Changes to config.json require container restart
-- **Security**: Read-only mount prevents container modification
+- **Credentials Service**: Primary source for credentials (if available)
+- **External Config**: `./config.json` is mounted into container as fallback
+- **Hot Reload**: Credentials from service are cached for 60 seconds (auto-refresh)
+- **Manual Refresh**: Call `/credentials/refresh` to force reload
+- **Security**: Read-only mount prevents container modification of config.json
 
 ## 📁 Project Structure
 
@@ -243,8 +317,171 @@ IxInventoryManagement/
 ## 📄 Configuration
 
 ### Environment Variables
-- `PYTHONUNBUFFERED=1`: Ensures Python output is not buffered
-- `MCP_SERVER_PORT=8888`: MCP server port
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PYTHONUNBUFFERED` | `1` | Ensures Python output is not buffered |
+| `MCP_SERVER_PORT` | `8888` | MCP server port |
+| `CREDENTIALS_SERVICE_URL` | `http://localhost:3001/api/config/credentials` | URL of the external credentials service |
+| `CREDENTIALS_SERVICE_TIMEOUT` | `5` | Timeout in seconds for credentials service requests |
+
+### Passing Environment Variables at Runtime
+
+#### With Docker Run
+```bash
+docker run -d \
+  -e CREDENTIALS_SERVICE_URL=http://host.docker.internal:3001/api/config/credentials \
+  -e CREDENTIALS_SERVICE_TIMEOUT=10 \
+  --add-host=host.docker.internal:host-gateway \
+  ... other options ...
+  ixnetwork-mcp-server-image
+```
+
+#### With Docker Compose
+**Option 1**: Edit `docker-compose.yml` directly:
+```yaml
+environment:
+  - CREDENTIALS_SERVICE_URL=http://host.docker.internal:3001/api/config/credentials
+  - CREDENTIALS_SERVICE_TIMEOUT=5
+```
+
+**Option 2**: Create a `.env` file in the same directory:
+```bash
+# .env file
+CREDENTIALS_SERVICE_URL=http://host.docker.internal:3001/api/config/credentials
+CREDENTIALS_SERVICE_TIMEOUT=5
+```
+
+Then update `docker-compose.yml`:
+```yaml
+environment:
+  - CREDENTIALS_SERVICE_URL=${CREDENTIALS_SERVICE_URL}
+  - CREDENTIALS_SERVICE_TIMEOUT=${CREDENTIALS_SERVICE_TIMEOUT:-5}
+```
+
+**Option 3**: Pass at runtime:
+```bash
+CREDENTIALS_SERVICE_URL=http://host.docker.internal:3001/api/config/credentials docker-compose up -d
+```
+
+### Credentials Service Integration
+
+The system uses a **service-first, fallback-to-file** approach:
+
+```
+┌─────────────────────┐     ┌─────────────────────┐
+│  Credentials        │     │    config.json      │
+│  Service            │     │    (fallback)       │
+│  :3001/api/config/  │     │                     │
+│  credentials        │     │                     │
+└─────────┬───────────┘     └──────────┬──────────┘
+          │                            │
+          │  1. Try first              │  2. Fallback
+          │                            │
+          ▼                            ▼
+┌─────────────────────────────────────────────────┐
+│              MCP Server (app.py)                │
+│                                                 │
+│  • 60-second credential caching                 │
+│  • Automatic retry on service failure           │
+│  • Graceful fallback to config.json             │
+└─────────────────────────────────────────────────┘
+```
+
+#### Verifying Credentials Source
+
+Check which source credentials are coming from:
+```bash
+curl http://localhost:8888/credentials/status
+```
+
+Response when using credentials service:
+```json
+{
+  "credentials_service_url": "http://localhost:3001/api/config/credentials",
+  "credentials_service_available": true,
+  "credentials_service_timeout": 5,
+  "cache_ttl_seconds": 60,
+  "cache_age_seconds": 15.23,
+  "cache_valid": true,
+  "chassis_count": 2,
+  "chassis_ips": ["10.36.237.106", "10.36.75.163"]
+}
+```
+
+Force refresh credentials:
+```bash
+curl -X POST http://localhost:8888/credentials/refresh
+```
+
+Response when refreshing from credentials service:
+```json
+{
+  "success": true,
+  "source": "credentials_service",
+  "service_url": "http://localhost:3001/api/config/credentials",
+  "chassis_count": 2,
+  "chassis_ips": ["10.36.237.106", "10.36.75.163"],
+  "message": "Credentials refreshed from credentials service"
+}
+```
+
+Response when falling back to config.json:
+```json
+{
+  "success": true,
+  "source": "config.json",
+  "service_url": "http://localhost:3001/api/config/credentials",
+  "service_available": false,
+  "chassis_count": 2,
+  "chassis_ips": ["10.36.237.106", "10.36.75.163"],
+  "message": "Credentials loaded from config.json (credentials service unavailable)"
+}
+```
+
+### ⚠️ Applying Code Changes (Important!)
+
+If you've made changes to `app.py` or any other source files, you **must rebuild the Docker container** for the changes to take effect.
+
+#### Using Docker Compose
+```bash
+# Rebuild and restart the container
+docker-compose up -d --build
+```
+
+#### Using Docker Run
+```bash
+# Stop and remove the old container
+docker stop ixnetwork-inventory-mcp
+docker rm ixnetwork-inventory-mcp
+
+# Rebuild the image with new code
+docker build -t ixnetwork-mcp-server-image .
+
+# Run the new container
+docker run -d \
+  --name ixnetwork-inventory-mcp \
+  -p 8888:8888 \
+  -v $(pwd)/config.json:/app/config.json:ro \
+  -e PYTHONUNBUFFERED=1 \
+  -e CREDENTIALS_SERVICE_URL=http://host.docker.internal:3001/api/config/credentials \
+  --add-host=host.docker.internal:host-gateway \
+  --restart unless-stopped \
+  ixnetwork-mcp-server-image
+```
+
+#### Verify New Endpoints Are Available
+After rebuilding, check the API documentation to confirm all endpoints are available:
+```bash
+# Open in browser
+open http://localhost:8888/docs
+
+# Or test the credentials endpoints directly
+curl http://localhost:8888/credentials/status
+curl -X POST http://localhost:8888/credentials/refresh
+```
+
+> **Note**: Changes to `config.json` do NOT require a rebuild since it's mounted as a volume. However, credentials are cached for 60 seconds, so call `/credentials/refresh` to force reload immediately.
 
 ### Health Checks
 - **Endpoint**: `http://localhost:8888/docs`
@@ -274,10 +511,12 @@ uvicorn app:app --reload --host 0.0.0.0 --port 8888
 
 ## 🔒 Security Considerations
 
-- **Credential Management**: Credentials stored in external config file
+- **Credential Management**: Credentials fetched from secure credentials service, with local config fallback
+- **Credentials Caching**: Credentials cached in memory for 60 seconds to reduce service load
 - **Network Security**: Use VPN for chassis access
 - **Container Security**: Non-root user in container
 - **API Security**: Consider adding authentication for production
+- **Service Communication**: Use HTTPS for credentials service in production
 
 ## 📈 Monitoring & Logging
 
@@ -303,6 +542,59 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Documentation**: http://localhost:8888/docs
 - **Issues**: Create an issue in the repository
 - **MCP Documentation**: [Model Context Protocol](https://modelcontextprotocol.io/)
+
+## 🔧 Troubleshooting
+
+### Endpoints Not Found (404)
+
+**Problem**: New endpoints like `/credentials/status` return 404.
+
+**Solution**: Rebuild the Docker container to pick up code changes:
+```bash
+docker-compose up -d --build
+```
+
+### Credentials Service Not Connecting
+
+**Problem**: Credentials always fall back to `config.json` even though the service is running.
+
+**Solutions**:
+1. **Check the service URL**: Ensure `CREDENTIALS_SERVICE_URL` points to the correct address
+2. **Use host.docker.internal**: When running in Docker, use `http://host.docker.internal:3001/...` instead of `http://localhost:3001/...`
+3. **Add host mapping** (Linux): Include `--add-host=host.docker.internal:host-gateway` in your docker run command
+4. **Check service response format**: The service must return:
+   ```json
+   {
+     "success": true,
+     "credentials": [{"ip": "x.x.x.x", "username": "...", "password": "..."}]
+   }
+   ```
+
+### View Container Logs
+
+```bash
+# Docker Compose
+docker-compose logs -f
+
+# Docker Run
+docker logs -f ixnetwork-inventory-mcp
+```
+
+### Check If Container Is Running
+
+```bash
+docker ps | grep ixnetwork
+```
+
+### Test Credentials Service Directly
+
+```bash
+# From host machine
+curl http://localhost:3001/api/config/credentials
+
+# From inside container (if needed)
+docker exec ixnetwork-inventory-mcp curl http://host.docker.internal:3001/api/config/credentials
+```
 
 ---
 

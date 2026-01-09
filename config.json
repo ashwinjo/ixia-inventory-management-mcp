@@ -1,6 +1,10 @@
 {
+  "10.36.237.106": {
+    "username": "admin",
+    "password": "admin"
+  },
   "10.36.75.163": {
-    "username": "ashwinauto",
-    "password": "XXXXXX!"
+    "username": "admin",
+    "password": "admin"
   }
 }

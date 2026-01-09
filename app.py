@@ -9,6 +9,8 @@ from datetime import datetime
 import logging
 import json
 import os
+import requests
+import time
 
 #Configure logging 
 logging.basicConfig(level=logging.DEBUG)
@@ -20,11 +22,79 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Load chassis credentials from config file
-def load_credentials():
+# Credentials service configuration
+CREDENTIALS_SERVICE_URL = os.environ.get(
+    "CREDENTIALS_SERVICE_URL", 
+    "http://localhost:3001/api/config/credentials"
+)
+CREDENTIALS_SERVICE_TIMEOUT = int(os.environ.get("CREDENTIALS_SERVICE_TIMEOUT", "5"))
+
+# Credentials cache
+_credentials_cache = {
+    "data": None,
+    "timestamp": 0,
+    "ttl": 60  # Cache TTL in seconds
+}
+
+def fetch_credentials_from_service() -> Optional[Dict[str, Dict[str, str]]]:
+    """
+    Fetch credentials from the external credentials service.
+    
+    Returns:
+        Dict mapping IP addresses to credentials, or None if service unavailable
+    """
+    try:
+        logger.info(f"Fetching credentials from service: {CREDENTIALS_SERVICE_URL}")
+        response = requests.get(
+            CREDENTIALS_SERVICE_URL, 
+            timeout=CREDENTIALS_SERVICE_TIMEOUT
+        )
+        response.raise_for_status()
+        
+        data = response.json()
+        
+        # Validate response structure
+        if not data.get("success") or "credentials" not in data:
+            logger.warning("Invalid response structure from credentials service")
+            return None
+        
+        # Transform the service response to our expected format
+        # From: {"credentials": [{"ip": "x.x.x.x", "username": "...", "password": "..."}]}
+        # To: {"x.x.x.x": {"username": "...", "password": "..."}}
+        credentials_dict = {}
+        for cred in data["credentials"]:
+            ip = cred.get("ip")
+            if ip:
+                credentials_dict[ip] = {
+                    "username": cred.get("username", ""),
+                    "password": cred.get("password", "")
+                }
+        
+        logger.info(f"Successfully fetched {len(credentials_dict)} credentials from service")
+        return credentials_dict
+        
+    except requests.exceptions.ConnectionError:
+        logger.warning(f"Credentials service not available at {CREDENTIALS_SERVICE_URL}")
+        return None
+    except requests.exceptions.Timeout:
+        logger.warning(f"Timeout connecting to credentials service")
+        return None
+    except requests.exceptions.RequestException as e:
+        logger.warning(f"Error fetching from credentials service: {str(e)}")
+        return None
+    except (json.JSONDecodeError, KeyError, TypeError) as e:
+        logger.warning(f"Error parsing credentials service response: {str(e)}")
+        return None
+
+def load_credentials_from_file() -> Dict[str, Dict[str, str]]:
+    """
+    Load credentials from the local config.json file.
+    
+    Returns:
+        Dict mapping IP addresses to credentials
+    """
     config_path = "config.json"
     try:
-        # Check if file exists
         if not os.path.exists(config_path):
             logger.warning(f"Config file {config_path} not found. Using empty credentials dictionary.")
             return {}
@@ -32,9 +102,54 @@ def load_credentials():
         with open(config_path, "r") as f:
             return json.load(f)
     except Exception as e:
-        logger.error(f"Error loading credentials: {str(e)}")
+        logger.error(f"Error loading credentials from file: {str(e)}")
         return {}
 
+def load_credentials(force_refresh: bool = False) -> Dict[str, Dict[str, str]]:
+    """
+    Load chassis credentials with fallback logic:
+    1. Try to fetch from credentials service
+    2. Fall back to config.json if service is unavailable
+    
+    Uses caching to avoid hitting the service on every request.
+    
+    Args:
+        force_refresh: If True, bypass the cache and fetch fresh credentials
+        
+    Returns:
+        Dict mapping IP addresses to credentials
+    """
+    global _credentials_cache
+    
+    current_time = time.time()
+    
+    # Check if cache is valid
+    if not force_refresh and _credentials_cache["data"] is not None:
+        if current_time - _credentials_cache["timestamp"] < _credentials_cache["ttl"]:
+            logger.debug("Using cached credentials")
+            return _credentials_cache["data"]
+    
+    # Try to fetch from service first
+    credentials = fetch_credentials_from_service()
+    
+    if credentials is not None:
+        # Update cache with service credentials
+        _credentials_cache["data"] = credentials
+        _credentials_cache["timestamp"] = current_time
+        return credentials
+    
+    # Fall back to file-based credentials
+    logger.info("Falling back to config.json for credentials")
+    file_credentials = load_credentials_from_file()
+    
+    # Cache the file credentials too (but with a shorter effective cache 
+    # since we want to retry the service)
+    _credentials_cache["data"] = file_credentials
+    _credentials_cache["timestamp"] = current_time - (_credentials_cache["ttl"] / 2)  # Retry service sooner
+    
+    return file_credentials
+
+# Initial load of credentials
 CHASSIS_CREDENTIALS = load_credentials()
 
 class ChassisCredentials(BaseModel):
@@ -341,6 +456,79 @@ def get_lldp_peer_data(credentials: ChassisCredentials) -> List[Dict[str, Any]]:
             'chassisIp': credentials.ip,
             'lastUpdatedAt_UTC': datetime.utcnow().strftime("%m/%d/%Y, %H:%M:%S")
         }]
+
+@app.post("/credentials/refresh", operation_id="refresh_credentials")
+def refresh_credentials() -> Dict[str, Any]:
+    """
+    Force refresh credentials from the credentials service.
+    Falls back to config.json if service is unavailable.
+    
+    Returns:
+        Dict containing refresh status and source of credentials
+    """
+    global _credentials_cache
+    
+    # Clear cache to force refresh
+    _credentials_cache["data"] = None
+    _credentials_cache["timestamp"] = 0
+    
+    # Try service first
+    service_credentials = fetch_credentials_from_service()
+    
+    if service_credentials is not None:
+        _credentials_cache["data"] = service_credentials
+        _credentials_cache["timestamp"] = time.time()
+        return {
+            "success": True,
+            "source": "credentials_service",
+            "service_url": CREDENTIALS_SERVICE_URL,
+            "chassis_count": len(service_credentials),
+            "chassis_ips": list(service_credentials.keys()),
+            "message": "Credentials refreshed from credentials service"
+        }
+    
+    # Fall back to file
+    file_credentials = load_credentials_from_file()
+    _credentials_cache["data"] = file_credentials
+    _credentials_cache["timestamp"] = time.time() - (_credentials_cache["ttl"] / 2)
+    
+    return {
+        "success": True,
+        "source": "config.json",
+        "service_url": CREDENTIALS_SERVICE_URL,
+        "service_available": False,
+        "chassis_count": len(file_credentials),
+        "chassis_ips": list(file_credentials.keys()),
+        "message": "Credentials loaded from config.json (credentials service unavailable)"
+    }
+
+@app.get("/credentials/status", operation_id="get_credentials_status")
+def get_credentials_status() -> Dict[str, Any]:
+    """
+    Get the current status of credentials including source and cache information.
+    
+    Returns:
+        Dict containing credentials status information
+    """
+    current_time = time.time()
+    cache_age = current_time - _credentials_cache["timestamp"] if _credentials_cache["timestamp"] > 0 else None
+    cache_valid = cache_age is not None and cache_age < _credentials_cache["ttl"]
+    
+    # Check if service is available
+    service_available = fetch_credentials_from_service() is not None
+    
+    credentials = load_credentials()
+    
+    return {
+        "credentials_service_url": CREDENTIALS_SERVICE_URL,
+        "credentials_service_available": service_available,
+        "credentials_service_timeout": CREDENTIALS_SERVICE_TIMEOUT,
+        "cache_ttl_seconds": _credentials_cache["ttl"],
+        "cache_age_seconds": round(cache_age, 2) if cache_age else None,
+        "cache_valid": cache_valid,
+        "chassis_count": len(credentials),
+        "chassis_ips": list(credentials.keys())
+    }
 
 # Initialize MCP after all routes are defined
 mcp = FastApiMCP(
