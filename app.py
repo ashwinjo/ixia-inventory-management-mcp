@@ -158,6 +158,14 @@ class ChassisCredentials(BaseModel):
     """
     ip: str
 
+class PortOperationCredentials(BaseModel):
+    """
+    Pydantic model for port operation requests
+    """
+    ip: str
+    card_number: int
+    port_number: int
+
 def get_chassis_auth(ip):
     """
     Get authentication details for a chassis from config file
@@ -456,6 +464,188 @@ def get_lldp_peer_data(credentials: ChassisCredentials) -> List[Dict[str, Any]]:
             'chassisIp': credentials.ip,
             'lastUpdatedAt_UTC': datetime.utcnow().strftime("%m/%d/%Y, %H:%M:%S")
         }]
+
+def get_port_id(session, card_number: int, port_number: int) -> int:
+    """
+    Helper function to get the internal port ID from card and port numbers.
+    
+    Args:
+        session: IxRestSession object
+        card_number: Card number on the chassis
+        port_number: Port number on the card
+        
+    Returns:
+        int: Internal port ID used for port operations
+        
+    Raises:
+        HTTPException: If port is not found
+    """
+    ports = session.get_ports(params={'cardNumber': card_number, 'portNumber': port_number}).data
+    if not ports:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Port {card_number}/{port_number} not found on chassis"
+        )
+    return ports[0]['id']
+
+@app.post("/chassis/take_port_ownership", operation_id="take_port_ownership")
+def take_port_ownership(credentials: PortOperationCredentials) -> Dict[str, Any]:
+    """
+    Take ownership of a port on the chassis.
+    
+    Note: This operation is only supported on Linux-based chassis.
+    
+    Args:
+        credentials (PortOperationCredentials): Port operation credentials in request body
+            - ip: IP address of the chassis
+            - card_number: Card number on the chassis
+            - port_number: Port number on the card
+        
+    Returns:
+        Dict containing success status and response data
+    """
+    try:
+        auth = get_chassis_auth(credentials.ip)
+        session = IxRestSession(
+            credentials.ip,
+            auth["username"],
+            auth["password"],
+            verbose=False
+        )
+        
+        # Look up the port ID using card and port numbers
+        port_id = get_port_id(session, credentials.card_number, credentials.port_number)
+        
+        logger.info(f"Taking ownership of port {credentials.card_number}/{credentials.port_number} (ID: {port_id}) on {credentials.ip}")
+        response = session.take_ownership(port_id)
+        
+        return {
+            "success": True,
+            "chassisIp": credentials.ip,
+            "cardNumber": credentials.card_number,
+            "portNumber": credentials.port_number,
+            "portId": port_id,
+            "message": "Port ownership taken successfully",
+            "lastUpdatedAt_UTC": datetime.utcnow().strftime("%m/%d/%Y, %H:%M:%S")
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error taking port ownership: {str(e)}")
+        return {
+            "success": False,
+            "chassisIp": credentials.ip,
+            "cardNumber": credentials.card_number,
+            "portNumber": credentials.port_number,
+            "message": f"Error taking port ownership: {str(e)}",
+            "lastUpdatedAt_UTC": datetime.utcnow().strftime("%m/%d/%Y, %H:%M:%S")
+        }
+
+@app.post("/chassis/release_port_ownership", operation_id="release_port_ownership")
+def release_port_ownership(credentials: PortOperationCredentials) -> Dict[str, Any]:
+    """
+    Release ownership of a port on the chassis.
+    
+    Note: This operation is only supported on Linux-based chassis.
+    
+    Args:
+        credentials (PortOperationCredentials): Port operation credentials in request body
+            - ip: IP address of the chassis
+            - card_number: Card number on the chassis
+            - port_number: Port number on the card
+        
+    Returns:
+        Dict containing success status and response data
+    """
+    try:
+        auth = get_chassis_auth(credentials.ip)
+        session = IxRestSession(
+            credentials.ip,
+            auth["username"],
+            auth["password"],
+            verbose=False
+        )
+        
+        # Look up the port ID using card and port numbers
+        port_id = get_port_id(session, credentials.card_number, credentials.port_number)
+        
+        logger.info(f"Releasing ownership of port {credentials.card_number}/{credentials.port_number} (ID: {port_id}) on {credentials.ip}")
+        response = session.release_ownership(port_id)
+        
+        return {
+            "success": True,
+            "chassisIp": credentials.ip,
+            "cardNumber": credentials.card_number,
+            "portNumber": credentials.port_number,
+            "portId": port_id,
+            "message": "Port ownership released successfully",
+            "lastUpdatedAt_UTC": datetime.utcnow().strftime("%m/%d/%Y, %H:%M:%S")
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error releasing port ownership: {str(e)}")
+        return {
+            "success": False,
+            "chassisIp": credentials.ip,
+            "cardNumber": credentials.card_number,
+            "portNumber": credentials.port_number,
+            "message": f"Error releasing port ownership: {str(e)}",
+            "lastUpdatedAt_UTC": datetime.utcnow().strftime("%m/%d/%Y, %H:%M:%S")
+        }
+
+@app.post("/chassis/reboot_port", operation_id="reboot_port")
+def reboot_port(credentials: PortOperationCredentials) -> Dict[str, Any]:
+    """
+    Reboot a port on the chassis.
+    
+    Note: This operation is only supported on Linux-based chassis.
+    
+    Args:
+        credentials (PortOperationCredentials): Port operation credentials in request body
+            - ip: IP address of the chassis
+            - card_number: Card number on the chassis
+            - port_number: Port number on the card
+        
+    Returns:
+        Dict containing success status and response data
+    """
+    try:
+        auth = get_chassis_auth(credentials.ip)
+        session = IxRestSession(
+            credentials.ip,
+            auth["username"],
+            auth["password"],
+            verbose=False
+        )
+        
+        # Look up the port ID using card and port numbers
+        port_id = get_port_id(session, credentials.card_number, credentials.port_number)
+        
+        logger.info(f"Rebooting port {credentials.card_number}/{credentials.port_number} (ID: {port_id}) on {credentials.ip}")
+        response = session.reboot_port(port_id)
+        
+        return {
+            "success": True,
+            "chassisIp": credentials.ip,
+            "cardNumber": credentials.card_number,
+            "portNumber": credentials.port_number,
+            "portId": port_id,
+            "message": "Port rebooted successfully",
+            "lastUpdatedAt_UTC": datetime.utcnow().strftime("%m/%d/%Y, %H:%M:%S")
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error rebooting port: {str(e)}")
+        return {
+            "success": False,
+            "chassisIp": credentials.ip,
+            "cardNumber": credentials.card_number,
+            "portNumber": credentials.port_number,
+            "message": f"Error rebooting port: {str(e)}",
+            "lastUpdatedAt_UTC": datetime.utcnow().strftime("%m/%d/%Y, %H:%M:%S")
+        }
 
 @app.post("/credentials/refresh", operation_id="refresh_credentials")
 def refresh_credentials() -> Dict[str, Any]:

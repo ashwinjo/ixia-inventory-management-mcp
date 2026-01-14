@@ -203,6 +203,14 @@ docker run -d \
 | `/chassis/list` | GET | List all configured chassis | `get_chassis_list` |
 | `/chassis/lldp` | POST | Get LLDP peer data | `get_lldp_peer_data` |
 
+### Port Operation Endpoints (Linux Chassis Only)
+
+| Endpoint | Method | Description | MCP Operation ID |
+|----------|--------|-------------|------------------|
+| `/chassis/take_port_ownership` | POST | Take ownership of a port | `take_port_ownership` |
+| `/chassis/release_port_ownership` | POST | Release ownership of a port | `release_port_ownership` |
+| `/chassis/reboot_port` | POST | Reboot a port | `reboot_port` |
+
 ### Credentials Management Endpoints
 
 | Endpoint | Method | Description | MCP Operation ID |
@@ -210,14 +218,27 @@ docker run -d \
 | `/credentials/refresh` | POST | Force refresh credentials from service | `refresh_credentials` |
 | `/credentials/status` | GET | Get credentials source status | `get_credentials_status` |
 
-### Request Format
+### Request Formats
+
+#### Standard Chassis Request
 ```json
 {
   "ip": "10.36.237.131"
 }
 ```
 
-### Response Example
+#### Port Operation Request
+```json
+{
+  "ip": "10.36.237.131",
+  "card_number": 1,
+  "port_number": 1
+}
+```
+
+### Response Examples
+
+#### Chassis Summary Response
 ```json
 {
   "chassisIp": "10.36.237.131",
@@ -234,6 +255,31 @@ docker run -d \
   "IxOS": "9.20.2212.15",
   "IxNetwork Protocols": "9.20.2212.15",
   "IxOS REST": "9.20.2212.15"
+}
+```
+
+#### Port Operation Response (Success)
+```json
+{
+  "success": true,
+  "chassisIp": "10.36.237.131",
+  "cardNumber": 1,
+  "portNumber": 1,
+  "portId": 42,
+  "message": "Port ownership taken successfully",
+  "lastUpdatedAt_UTC": "01/14/2026, 10:30:25"
+}
+```
+
+#### Port Operation Response (Error)
+```json
+{
+  "success": false,
+  "chassisIp": "10.36.237.131",
+  "cardNumber": 1,
+  "portNumber": 99,
+  "message": "Error taking port ownership: Port 1/99 not found on chassis",
+  "lastUpdatedAt_UTC": "01/14/2026, 10:30:25"
 }
 ```
 
@@ -261,6 +307,9 @@ Add to your `claude_desktop_config.json`:
 - "What's the performance of chassis 10.36.236.121?"
 - "List all available chassis"
 - "Get sensor data for the first chassis"
+- "Take ownership of port 1/1 on chassis 10.36.237.131"
+- "Release ownership of port 2/3 on 10.36.236.121"
+- "Reboot port 1/4 on the first chassis"
 
 ## 🐳 Docker Deployment
 
