@@ -1,6 +1,6 @@
 # IxNetwork Inventory MCP Server
 
-An MCP (Model Context Protocol) server that exposes IxNetwork chassis inventory, port management, and hardware telemetry as AI-callable tools. Connect it to Claude Desktop or any MCP-compatible agent to query and manage your Ixia chassis fleet using natural language.
+An MCP (Model Context Protocol) server that exposes IxNetwork chassis inventory, port management, and hardware telemetry as AI-callable tools. Connect it to any MCP-compatible agent or AI assistant to query and manage your Ixia chassis fleet using natural language.
 
 Built with FastAPI. Every REST endpoint is automatically an MCP tool — no separate tool definitions. Runs as a Docker container with a volume-mounted credential store.
 
@@ -12,7 +12,7 @@ Built with FastAPI. Every REST endpoint is automatically an MCP tool — no sepa
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Configuration](#configuration)
-- [Claude Desktop Setup](#claude-desktop-setup)
+- [MCP Client Setup](#mcp-client-setup)
 - [MCP Tools Reference](#mcp-tools-reference)
 - [Natural Language Query Examples](#natural-language-query-examples)
 - [Managing Chassis at Runtime](#managing-chassis-at-runtime)
@@ -25,7 +25,7 @@ Built with FastAPI. Every REST endpoint is automatically an MCP tool — no sepa
 ## Architecture
 
 ```
-Claude Desktop / AI Agent
+MCP Client / AI Agent
         │
         │  MCP over HTTP (Bearer token)
         ▼
@@ -54,7 +54,7 @@ Credentials are cached in memory for 60 seconds. The external credentials servic
 
 - Docker and Docker Compose v2
 - `openssl` (for API key generation)
-- `npx` (for Claude Desktop integration via `mcp-remote`)
+- `npx` (for MCP client integration via `mcp-remote`)
 - Network access to your IxNetwork chassis (HTTPS, port 443)
 
 ---
@@ -83,14 +83,14 @@ cd ixia-inventory-management-mcp
 }
 ```
 
-You can also add chassis later through Claude without editing this file — see [Managing Chassis at Runtime](#managing-chassis-at-runtime).
+You can also add chassis later through any connected MCP client without editing this file — see [Managing Chassis at Runtime](#managing-chassis-at-runtime).
 
 **3. Generate an API key**
 
 ```bash
 export MCP_API_KEY=$(openssl rand -hex 32)
 echo "MCP_API_KEY=$MCP_API_KEY" >> .env
-echo "Save this key — you need it for Claude Desktop config"
+echo "Save this key — you need it for your MCP client config"
 ```
 
 **4. Start the server**
@@ -161,16 +161,11 @@ On Linux, `host.docker.internal` resolves to the host gateway only with `extra_h
 
 ---
 
-## Claude Desktop Setup
+## MCP Client Setup
 
-**1. Locate your Claude Desktop config file**
+The server exposes a Streamable HTTP MCP endpoint at `http://localhost:8888/mcp`. Any MCP-compatible client can connect using `mcp-remote` as a bridge.
 
-| OS | Path |
-|---|---|
-| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
-| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
-
-**2. Add the MCP server**
+**Generic config (works with any client that accepts an `mcpServers` JSON block)**
 
 ```json
 {
@@ -178,10 +173,10 @@ On Linux, `host.docker.internal` resolves to the host gateway only with `extra_h
     "ixia-inventory": {
       "command": "npx",
       "args": [
-        "mcp-remote",
+        "mcp-remote@latest",
         "http://localhost:8888/mcp",
         "--header",
-        "Authorization: Bearer YOUR_API_KEY_HERE"
+        "Authorization:Bearer YOUR_API_KEY_HERE"
       ]
     }
   }
@@ -190,15 +185,19 @@ On Linux, `host.docker.internal` resolves to the host gateway only with `extra_h
 
 Replace `YOUR_API_KEY_HERE` with the value of `$MCP_API_KEY`.
 
-**3. Restart Claude Desktop**
+**Claude Code**
 
-The MCP server will appear in the tool panel. Claude will automatically call the correct tools based on your natural language queries.
+```bash
+claude mcp add ixia-inventory -- npx mcp-remote@latest http://localhost:8888/mcp --header "Authorization:Bearer $MCP_API_KEY"
+```
+
+Or add the JSON block above to `~/.claude/settings.json` under the `mcpServers` key.
 
 ---
 
 ## MCP Tools Reference
 
-All tools require the Bearer token configured in Claude Desktop. The following tools are available:
+All tools require a Bearer token passed via the `Authorization` header. The following tools are available:
 
 ### Inventory — Read
 
@@ -242,7 +241,7 @@ All tools require the Bearer token configured in Claude Desktop. The following t
 
 ## Natural Language Query Examples
 
-These are queries you can type directly into Claude once the MCP server is connected.
+Example natural language queries once your MCP client is connected.
 
 **Discovery**
 ```
@@ -296,7 +295,7 @@ Chassis can be added, updated, or removed while the server is running — no res
 
 **Add or update a chassis**
 
-Via Claude: *"Add chassis 10.36.237.200 with username admin and password admin123"*
+Via MCP agent: *"Add chassis 10.36.237.200 with username admin and password admin123"*
 
 Via curl:
 ```bash
@@ -308,7 +307,7 @@ curl -X POST http://localhost:8888/chassis/credentials \
 
 **Remove a chassis**
 
-Via Claude: *"Remove chassis 10.36.237.200"*
+Via MCP agent: *"Remove chassis 10.36.237.200"*
 
 Via curl:
 ```bash
@@ -390,7 +389,7 @@ docker-compose up -d
 
 ### 401 Unauthorized on all requests
 
-**Symptom**: Every curl or Claude Desktop call returns `401`.
+**Symptom**: Every curl or MCP client call returns `401`.
 
 **Cause**: Mismatched API key between the server and the client.
 
@@ -404,13 +403,13 @@ docker exec ixnetwork-inventory-mcp env | grep MCP_API_KEY
 curl -H "Authorization: Bearer <that_key>" http://localhost:8888/chassis/list
 ```
 
-**Fix**: Ensure `claude_desktop_config.json` contains the same key that was passed to the container. Restart Claude Desktop after any config change.
+**Fix**: Ensure your MCP client config passes the same key that was passed to the container via `--header "Authorization:Bearer <key>"`.
 
 ---
 
-### Claude Desktop shows no tools / "MCP server not connected"
+### MCP client shows no tools / server not connected
 
-**Symptom**: Tool panel is empty or the server name is grayed out.
+**Symptom**: Tool list is empty or the server fails to connect.
 
 **Diagnosis steps**:
 
@@ -421,16 +420,12 @@ curl -H "Authorization: Bearer <that_key>" http://localhost:8888/chassis/list
 
 2. Confirm `npx` and `mcp-remote` are available:
    ```bash
-   npx mcp-remote --version
+   npx mcp-remote@latest http://localhost:8888/mcp --header "Authorization:Bearer $MCP_API_KEY"
    ```
 
-3. Check Claude Desktop config syntax — invalid JSON silently prevents loading:
-   ```bash
-   # macOS
-   cat ~/Library/Application\ Support/Claude/claude_desktop_config.json | python3 -m json.tool
-   ```
+3. Check your MCP client config for JSON syntax errors — invalid JSON silently prevents loading.
 
-4. Restart Claude Desktop fully (quit and reopen, not just the window).
+4. Restart your MCP client fully after any config change.
 
 ---
 
@@ -514,7 +509,7 @@ docker-compose logs | grep '"levelname": "ERROR"'
 docker-compose logs | grep '"request_id": "abc123"'
 ```
 
-All log lines are JSON. Each request generates a unique `request_id`. If Claude Desktop surfaces an error, find the corresponding `request_id` in the `X-Request-ID` response header (visible in browser devtools or curl `-v` output) and grep for it in logs.
+All log lines are JSON. Each request generates a unique `request_id`. If your MCP client surfaces an error, find the corresponding `request_id` in the `X-Request-ID` response header (visible in browser devtools or curl `-v` output) and grep for it in logs.
 
 ---
 
