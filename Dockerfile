@@ -13,6 +13,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
@@ -33,9 +34,9 @@ USER app
 # Expose port
 EXPOSE 8888
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8888/docs || exit 1
+# Health check — uses lightweight /health endpoint (not /docs)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8888/health || exit 1
 
 # Start the application
-CMD ["python", "app.py"] 
+CMD ["python", "app.py"]
