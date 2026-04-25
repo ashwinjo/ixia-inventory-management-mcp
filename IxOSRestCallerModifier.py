@@ -241,14 +241,11 @@ def get_chassis_ports_information(session, chassisIp, chassisType):
                 for k in keys_to_remove:
                     port.pop(k)
 
-                # Newer platforms return fullyQualifiedPortName as dot-notation
-                # e.g. "4.1" means card 4, port 1 — parse into integer fields
+                # Newer platforms break ports into sub-ports (e.g. port 4 → "4.1", "4.2", "4.3", "4.4")
+                # Use fullyQualifiedPortName as portNumber when present
                 fqn = port.get('fullyQualifiedPortName', '')
-                if fqn and fqn != 'N/A':
-                    parts = str(fqn).strip().split('.')
-                    if len(parts) == 2 and all(p.isdigit() for p in parts):
-                        port['cardNumber'] = int(parts[0])
-                        port['portNumber'] = int(parts[1])
+                if fqn and fqn != 'N/A' and str(fqn).strip():
+                    port['portNumber'] = str(fqn).strip()
 
             # Calculate port statistics
             used_ports = len([p for p in port_list if p.get("owner") != "Free"])
