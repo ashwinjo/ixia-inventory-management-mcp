@@ -478,7 +478,7 @@ def get_chassis_ports(credentials: ChassisCredentials) -> List[Dict[str, Any]]:
     Example input: {"ip": "10.36.237.131"}
 
     Returns list of port objects. Fields per port: cardNumber, portNumber,
-    fullyQualifiedPortName (e.g. "1/1/1"), owner ("Free" if unowned), linkState,
+    fullyQualifiedPortName (e.g. "1/1/1" or "4.1" on newer platforms), owner ("Free" if unowned), linkState,
     speed, phyMode, transceiverModel, transceiverManufacturer, lldpPeerData (dict or null).
     Aggregate stats appended to each port: totalPorts, ownedPorts, freePorts.
     """
