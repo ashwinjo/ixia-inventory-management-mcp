@@ -195,19 +195,17 @@ def load_credentials_from_file() -> Dict[str, Dict[str, str]]:
 
 def save_credentials_to_file(credentials: Dict[str, Dict[str, str]]) -> None:
     """
-    Atomically write credentials to config.json.
+    Write credentials to config.json.
 
-    Writes to a temp file first, then renames — guarantees readers never
-    see a half-written file even if the process crashes mid-write.
+    Writes directly to the file to ensure compatibility with Docker bind mounts,
+    where rename-based atomic writes can silently fail to update the host file.
 
     Raises RuntimeError if the file cannot be written.
     """
     config_path = "config.json"
-    tmp_path = config_path + ".tmp"
     try:
-        with open(tmp_path, "w") as f:
+        with open(config_path, "w") as f:
             json.dump(credentials, f, indent=2)
-        os.replace(tmp_path, config_path)
         logger.info("Saved credentials to file", extra={"chassis_count": len(credentials)})
     except Exception as e:
         logger.error("Failed to write credentials file", extra={"error": str(e)})

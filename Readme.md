@@ -19,6 +19,7 @@ Built with FastAPI. Every REST endpoint is automatically an MCP tool — no sepa
 - [REST API Reference](#rest-api-reference)
 - [Troubleshooting](#troubleshooting)
 - [Development](#development)
+- [Applying Code Changes](#applying-code-changes)
 
 ---
 
@@ -557,3 +558,52 @@ requirements.txt
 3. Raise `HTTPException` for error conditions — do not return `{"success": false}` with HTTP 200.
 4. Add business logic to `IxOSRestCallerModifier.py` if it involves IxOS data transformation.
 5. Rebuild: `docker-compose up -d --build`
+
+---
+
+## Applying Code Changes
+
+The server runs inside Docker. How you pick up a change depends on what you changed.
+
+### Quick reference
+
+| What changed | Command needed | MCP client reconnect? |
+|---|---|---|
+| Source code (`app.py`, `IxOSRestCallerModifier.py`, `RestApi/`, `Dockerfile`, `requirements.txt`) | `docker-compose up -d --build` | **Yes** |
+| `config.json` (chassis credentials) | `curl -X POST http://localhost:8888/credentials/refresh -H "Authorization: Bearer $MCP_API_KEY"` — or wait 60 s for auto-refresh | No |
+| Environment variables (`.env`) | `docker-compose up -d` | No |
+
+### Source code changes (rebuild required)
+
+Any change to Python source files requires rebuilding the container image:
+
+```bash
+docker-compose up -d --build
+```
+
+This stops the old container, rebuilds the image from the `Dockerfile`, and starts a fresh container. The server is unavailable for a few seconds during the restart.
+
+**After a rebuild, reconnect your MCP client.** The MCP tool list is served at startup — stale client connections will not see new or changed tools. How to reconnect:
+
+- **Claude Desktop / Claude Code**: Run `claude mcp restart ixia-inventory` or restart the client application entirely.
+- **Any `mcp-remote` bridge**: Kill the `mcp-remote` process and let your client relaunch it. The bridge re-fetches the tool manifest on connect.
+- **Verify** the new tool is visible by asking your agent: *"What tools do you have available?"*
+
+### config.json changes (no rebuild)
+
+`config.json` is volume-mounted into the container — the file on disk is read directly. No rebuild or restart is needed. Force an immediate reload with:
+
+```bash
+curl -X POST http://localhost:8888/credentials/refresh \
+  -H "Authorization: Bearer $MCP_API_KEY"
+```
+
+Without this call, the new credentials will be picked up automatically within 60 seconds (the in-memory cache TTL).
+
+### Environment variable changes (restart only)
+
+Changes to `.env` are picked up with a plain restart — no image rebuild:
+
+```bash
+docker-compose up -d
+```

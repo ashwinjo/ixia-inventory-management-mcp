@@ -66,7 +66,7 @@ When running in Docker and the credentials service is on the host, use `http://h
 
 ## Chassis Credential CRUD (runtime, no restart needed)
 
-`POST /chassis/credentials` (`add_chassis_credentials`) — adds or updates a chassis. Writes atomically to `config.json` via `save_credentials_to_file()` (temp file + `os.replace`) then directly patches `_credentials_cache`. Takes effect immediately.
+`POST /chassis/credentials` (`add_chassis_credentials`) — adds or updates a chassis. Writes directly to `config.json` via `save_credentials_to_file()` then patches `_credentials_cache`. Takes effect immediately. Direct write (not tmp+rename) is intentional — Docker file bind mounts do not reliably propagate renames to the host file.
 
 `POST /chassis/credentials/remove` (`remove_chassis_credentials`) — removes a chassis by IP. Same atomic write + cache patch pattern.
 
