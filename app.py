@@ -21,6 +21,7 @@ from datetime import datetime
 # ── Structured JSON Logging ──────────────────────────────────────────────────
 
 request_id_var: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="-")
+user_id_var: contextvars.ContextVar[str] = contextvars.ContextVar("user_id", default="unknown")
 
 
 class _CorrelationIdFilter(logging.Filter):
@@ -53,6 +54,56 @@ def _setup_logging() -> None:
 
 _setup_logging()
 logger = logging.getLogger(__name__)
+
+# ── Telemetry & Audit Log ────────────────────────────────────────────────────
+
+TELEMETRY_LOG_PATH = os.environ.get("TELEMETRY_LOG_PATH", "/app/logs/telemetry.jsonl")
+AUDIT_LOG_PATH = os.environ.get("AUDIT_LOG_PATH", "/app/logs/audit.jsonl")
+
+_log_lock = threading.Lock()
+
+
+def _ensure_log_dir() -> None:
+    for path in (TELEMETRY_LOG_PATH, AUDIT_LOG_PATH):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
+
+_ensure_log_dir()
+
+
+def _append_jsonl(path: str, record: dict) -> None:
+    with _log_lock:
+        try:
+            with open(path, "a") as f:
+                f.write(json.dumps(record) + "\n")
+        except OSError as e:
+            logger.warning("Failed to write log", extra={"path": path, "error": str(e)})
+
+
+def write_telemetry(record: dict) -> None:
+    """Fire-and-forget telemetry write — does not block the request path."""
+    threading.Thread(target=_append_jsonl, args=(TELEMETRY_LOG_PATH, record), daemon=True).start()
+
+
+def write_audit(
+    operation: str,
+    target: dict,
+    result: str,
+    error: str | None = None,
+) -> None:
+    """Synchronous audit write — ensures write ops are always recorded."""
+    record: dict = {
+        "timestamp_utc": datetime.utcnow().isoformat() + "Z",
+        "operation": operation,
+        "target": target,
+        "user": user_id_var.get("unknown"),
+        "request_id": request_id_var.get("-"),
+        "result": result,
+    }
+    if error:
+        record["error"] = error
+    _append_jsonl(AUDIT_LOG_PATH, record)
+
 
 # ── Startup Validation ───────────────────────────────────────────────────────
 
@@ -96,9 +147,12 @@ _AUTH_EXCLUDED_PATHS = {"/health"}
 
 @app.middleware("http")
 async def request_middleware(request: Request, call_next):
-    """Sets correlation ID and enforces Bearer token auth on all routes except /health."""
+    """Sets correlation ID, user identity, enforces Bearer token auth, and records telemetry."""
     request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
-    token = request_id_var.set(request_id)
+    user_id = request.headers.get("X-User-ID", "mcp-agent")
+    rid_token = request_id_var.set(request_id)
+    uid_token = user_id_var.set(user_id)
+    start_ms = time.time() * 1000
     try:
         if request.url.path not in _AUTH_EXCLUDED_PATHS:
             auth_header = request.headers.get("Authorization", "")
@@ -120,9 +174,23 @@ async def request_middleware(request: Request, call_next):
 
         response = await call_next(request)
         response.headers["X-Request-ID"] = request_id
+
+        # Skip telemetry for internal/meta endpoints
+        if request.url.path not in {"/health", "/telemetry/summary", "/audit/recent", "/docs", "/openapi.json"}:
+            write_telemetry({
+                "timestamp_utc": datetime.utcnow().isoformat() + "Z",
+                "operation": request.url.path,
+                "method": request.method,
+                "status_code": response.status_code,
+                "duration_ms": round(time.time() * 1000 - start_ms, 2),
+                "user": user_id,
+                "request_id": request_id,
+            })
+
         return response
     finally:
-        request_id_var.reset(token)
+        request_id_var.reset(rid_token)
+        user_id_var.reset(uid_token)
 
 # ── Health Endpoint (no auth) ────────────────────────────────────────────────
 
@@ -733,6 +801,7 @@ def take_port_ownership(credentials: PortOperationCredentials) -> Dict[str, Any]
     session = IxRestSession(credentials.ip, auth["username"], auth["password"], verbose=False)
     port_id = get_port_id(session, credentials.card_number, credentials.port_number)
 
+    _audit_target = {"ip": credentials.ip, "card": credentials.card_number, "port": credentials.port_number}
     try:
         logger.info(
             "Taking port ownership",
@@ -741,8 +810,10 @@ def take_port_ownership(credentials: PortOperationCredentials) -> Dict[str, Any]
         session.take_ownership(port_id)
     except Exception as e:
         logger.error("Chassis rejected take_ownership", extra={"chassis": credentials.ip, "error": str(e)})
+        write_audit("take_port_ownership", _audit_target, result="error", error=str(e))
         raise HTTPException(status_code=502, detail=f"Chassis operation failed: {str(e)}")
 
+    write_audit("take_port_ownership", _audit_target, result="success")
     return {
         "success": True,
         "chassisIp": credentials.ip,
@@ -772,6 +843,7 @@ def release_port_ownership(credentials: PortOperationCredentials) -> Dict[str, A
     session = IxRestSession(credentials.ip, auth["username"], auth["password"], verbose=False)
     port_id = get_port_id(session, credentials.card_number, credentials.port_number)
 
+    _audit_target = {"ip": credentials.ip, "card": credentials.card_number, "port": credentials.port_number}
     try:
         logger.info(
             "Releasing port ownership",
@@ -780,8 +852,10 @@ def release_port_ownership(credentials: PortOperationCredentials) -> Dict[str, A
         session.release_ownership(port_id)
     except Exception as e:
         logger.error("Chassis rejected release_ownership", extra={"chassis": credentials.ip, "error": str(e)})
+        write_audit("release_port_ownership", _audit_target, result="error", error=str(e))
         raise HTTPException(status_code=502, detail=f"Chassis operation failed: {str(e)}")
 
+    write_audit("release_port_ownership", _audit_target, result="success")
     return {
         "success": True,
         "chassisIp": credentials.ip,
@@ -811,6 +885,7 @@ def reboot_port(credentials: PortOperationCredentials) -> Dict[str, Any]:
     session = IxRestSession(credentials.ip, auth["username"], auth["password"], verbose=False)
     port_id = get_port_id(session, credentials.card_number, credentials.port_number)
 
+    _audit_target = {"ip": credentials.ip, "card": credentials.card_number, "port": credentials.port_number}
     try:
         logger.info(
             "Rebooting port",
@@ -819,8 +894,10 @@ def reboot_port(credentials: PortOperationCredentials) -> Dict[str, Any]:
         session.reboot_port(port_id)
     except Exception as e:
         logger.error("Chassis rejected reboot_port", extra={"chassis": credentials.ip, "error": str(e)})
+        write_audit("reboot_port", _audit_target, result="error", error=str(e))
         raise HTTPException(status_code=502, detail=f"Chassis operation failed: {str(e)}")
 
+    write_audit("reboot_port", _audit_target, result="success")
     return {
         "success": True,
         "chassisIp": credentials.ip,
@@ -946,6 +1023,7 @@ def add_chassis_credentials(entry: ChassisCredentialInput) -> Dict[str, Any]:
 
     action = "updated" if is_update else "added"
     logger.info(f"Chassis credentials {action}", extra={"chassis": entry.ip})
+    write_audit(f"add_chassis_credentials", {"ip": entry.ip, "action": action}, result="success")
     return {
         "success": True,
         "action": action,
@@ -989,6 +1067,7 @@ def remove_chassis_credentials(entry: ChassisCredentialRemove) -> Dict[str, Any]
         _credentials_cache["last_source"] = "file"
 
     logger.info("Chassis credentials removed", extra={"chassis": entry.ip})
+    write_audit("remove_chassis_credentials", {"ip": entry.ip}, result="success")
     return {
         "success": True,
         "chassis_ip": entry.ip,

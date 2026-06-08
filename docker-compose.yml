@@ -12,9 +12,9 @@ services:
       - MCP_SERVER_PORT=8888
       # Required: set via .env file or export MCP_API_KEY=$(openssl rand -hex 32)
       - MCP_API_KEY=${MCP_API_KEY}
-      # Optional: external credentials service
-      # - CREDENTIALS_SERVICE_URL=http://host.docker.internal:3001/api/config/credentials
-      # - CREDENTIALS_SERVICE_TIMEOUT=5
+      # Credentials service — fetch chassis list from inventory explorer DB
+      - CREDENTIALS_SERVICE_URL=http://host.docker.internal:3001/api/config/credentials
+      - CREDENTIALS_SERVICE_TIMEOUT=5
     # Required on Linux to reach services on the host from within the container
     extra_hosts:
       - "host.docker.internal:host-gateway"
